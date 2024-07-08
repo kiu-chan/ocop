@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:ocop/src/page/map/mapPage.dart';
 import 'package:ocop/src/page/home/homePage.dart';
+import 'package:ocop/src/page/settings/settingPage.dart';
 
 
 class Home extends StatefulWidget {
@@ -25,6 +26,12 @@ class _HomeState extends State<Home> {
       case 1:
       {
         currentWidget = MapPage();
+        break;
+      }
+
+      case 2:
+      {
+        currentWidget = SettingPage();
         break;
       }
     }
