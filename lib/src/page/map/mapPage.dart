@@ -15,6 +15,12 @@ class _MapPageState extends State<MapPage> {
   final MapController mapController = MapController();
   double currentZoom = 10.0;
 
+  String mapName = "Bản đồ";
+  final String mapUrl = "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
+  final String namePackage = "com.example.app";
+
+  final LatLng mapLat = new LatLng(22.406276, 105.624405);  //Tọa độ mặc định
+
   List<List<LatLng>> polygonData = [];
   List<String> listPaths = ['lib/src/assets/geodata/vungDem.geojson', 'lib/src/assets/geodata/vungLoi.geojson'];
   final List<Color> orderedColors = [
@@ -103,20 +109,20 @@ class _MapPageState extends State<MapPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Bản đồ'),
+        title: Text(mapName),
       ),
       body: Stack(
         children: [
           FlutterMap(
             mapController: mapController,
             options: MapOptions(
-              center: LatLng(22.406276, 105.624405), // Tọa độ
+              center: mapLat,
               zoom: currentZoom,
             ),
             nonRotatedChildren: [
               TileLayer(
-                urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
-                userAgentPackageName: 'com.example.app',
+                urlTemplate: mapUrl,
+                userAgentPackageName: namePackage,
               ),
               PolygonLayer(
                 polygons: List.generate(polygonData.length, (index) {
