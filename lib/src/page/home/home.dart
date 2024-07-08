@@ -24,7 +24,7 @@ class _HomeState extends State<Home> {
       
       case 1:
       {
-        currentWidget = mapPage();
+        currentWidget = MapPage();
         break;
       }
     }
