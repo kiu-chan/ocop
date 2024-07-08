@@ -103,7 +103,7 @@ class _MapPageState extends State<MapPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Bản đồ Việt Nam'),
+        title: Text('Bản đồ'),
       ),
       body: Stack(
         children: [
@@ -119,12 +119,13 @@ class _MapPageState extends State<MapPage> {
                 userAgentPackageName: 'com.example.app',
               ),
               PolygonLayer(
-                polygons: polygonData.asMap().entries.map((entry) {
-                  final index = entry.key;
-                  final polygonPoints = entry.value;
+                polygons: List.generate(polygonData.length, (index) {
+                  final polygonPoints = polygonData[index];
                   
-                  // Sử dụng màu theo đúng thứ tự
-                  final color = orderedColors[index % orderedColors.length];
+                  // Sử dụng màu theo đúng thứ tự, không lặp lại
+                  final color = index < orderedColors.length 
+                      ? orderedColors[index] 
+                      : Colors.grey; // Màu mặc định nếu hết màu trong danh sách
                   
                   return Polygon(
                     points: polygonPoints,
@@ -133,7 +134,7 @@ class _MapPageState extends State<MapPage> {
                     borderStrokeWidth: 2,
                     isFilled: true,
                   );
-                }).toList(),
+                }),
               ),
             ],
           ),
