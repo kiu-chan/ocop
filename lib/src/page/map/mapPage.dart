@@ -4,6 +4,7 @@ import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:geojson/geojson.dart';
+import 'dart:math' as math;
 
 class MapPage extends StatefulWidget {
   @override
@@ -15,17 +16,30 @@ class _MapPageState extends State<MapPage> {
   double currentZoom = 10.0;
 
   List<List<LatLng>> polygonData = [];
-
+  List<String> listPaths = ['lib/src/assets/geodata/vungDem.geojson', 'lib/src/assets/geodata/vungLoi.geojson'];
+  final List<Color> orderedColors = [
+  Colors.red,
+  Colors.blue,
+  Colors.green,
+  Colors.yellow,
+  Colors.orange,
+  Colors.purple,
+  Colors.teal,
+  Colors.pink,
+  // Thêm màu khác nếu cần
+];
   @override
   void initState() {
     super.initState();
-    _loadGeoJsonData();
+    for (int i = 0; i < listPaths.length; i++) {
+    _loadGeoJsonData(listPaths[i]);
+    }
   }
 
-  Future<void> _loadGeoJsonData() async {
+  Future<void> _loadGeoJsonData(String path) async {
   try {
     // Đọc tệp GeoJSON từ assets
-    final contents = await rootBundle.loadString('lib/src/assets/geodata/sinhcanh.geojson');
+    final contents = await rootBundle.loadString(path);
 
     // Phân tích nội dung GeoJSON
     final geoJson = GeoJson();
@@ -60,10 +74,11 @@ class _MapPageState extends State<MapPage> {
         }
       }
     }
-  print(tempPolygonData.length);
+  // print(tempPolygonData.length);
     // Cập nhật trạng thái với dữ liệu đa giác
     setState(() {
-      polygonData = tempPolygonData;
+      for(final point in tempPolygonData)
+      polygonData.add(point);
     });
 
     // Đóng GeoJSON để giải phóng bộ nhớ
@@ -104,12 +119,19 @@ class _MapPageState extends State<MapPage> {
                 userAgentPackageName: 'com.example.app',
               ),
               PolygonLayer(
-                polygons: polygonData.map((polygonPoints) {
+                polygons: polygonData.asMap().entries.map((entry) {
+                  final index = entry.key;
+                  final polygonPoints = entry.value;
+                  
+                  // Sử dụng màu theo đúng thứ tự
+                  final color = orderedColors[index % orderedColors.length];
+                  
                   return Polygon(
                     points: polygonPoints,
-                    color: Colors.blue.withOpacity(0.3),
-                    borderColor: Colors.blue,
+                    color: color.withOpacity(0.3),
+                    borderColor: Colors.black,
                     borderStrokeWidth: 2,
+                    isFilled: true,
                   );
                 }).toList(),
               ),

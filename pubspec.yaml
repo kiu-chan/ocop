@@ -68,6 +68,8 @@ flutter:
   assets:
     - lib\src\assets\img\home\logo.png
     - lib\src\assets\geodata\sinhcanh.geojson
+    - lib\src\assets\geodata\vungDem.geojson
+    - lib\src\assets\geodata\vungLoi.geojson
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware
