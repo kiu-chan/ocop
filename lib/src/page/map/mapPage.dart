@@ -1,10 +1,13 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:geojson/geojson.dart';
-import 'dart:math' as math;
+import 'package:ocop/src/page/map/elements/menu.dart';
+import 'package:ocop/src/page/map/data/ImageData.dart';
+import 'package:ocop/src/page/map/data/MapData.dart';
+import 'package:ocop/src/page/map/elements/MarkerMap.dart';
+
 
 class MapPage extends StatefulWidget {
   @override
@@ -16,9 +19,7 @@ class _MapPageState extends State<MapPage> {
   double currentZoom = 10.0;
 
   int? selectedMap = 1;
-
-  bool _showSelectionBar = false;
-
+  
   String mapName = "Bản đồ";
   List<String> listMapUrl = [
     "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
@@ -39,7 +40,7 @@ class _MapPageState extends State<MapPage> {
       ],
     ),
     ImageData(
-      'lib/src/assets/img/settings/images.png',
+      'lib/src/assets/img/map/image.png',
       'Ảnh 2',
       [
         LatLng(22.406276, 105.644405),
@@ -47,7 +48,7 @@ class _MapPageState extends State<MapPage> {
       ],
     ),
     ImageData(
-      'lib/src/assets/img/settings/images.png',
+      'lib/src/assets/img/map/img.png',
       'Ảnh 3',
       [
         LatLng(22.426276, 105.644405),
@@ -136,7 +137,6 @@ class _MapPageState extends State<MapPage> {
   }
 }
 
-
   void _zoomIn() {
     currentZoom = currentZoom + 1;
     mapController.move(mapController.center, currentZoom);
@@ -145,6 +145,26 @@ class _MapPageState extends State<MapPage> {
   void _zoomOut() {
     currentZoom = currentZoom - 1;
     mapController.move(mapController.center, currentZoom);
+  }
+
+
+  void _changeMapSource(int mapValue) {
+    setState(() {
+      mapUrl = listMapUrl[mapValue];
+      print(mapUrl);
+    });
+  }
+
+  void _setStateProduct(ImageData imageData) {
+    setState(() {
+      imageData.setCheck();
+    });
+  }
+  
+  void _setPolygonData(MapData mapData) {
+    setState(() {
+      mapData.setCheck();
+    });
   }
 
   @override
@@ -165,170 +185,12 @@ class _MapPageState extends State<MapPage> {
           ),
         ],
       ),
-      endDrawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: <Widget>[
-            Container(
-              height: 80,
-              child: DrawerHeader(
-                decoration: BoxDecoration(
-                  color: Colors.blue,
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    IconButton(
-                      icon: Icon(Icons.close, color: Colors.white),
-                      onPressed: () {
-                        Navigator.pop(context); // Đóng Drawer
-                      },
-                    ),
-                    Text(
-                      'Tùy chỉnh',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 24,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            ExpansionTile(
-              leading: Icon(Icons.api),
-              title: Text('Bản đồ nền'),
-              subtitle: Text('Bản đồ mặc định'),
-              children: <Widget>[
-                RadioListTile<int>(
-                  title: Text('Bản đồ địa lý'),
-                  value: 1,
-                  groupValue: selectedMap,
-                  onChanged: (value) {
-                    setState(() {
-                      selectedMap = value;
-                      _changeMapSource(0);
-                      Navigator.pop(context);
-                    });
-                  },
-                ),
-                RadioListTile<int>(
-                  title: Text('Bản đồ vệ tinh'),
-                  value: 2,
-                  groupValue: selectedMap,
-                  onChanged: (value) {
-                    setState(() {
-                      selectedMap = value;
-                      _changeMapSource(1);
-                      Navigator.pop(context);
-                    });
-                  },
-                ),
-              ],
-            ),
-            ExpansionTile(
-              leading: Icon(Icons.show_chart),
-              title: Text('Lớp hành chính'),
-              subtitle: Text('Mô tả'),
-              children: <Widget>[
-                CheckboxListTile(
-                  title: Text('Ranh giới'),
-                  value: true,
-                  controlAffinity: ListTileControlAffinity.leading,
-                  activeColor: Colors.blue,
-                  onChanged: (bool? value) {
-                    _changeMapSource(0);
-                    Navigator.pop(context);
-                  },
-                ),
-                CheckboxListTile(
-                  title: Text('Ranh giới huyện'),
-                  value: true,
-                  controlAffinity: ListTileControlAffinity.leading,
-                  activeColor: Colors.blue,
-                  onChanged: (bool? value) {
-                    _changeMapSource(1);
-                    Navigator.pop(context);
-                  },
-                ),
-              ],
-            ),
-            ExpansionTile(
-              leading: Icon(Icons.workspaces_outline),
-              title: Text('Lớp sản phẩm'),
-              subtitle: Text('Mô tả'),
-              children: imageDataList.map((imageData) {
-                return CheckboxListTile(
-                  title: Row(
-                    children: [
-                      Text(imageData.title),
-                      Text(
-                        " (" + imageData.locations.length.toString() + ")",
-                        style: TextStyle(
-                          color: Colors.blue,
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                        ),
-                        ),
-                    ],
-                  ),
-                  value: imageData.checkRender,
-                  controlAffinity: ListTileControlAffinity.leading,
-                  activeColor: Colors.blue,
-                  onChanged: (bool? value) {
-                    setState(() {
-                    imageData.setCheck();
-                    });
-                  },
-                );
-              }).toList(),
-            ),
-            ExpansionTile(
-              leading: Icon(Icons.auto_awesome_motion),
-              title: Text('Khu vực'),
-              subtitle: Text('Mô tả'),
-              children: polygonData.map((mapData) {
-                return CheckboxListTile(
-                  title: 
-                      Text(mapData.mapPath),
-                  value: mapData.checkRender,
-                  controlAffinity: ListTileControlAffinity.leading,
-                  activeColor: Colors.blue,
-                  onChanged: (bool? value) {
-                    setState(() {
-                    mapData.setCheck();
-                    });
-                  },
-                );
-              }).toList(),
-            ),
-            ExpansionTile(
-              leading: Icon(Icons.home),
-              title: Text('Chủ thể OCOP'),
-              subtitle: Text('Mô tả'),
-              children: <Widget>[
-                CheckboxListTile(
-                  title: Text('Bản đồ địa lý'),
-                  value: true,
-                  controlAffinity: ListTileControlAffinity.leading,
-                  activeColor: Colors.blue,
-                  onChanged: (bool? value) {
-                    _changeMapSource(0);
-                  },
-                ),
-                CheckboxListTile(
-                  title: Text('Bản đồ vệ tinh'),
-                  value: true,
-                  controlAffinity: ListTileControlAffinity.leading,
-                  activeColor: Colors.blue,
-                  onChanged: (bool? value) {
-                    _changeMapSource(1);
-                  },
-                ),
-              ],
-            ),
-          ],
-        ),
+      endDrawer: Menu(
+        onClickMap: _changeMapSource,
+        onClickImgData: _setStateProduct,
+        imageDataList: imageDataList,
+        polygonData: polygonData,
+        onClickMapData: _setPolygonData,
       ),
       body: Stack(
         children: [
@@ -362,7 +224,7 @@ class _MapPageState extends State<MapPage> {
                     );
                   }
                   return Polygon(
-                    points: [], // Hoặc các giá trị mặc định tương ứng với Polygon
+                    points: [],
                     color: Colors.transparent,
                     borderColor: Colors.transparent,
                     borderStrokeWidth: 0,
@@ -370,10 +232,9 @@ class _MapPageState extends State<MapPage> {
                   );
                 }),
               ),
-
-              MarkerLayer(
-            markers: _buildMarkers(),
-          ),
+              MarkerMap(
+                imageDataList: imageDataList,
+                ),
             ],
           ),
           Positioned(
@@ -398,103 +259,5 @@ class _MapPageState extends State<MapPage> {
         ],
       ),
     );
-  }
-
-  List<Marker> _buildMarkers() {
-    List<Marker> markers = [];
-    for (var imageData in imageDataList) {
-      if(imageData.getCheck())
-      for (var location in imageData.locations) {
-        markers.add(
-          Marker(
-            width: 50.0,
-            height: 50.0,
-            point: location,
-            builder: (ctx) => GestureDetector(
-              onTap: () {
-                showDialog(
-                  context: ctx,
-                  builder: (BuildContext context) {
-                    return AlertDialog(
-                      title: Text(imageData.title),
-                      content: Image.asset(imageData.imagePath),
-                    );
-                  },
-                );
-              },
-              child: Container(
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: Colors.black,  // Màu viền
-                    width: 1.0,  // Độ dày viền
-                  ),
-                  image: DecorationImage(
-                    image: AssetImage(imageData.imagePath),
-                    fit: BoxFit.cover,
-                  ),
-                ),
-              ),
-            ),
-          ),
-        );
-      }
-    }
-    return markers;
-  }
-
-  void _changeMapSource(int mapValue) {
-    setState(() {
-      mapUrl = listMapUrl[mapValue];
-      print(mapUrl);
-    });
-  }
-}
-
-
-
-class MapData {
-  final String mapPath;
-  final List<LatLng> mapData;
-  bool checkRender = true;
-
-  MapData(this.mapPath, this.mapData);
-
-  String getPath() {
-    return mapPath;
-  }
-
-  // void setMapData(List<LatLng> mapData) {
-  //   this.mapData = mapData;
-  // }
-
-  List<LatLng>  getMapData() {
-    return this.mapData;
-  }
-
-  void setCheck() {
-    checkRender =!checkRender;
-  }
-
-  bool getCheck() {
-    return checkRender;
-  }
-}
-
-class ImageData {
-  final String imagePath;
-  final String title;
-  final List<LatLng> locations;
-  bool checkRender = true;
-
-  ImageData(this.imagePath, this.title, this.locations);
-
-  void setCheck() {
-    checkRender =!checkRender;
-    print(checkRender);
-  }
-
-  bool getCheck() {
-    return checkRender;
   }
 }

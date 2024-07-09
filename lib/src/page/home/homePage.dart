@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:ocop/src/page/home/header/header.dart';
 import 'package:ocop/src/page/home/content/products/products.dart';
-import 'package:ocop/src/page/home/content/content.dart';
 import 'package:ocop/src/page/home/content/news/news.dart';
 
 class homePage extends StatefulWidget {

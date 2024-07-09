@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:ocop/src/page/map/mapPage.dart';
-import 'package:ocop/src/page/home/homePage.dart';
 import 'package:ocop/src/page/home/home.dart';
 
 class MyApp extends StatefulWidget {
@@ -16,7 +14,7 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return const MaterialApp(
       debugShowCheckedModeBanner: false,
       home: SafeArea(
         child: Home(),
