@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:ocop/src/page/home/content/products/products.dart';
 
 class Content extends StatefulWidget {
+  const Content({super.key});
+
   @override
+  // ignore: library_private_types_in_public_api
   _ContentState createState() => _ContentState();
 }
 

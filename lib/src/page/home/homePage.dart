@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:ocop/src/page/home/content/products/products.dart';
 import 'package:ocop/src/page/home/content/news/news.dart';
+import 'package:ocop/src/page/elements/logo.dart';
 
 class homePage extends StatefulWidget {
   @override
@@ -17,6 +18,10 @@ class _homePageState extends State<homePage> {
           // Container(
           //   child: ProductList(),
           // ),
+          SizedBox(
+            height: 30,
+          ),
+          Logo(),
           SizedBox(
             height: 10,
           ),

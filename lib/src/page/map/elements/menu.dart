@@ -30,7 +30,7 @@ class _MenuState extends State<Menu> {
             Container(
               height: 80,
               child: DrawerHeader(
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   color: Colors.blue,
                 ),
                 child: Row(
@@ -124,7 +124,7 @@ class _MenuState extends State<Menu> {
                       Text(imageData.title),
                       Text(
                         " (" + imageData.locations.length.toString() + ")",
-                        style: TextStyle(
+                        style: const TextStyle(
                           color: Colors.blue,
                           fontSize: 15,
                           fontWeight: FontWeight.bold,

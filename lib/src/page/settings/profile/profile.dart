@@ -10,8 +10,8 @@ class _ProfileState extends State<Profile> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: Container(
-        color: Color.fromARGB(255, 161, 212, 254),
-            padding: EdgeInsets.only(top: 20, left: 20),
+        color: const Color.fromARGB(255, 161, 212, 254),
+            padding: const EdgeInsets.only(top: 20, left: 20),
         child: Row(
           children: [
             Container(
@@ -35,7 +35,7 @@ class _ProfileState extends State<Profile> {
             const SizedBox(width: 16.0),
             Container(
               height: 100,
-              child: Column(
+              child: const Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
