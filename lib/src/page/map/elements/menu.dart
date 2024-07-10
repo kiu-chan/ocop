@@ -168,7 +168,7 @@ class _MenuState extends State<Menu> {
               subtitle: Text('Mô tả'),
               children: <Widget>[
                 CheckboxListTile(
-                  title: Text('Bản đồ địa lý'),
+                  title: const Text('Bản đồ địa lý'),
                   value: true,
                   controlAffinity: ListTileControlAffinity.leading,
                   activeColor: Colors.blue,

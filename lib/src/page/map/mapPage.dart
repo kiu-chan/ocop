@@ -172,11 +172,12 @@ class _MapPageState extends State<MapPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(mapName),
+        automaticallyImplyLeading: false,
         actions: [
           Builder(
             builder: (BuildContext context) {
               return IconButton(
-                icon: Icon(Icons.menu),
+                icon: const Icon(Icons.menu),
                 onPressed: () {
                   Scaffold.of(context).openEndDrawer();
                 },
@@ -243,7 +244,7 @@ class _MapPageState extends State<MapPage> {
             child: Column(
               children: [
                 FloatingActionButton(
-                  child: Icon(Icons.add),
+                  child: const Icon(Icons.add),
                   onPressed: _zoomIn,
                   heroTag: "zoomIn",
                 ),
