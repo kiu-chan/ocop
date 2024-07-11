@@ -15,14 +15,11 @@ class _homePageState extends State<homePage> {
       body: Column(
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
-          // Container(
-          //   child: ProductList(),
-          // ),
-          SizedBox(
+          const SizedBox(
             height: 30,
           ),
-          Logo(),
-          SizedBox(
+          const Logo(),
+          const SizedBox(
             height: 10,
           ),
           ProductList(),

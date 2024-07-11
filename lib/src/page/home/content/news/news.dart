@@ -1,14 +1,16 @@
 import 'package:flutter/material.dart';
+import 'package:ocop/src/data/home/newsData.dart';
+import 'package:ocop/src/page/home/content/news/elements/newsCard.dart';
 
 class NewsList extends StatelessWidget {
-  final List<Product> products = [
-    Product(name: 'Tin tức 1', news: "fwkfwifwifkbwifwibfwifbwofbwofnwdknqwidqkdsfnwkfnqofnwo"),
-    Product(name: 'Tin tức 2', news: "fwkfwifwifkbwifwibfwifbwofbwofnwdknqwidqkdsfnwkfnqofnwo"),
-    Product(name: 'Tin tức 3', news: "fwkfwifwifkbwifwibfwifbwofbwofnwdknqwidqkdsfnwkfnqofnwo"),
-    Product(name: 'Tin tức 3', news: "fwkfwifwifkbwifwibfwifbwofbwofnwdknqwidqkdsfnwkfnqofnwo"),
-    Product(name: 'Tin tức 3', news: "fwkfwifwifkbwifwibfwifbwofbwofnwdknqwidqkdsfnwkfnqofnwo"),
-    Product(name: 'Tin tức 3', news: "fwkfwifwifkbwifwibfwifbwofbwofnwdknqwidqkdsfnwkfnqofnwo"),
-    Product(name: 'Tin tức 3', news: "fwkfwifwifkbwifwibfwifbwofbwofnwdknqwidqkdsfnwkfnqofnwo"),
+  final List<News> news = [
+    News(name: 'Tin tức 1', news: "fwkfwifwifkbwifwibfwifbwofbwofnwdknqwidqkdsfnwkfnqofnwo"),
+    News(name: 'Tin tức 2', news: "fwkfwifwifkbwifwibfwifbwofbwofnwdknqwidqkdsfnwkfnqofnwo"),
+    News(name: 'Tin tức 3', news: "fwkfwifwifkbwifwibfwifbwofbwofnwdknqwidqkdsfnwkfnqofnwo"),
+    News(name: 'Tin tức 3', news: "fwkfwifwifkbwifwibfwifbwofbwofnwdknqwidqkdsfnwkfnqofnwo"),
+    News(name: 'Tin tức 3', news: "fwkfwifwifkbwifwibfwifbwofbwofnwdknqwidqkdsfnwkfnqofnwo"),
+    News(name: 'Tin tức 3', news: "fwkfwifwifkbwifwibfwifbwofbwofnwdknqwidqkdsfnwkfnqofnwo"),
+    News(name: 'Tin tức 3', news: "fwkfwifwifkbwifwibfwifbwofbwofnwdknqwidqkdsfnwkfnqofnwo"),
     // Thêm các tin tức khác vào đây
   ];
 
@@ -45,43 +47,12 @@ class NewsList extends StatelessWidget {
             height: 400,
             child: ListView.builder(
               scrollDirection: Axis.vertical,
-              itemCount: products.length,
+              itemCount: news.length,
               itemBuilder: (context, index) {
-                return ProductCard(product: products[index]);
+                return NewsCard(news: news[index]);
               },
             )),
       ],
     );
   }
-}
-
-class ProductCard extends StatelessWidget {
-  final Product product;
-
-  ProductCard({required this.product});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 160,
-      margin: EdgeInsets.all(8),
-      child: Card(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Text(product.name, style: TextStyle(fontWeight: FontWeight.bold)),
-            SizedBox(height: 8),
-            Text('${product.news} đ'),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class Product {
-  final String name;
-  final String news;
-
-  Product({required this.name, required this.news});
 }

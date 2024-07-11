@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:ocop/src/data/home/productData.dart';
+import 'package:ocop/src/page/home/content/products/elements/productCard.dart';
+import 'package:ocop/src/page/home/content/products/elements/productInformation.dart';
 
 class ProductList extends StatelessWidget {
   final List<Product> products = [
-    Product(name: 'Sản phẩm 1', price: 100),
-    Product(name: 'Sản phẩm 2', price: 200),
-    Product(name: 'Sản phẩm 3', price: 300),
+    Product(name: 'Sản phẩm 1', star: 5, category: 'Thực phẩm'),
+    Product(name: 'Sản phẩm 2', star: 1, category: 'Thực phẩm'),
+    Product(name: 'Sản phẩm 3', star: 3, category: 'Thực phẩm'),
     // Thêm các sản phẩm khác vào đây
   ];
 
@@ -25,6 +28,22 @@ class ProductList extends StatelessWidget {
                 ), // Văn bản in đậm
             ),
           ),
+          // GestureDetector(
+          //             onTap: () {
+          //               Navigator.push(
+          //                 context,
+          //                 MaterialPageRoute(builder: (context) => ProductInformation()),
+          //               );
+          //             },
+          //             child: const Text(
+          //               'Đăng ký',
+          //               style: TextStyle(
+          //                 fontSize: 16,
+          //                 decoration: TextDecoration.underline, // Hiển thị chữ dưới gạch chân
+          //                 color: Colors.blue, // Màu chữ xanh
+          //               ),
+          //             ),
+          //           ),
             Container(
             padding: EdgeInsets.only(right: 10.0), 
             child: Text(
@@ -49,35 +68,4 @@ class ProductList extends StatelessWidget {
       ],
     );
   }
-}
-
-class ProductCard extends StatelessWidget {
-  final Product product;
-
-  ProductCard({required this.product});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 160,
-      margin: EdgeInsets.all(8),
-      child: Card(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: <Widget>[
-            Text(product.name, style: TextStyle(fontWeight: FontWeight.bold)),
-            SizedBox(height: 8),
-            Text('${product.price} đ'),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class Product {
-  final String name;
-  final int price;
-
-  Product({required this.name, required this.price});
 }

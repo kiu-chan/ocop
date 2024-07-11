@@ -4,8 +4,8 @@ import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:geojson/geojson.dart';
 import 'package:ocop/src/page/map/elements/menu.dart';
-import 'package:ocop/src/page/map/data/ImageData.dart';
-import 'package:ocop/src/page/map/data/MapData.dart';
+import 'package:ocop/src/data/map/ImageData.dart';
+import 'package:ocop/src/data/map/MapData.dart';
 import 'package:ocop/src/page/map/elements/MarkerMap.dart';
 
 

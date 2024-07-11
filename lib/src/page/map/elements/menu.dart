@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:ocop/src/page/map/data/ImageData.dart';
-import 'package:ocop/src/page/map/data/MapData.dart';
+import 'package:ocop/src/data/map/ImageData.dart';
+import 'package:ocop/src/data/map/MapData.dart';
 
 class Menu extends StatefulWidget {
   final ValueChanged<int> onClickMap;

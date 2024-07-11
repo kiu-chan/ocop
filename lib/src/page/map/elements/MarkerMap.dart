@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
-import 'package:ocop/src/page/map/data/ImageData.dart';
+import 'package:ocop/src/data/map/ImageData.dart';
 
 class MarkerMap extends StatelessWidget {
   final List<ImageData> imageDataList;
