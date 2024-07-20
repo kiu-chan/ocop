@@ -27,7 +27,7 @@ class ProductCard extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
               Image.asset(
-                'lib/src/assets/img/map/img.png',
+                'lib/src/assets/img/home/image.png',
                 height: 100,
                 width: 100,
                 fit: BoxFit.cover,
