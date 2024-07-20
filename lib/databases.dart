@@ -52,6 +52,38 @@ class DefaultDatabaseOptions {
     return products;
   }
 
+  Future<List<Map<String, dynamic>>> getProductProcesses() async {
+  final result = await connection!.query('SELECT * FROM public.product_processes');
+  List<Map<String, dynamic>> productProcesses = [];
+
+  for (var row in result) {
+    productProcesses.add({
+      'id': row[0],
+      'product_id': row[1],
+      'content': row[2],
+      'created_at': row[3],
+      'updated_at': row[4],
+    });
+  }
+
+    return productProcesses;
+  }
+
+  Future<List<Map<String, dynamic>>> getMedia() async {
+  final result = await connection!.query('SELECT * FROM public.media');
+  List<Map<String, dynamic>> mediaList = [];
+
+  for (var row in result) {
+    mediaList.add({
+      'id': row[0],
+      'responsive_images': row[14], // Assuming responsive_images is the 5th column
+      // Add other fields if needed
+    });
+  }
+
+  return mediaList;
+}
+
   Future<void> close() async {
     await connection!.close();
     print('Connection closed.');
