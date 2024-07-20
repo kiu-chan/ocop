@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 class HeaderSettings extends StatefulWidget {
+  const HeaderSettings({super.key});
+
   @override
   _HeaderSettingsState createState() => _HeaderSettingsState();
 }

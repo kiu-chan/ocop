@@ -15,18 +15,18 @@ class _ContentState extends State<Content> {
     return Scaffold(
       body: Column(
         children: [
-          Text("data"),
+          const Text("data"),
           ProductList(),
           // Thêm các thành phần khác vào sau ListView nằm ngang
           Container(
             height: 100.0,
             color: Colors.orange,
-            child: Center(child: Text('Thành phần khác 1')),
+            child: const Center(child: Text('Thành phần khác 1')),
           ),
           Container(
             height: 100.0,
             color: Colors.purple,
-            child: Center(child: Text('Thành phần khác 2')),
+            child: const Center(child: Text('Thành phần khác 2')),
           ),
         ],
       ),

@@ -5,13 +5,13 @@ import 'package:ocop/src/page/home/content/news/elements/newsContent.dart';
 class NewsCard extends StatelessWidget {
   final News news;
 
-  NewsCard({required this.news});
+  const NewsCard({super.key, required this.news});
 
   @override
   Widget build(BuildContext context) {
     return Container(
       width: 160,
-      margin: EdgeInsets.all(8),
+      margin: const EdgeInsets.all(8),
       child: InkWell(
         onTap: () {
           Navigator.push(
@@ -25,8 +25,8 @@ class NewsCard extends StatelessWidget {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: <Widget>[
-              Text(news.name, style: TextStyle(fontWeight: FontWeight.bold)),
-              SizedBox(height: 8),
+              Text(news.name, style: const TextStyle(fontWeight: FontWeight.bold)),
+              const SizedBox(height: 8),
               // Text('${news.news} đ'),
             ],
           ),

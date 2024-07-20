@@ -16,7 +16,7 @@ class MapData {
   // }
 
   List<LatLng>  getMapData() {
-    return this.mapData;
+    return mapData;
   }
 
   void setCheck() {

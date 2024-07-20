@@ -14,6 +14,8 @@ class NewsList extends StatelessWidget {
     // Thêm các tin tức khác vào đây
   ];
 
+  NewsList({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -22,8 +24,8 @@ class NewsList extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Container(
-            padding: EdgeInsets.only(left: 10.0), 
-            child: Text(
+            padding: const EdgeInsets.only(left: 10.0), 
+            child: const Text(
               "Tin tức",
               style: TextStyle(
                 fontWeight: FontWeight.bold,
@@ -32,8 +34,8 @@ class NewsList extends StatelessWidget {
             ),
           ),
             Container(
-            padding: EdgeInsets.only(right: 10.0), 
-            child: Text(
+            padding: const EdgeInsets.only(right: 10.0), 
+            child: const Text(
               "All",
               style: TextStyle(
                 fontWeight: FontWeight.bold,
@@ -43,7 +45,7 @@ class NewsList extends StatelessWidget {
           ),
           ],
         ),
-        Container(
+        SizedBox(
             height: 400,
             child: ListView.builder(
               scrollDirection: Axis.vertical,

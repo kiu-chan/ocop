@@ -4,6 +4,8 @@ import 'package:ocop/src/page/home/content/news/news.dart';
 import 'package:ocop/src/page/elements/logo.dart';
 
 class homePage extends StatefulWidget {
+  const homePage({super.key});
+
   @override
   _homePageState createState() => _homePageState();
 }

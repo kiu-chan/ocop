@@ -15,7 +15,7 @@ class _RegisterPageState extends State<RegisterPage> {
   final TextEditingController _passwordController = TextEditingController();
   @override
   Widget build(BuildContext context) {  
-    void _login() {
+    void login() {
     final email = _emailController.text;
     final password = _passwordController.text;
 
@@ -31,14 +31,14 @@ class _RegisterPageState extends State<RegisterPage> {
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
-          title: Text('Login Failed'),
-          content: Text('Incorrect email or password.'),
+          title: const Text('Login Failed'),
+          content: const Text('Incorrect email or password.'),
           actions: <Widget>[
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop();
               },
-              child: Text('OK'),
+              child: const Text('OK'),
             ),
           ],
         ),
@@ -47,20 +47,20 @@ class _RegisterPageState extends State<RegisterPage> {
   }
     return Scaffold(
       appBar: AppBar(
-        title: Text("Register"),
+        title: const Text("Register"),
         leading: IconButton(
-          icon: Icon(Icons.arrow_back),
+          icon: const Icon(Icons.arrow_back),
           onPressed: () {
             Navigator.pop(context); // Quay lại trang trước đó
           },
         ),
         actions: <Widget>[
           IconButton(
-            icon: Icon(Icons.home),
+            icon: const Icon(Icons.home),
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => Home()),
+                MaterialPageRoute(builder: (context) => const Home()),
               );
             }
           ),
@@ -69,7 +69,7 @@ class _RegisterPageState extends State<RegisterPage> {
       body: Center(
           child: Stack(
             children: [
-              BackGround(),
+              const BackGround(),
               Center(
                 child: Container(
                   width: double.infinity,
@@ -78,7 +78,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: <Widget>[
-                      Logo(),
+                      const Logo(),
                       const SizedBox(height: 20),
                       FractionallySizedBox(
                         widthFactor: 0.9,
@@ -147,15 +147,14 @@ class _RegisterPageState extends State<RegisterPage> {
                           ],
                         ),
                       ),
-                      SizedBox(height: 20,),
-                      const SizedBox(height: 20),
+                      const SizedBox(height: 40,),
                       ElevatedButton(
-                        onPressed: _login,
+                        onPressed: login,
                         style: ElevatedButton.styleFrom(
                           foregroundColor: Colors.white, 
                           backgroundColor: Colors.green,
                         ),
-                        child: Text('Register'),
+                        child: const Text('Register'),
                       ),
                     const SizedBox(height: 10),
                     GestureDetector(

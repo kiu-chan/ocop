@@ -6,13 +6,13 @@ import 'package:ocop/src/page/elements/star.dart';
 class ProductCard extends StatelessWidget {
   final Product product;
   
-  ProductCard({required this.product});
+  const ProductCard({super.key, required this.product});
 
   @override
   Widget build(BuildContext context) {
     return Container(
       width: 160,
-      margin: EdgeInsets.all(8),
+      margin: const EdgeInsets.all(8),
       child: InkWell(
         onTap: () {
           Navigator.push(
@@ -32,10 +32,10 @@ class ProductCard extends StatelessWidget {
                 width: 100,
                 fit: BoxFit.cover,
               ),
-              SizedBox(height: 8),
-              Text(product.name, style: TextStyle(fontWeight: FontWeight.bold)),
-              SizedBox(height: 8),
-              Star(value: 2),
+              const SizedBox(height: 8),
+              Text(product.name, style: const TextStyle(fontWeight: FontWeight.bold)),
+              const SizedBox(height: 8),
+              const Star(value: 2),
             ],
           ),
         ),

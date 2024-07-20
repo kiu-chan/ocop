@@ -10,6 +10,8 @@ import 'package:ocop/src/page/map/elements/MarkerMap.dart';
 
 
 class MapPage extends StatefulWidget {
+  const MapPage({super.key});
+
   @override
   _MapPageState createState() => _MapPageState();
 }
@@ -28,7 +30,7 @@ class _MapPageState extends State<MapPage> {
   String mapUrl = "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
   final String namePackage = "com.example.app";
 
-  final LatLng mapLat = new LatLng(22.406276, 105.624405);  //Tọa độ mặc định
+  final LatLng mapLat = LatLng(22.406276, 105.624405);  //Tọa độ mặc định
 
   List<ImageData> imageDataList = [
     ImageData(
@@ -125,14 +127,17 @@ class _MapPageState extends State<MapPage> {
     setState(() {
       List<LatLng> data = [];
       for(final listData in tempPolygonData)
-        for(final point in listData)
+        // ignore: curly_braces_in_flow_control_structures
+        for(final point in listData) {
           data.add(point);
-      polygonData.add(new MapData(path, data));
+        }
+      polygonData.add(MapData(path, data));
     });
 
     // Đóng GeoJSON để giải phóng bộ nhớ
     geoJson.dispose();
   } catch (e) {
+    // ignore: avoid_print
     print('Error loading GeoJSON data: $e');
   }
 }
@@ -244,15 +249,15 @@ class _MapPageState extends State<MapPage> {
             child: Column(
               children: [
                 FloatingActionButton(
-                  child: const Icon(Icons.add),
                   onPressed: _zoomIn,
                   heroTag: "zoomIn",
+                  child: const Icon(Icons.add),
                 ),
-                SizedBox(height: 10),
+                const SizedBox(height: 10),
                 FloatingActionButton(
-                  child: Icon(Icons.remove),
                   onPressed: _zoomOut,
                   heroTag: "zoomOut",
+                  child: const Icon(Icons.remove),
                 ),
               ],
             ),

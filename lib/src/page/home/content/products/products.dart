@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:ocop/src/data/home/productData.dart';
 import 'package:ocop/src/page/home/content/products/elements/productCard.dart';
-import 'package:ocop/src/page/home/content/products/elements/productInformation.dart';
 
 class ProductList extends StatelessWidget {
   final List<Product> products = [
@@ -11,6 +10,8 @@ class ProductList extends StatelessWidget {
     // Thêm các sản phẩm khác vào đây
   ];
 
+  ProductList({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -19,8 +20,8 @@ class ProductList extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Container(
-            padding: EdgeInsets.only(left: 10.0), 
-            child: Text(
+            padding: const EdgeInsets.only(left: 10.0), 
+            child: const Text(
               "Danh sách sản phẩm",
               style: TextStyle(
                 fontWeight: FontWeight.bold,
@@ -45,8 +46,8 @@ class ProductList extends StatelessWidget {
           //             ),
           //           ),
             Container(
-            padding: EdgeInsets.only(right: 10.0), 
-            child: Text(
+            padding: const EdgeInsets.only(right: 10.0), 
+            child: const Text(
               "All",
               style: TextStyle(
                 fontWeight: FontWeight.bold,
@@ -56,7 +57,7 @@ class ProductList extends StatelessWidget {
           ),
           ],
         ),
-        Container(
+        SizedBox(
             height: 200,
             child: ListView.builder(
               scrollDirection: Axis.horizontal,

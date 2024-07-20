@@ -15,17 +15,17 @@ class _HomeState extends State<Home> {
   int currentIndex = 0;
   @override
   Widget build(BuildContext context) {
-    Widget currentWidget = SizedBox.shrink();
+    Widget currentWidget = const SizedBox.shrink();
     switch(currentIndex) {
       case 0:
       {
-        currentWidget = homePage();
+        currentWidget = const homePage();
         break;
       }
       
       case 1:
       {
-        currentWidget = MapPage();
+        currentWidget = const MapPage();
         break;
       }
 
@@ -36,46 +36,41 @@ class _HomeState extends State<Home> {
       }
     }
     return Scaffold(
-      body: Container(
-        // color: Colors.red,
-        child: AnimatedSwitcher(
-          duration: Duration(milliseconds: 500),
-          child:
-              Container(key: ValueKey<int>(currentIndex), child: currentWidget),
-        ),
+      body: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 500),
+        child:
+            Container(key: ValueKey<int>(currentIndex), child: currentWidget),
       ),
-      bottomNavigationBar: Container(
-        child: BottomNavigationBar(
-          onTap: (int index) {
-            setState(() {
-              currentIndex = index;
-            });
-          },
-            type: BottomNavigationBarType.fixed,
-          currentIndex: currentIndex,
-          items: const <BottomNavigationBarItem>[
-            BottomNavigationBarItem(
+      bottomNavigationBar: BottomNavigationBar(
+        onTap: (int index) {
+          setState(() {
+            currentIndex = index;
+          });
+        },
+          type: BottomNavigationBarType.fixed,
+        currentIndex: currentIndex,
+        items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(
+            icon: Icon(
+              Icons.home,
+              // color: Colors.black,
+            ),
+            label: "Home",
+            // backgroundColor: Colors.white,
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(
+              Icons.map_outlined,
+            ),
+            label: "Map",
+          ),
+          BottomNavigationBarItem(
               icon: Icon(
-                Icons.home,
+                Icons.settings,
                 // color: Colors.black,
               ),
-              label: "Home",
-              // backgroundColor: Colors.white,
-            ),
-            BottomNavigationBarItem(
-              icon: Icon(
-                Icons.map_outlined,
-              ),
-              label: "Map",
-            ),
-            BottomNavigationBarItem(
-                icon: Icon(
-                  Icons.settings,
-                  // color: Colors.black,
-                ),
-                label: "Settings"),
-          ],
-        ),
+              label: "Settings"),
+        ],
       ),
     );
   }

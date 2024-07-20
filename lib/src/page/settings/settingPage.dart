@@ -3,6 +3,8 @@ import 'package:ocop/src/page/settings/profile/profile.dart';
 import 'package:ocop/src/page/settings/elements/options.dart';
 
 class SettingPage extends StatefulWidget {
+  const SettingPage({super.key});
+
   @override
   _SettingPageState createState() => _SettingPageState();
 }
@@ -10,17 +12,17 @@ class SettingPage extends StatefulWidget {
 class _SettingPageState extends State<SettingPage> {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return const Scaffold(
       body: Column(
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
-          Container(
+          SizedBox(
             height: 200, 
             child: Profile()
             ),
           FractionallySizedBox(
             widthFactor: 0.8,
-            child: Container(
+            child: SizedBox(
               height: 300,
               child: Options(),
             ),

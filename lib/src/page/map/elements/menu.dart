@@ -10,7 +10,7 @@ class Menu extends StatefulWidget {
   final List<MapData> polygonData;
   @override
   _MenuState createState() => _MenuState();
-  Menu({
+  const Menu({super.key, 
     required this.onClickMap,
     required this.onClickImgData,
     required this.imageDataList,
@@ -27,7 +27,7 @@ class _MenuState extends State<Menu> {
         child: ListView(
           padding: EdgeInsets.zero,
           children: <Widget>[
-            Container(
+            SizedBox(
               height: 80,
               child: DrawerHeader(
                 decoration: const BoxDecoration(
@@ -37,12 +37,12 @@ class _MenuState extends State<Menu> {
                   mainAxisAlignment: MainAxisAlignment.start,
                   children: [
                     IconButton(
-                      icon: Icon(Icons.close, color: Colors.white),
+                      icon: const Icon(Icons.close, color: Colors.white),
                       onPressed: () {
                         Navigator.pop(context); // Đóng Drawer
                       },
                     ),
-                    Text(
+                    const Text(
                       'Tùy chỉnh',
                       style: TextStyle(
                         color: Colors.white,
@@ -54,12 +54,12 @@ class _MenuState extends State<Menu> {
               ),
             ),
             ExpansionTile(
-              leading: Icon(Icons.api),
-              title: Text('Bản đồ nền'),
-              subtitle: Text('Bản đồ mặc định'),
+              leading: const Icon(Icons.api),
+              title: const Text('Bản đồ nền'),
+              subtitle: const Text('Bản đồ mặc định'),
               children: <Widget>[
                 RadioListTile<int>(
-                  title: Text('Bản đồ địa lý'),
+                  title: const Text('Bản đồ địa lý'),
                   value: 1,
                   groupValue: selectedMap,
                   onChanged: (value) {
@@ -72,7 +72,7 @@ class _MenuState extends State<Menu> {
                   },
                 ),
                 RadioListTile<int>(
-                  title: Text('Bản đồ vệ tinh'),
+                  title: const Text('Bản đồ vệ tinh'),
                   value: 2,
                   groupValue: selectedMap,
                   onChanged: (value) {
@@ -87,12 +87,12 @@ class _MenuState extends State<Menu> {
               ],
             ),
             ExpansionTile(
-              leading: Icon(Icons.show_chart),
-              title: Text('Lớp hành chính'),
-              subtitle: Text('Mô tả'),
+              leading: const Icon(Icons.show_chart),
+              title: const Text('Lớp hành chính'),
+              subtitle: const Text('Mô tả'),
               children: <Widget>[
                 CheckboxListTile(
-                  title: Text('Ranh giới'),
+                  title: const Text('Ranh giới'),
                   value: true,
                   controlAffinity: ListTileControlAffinity.leading,
                   activeColor: Colors.blue,
@@ -102,7 +102,7 @@ class _MenuState extends State<Menu> {
                   },
                 ),
                 CheckboxListTile(
-                  title: Text('Ranh giới huyện'),
+                  title: const Text('Ranh giới huyện'),
                   value: true,
                   controlAffinity: ListTileControlAffinity.leading,
                   activeColor: Colors.blue,
@@ -114,16 +114,16 @@ class _MenuState extends State<Menu> {
               ],
             ),
             ExpansionTile(
-              leading: Icon(Icons.workspaces_outline),
-              title: Text('Lớp sản phẩm'),
-              subtitle: Text('Mô tả'),
+              leading: const Icon(Icons.workspaces_outline),
+              title: const Text('Lớp sản phẩm'),
+              subtitle: const Text('Mô tả'),
               children: widget.imageDataList.map((imageData) {
                 return CheckboxListTile(
                   title: Row(
                     children: [
                       Text(imageData.title),
                       Text(
-                        " (" + imageData.locations.length.toString() + ")",
+                        " (${imageData.locations.length})",
                         style: const TextStyle(
                           color: Colors.blue,
                           fontSize: 15,
@@ -144,9 +144,9 @@ class _MenuState extends State<Menu> {
               }).toList(),
             ),
             ExpansionTile(
-              leading: Icon(Icons.auto_awesome_motion),
-              title: Text('Khu vực'),
-              subtitle: Text('Mô tả'),
+              leading: const Icon(Icons.auto_awesome_motion),
+              title: const Text('Khu vực'),
+              subtitle: const Text('Mô tả'),
               children: widget.polygonData.map((mapData) {
                 return CheckboxListTile(
                   title: 
@@ -163,9 +163,9 @@ class _MenuState extends State<Menu> {
               }).toList(),
             ),
             ExpansionTile(
-              leading: Icon(Icons.home),
-              title: Text('Chủ thể OCOP'),
-              subtitle: Text('Mô tả'),
+              leading: const Icon(Icons.home),
+              title: const Text('Chủ thể OCOP'),
+              subtitle: const Text('Mô tả'),
               children: <Widget>[
                 CheckboxListTile(
                   title: const Text('Bản đồ địa lý'),
@@ -177,7 +177,7 @@ class _MenuState extends State<Menu> {
                   },
                 ),
                 CheckboxListTile(
-                  title: Text('Bản đồ vệ tinh'),
+                  title: const Text('Bản đồ vệ tinh'),
                   value: true,
                   controlAffinity: ListTileControlAffinity.leading,
                   activeColor: Colors.blue,

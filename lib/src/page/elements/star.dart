@@ -11,10 +11,10 @@ class Star extends StatelessWidget {
       children: List.generate(5, (index) {
         if (index < value) {
           // Hiển thị sao đầy đủ cho các sao trong phạm vi value
-          return Icon(Icons.star, color: Colors.amber);
+          return const Icon(Icons.star, color: Colors.amber);
         } else {
           // Hiển thị sao viền cho các sao còn lại
-          return Icon(Icons.star_border, color: Colors.amber);
+          return const Icon(Icons.star_border, color: Colors.amber);
         }
       }),
     );

@@ -19,7 +19,7 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {  
-    void _login() {
+    void login() {
     final email = _emailController.text;
     final password = _passwordController.text;
 
@@ -28,15 +28,15 @@ class _LoginPageState extends State<LoginPage> {
       // Điều hướng tới trang khác nếu đăng nhập thành công
       Navigator.push(
         context,
-        MaterialPageRoute(builder: (context) => Home()),
+        MaterialPageRoute(builder: (context) => const Home()),
       );
     } else {
       // Hiển thị thông báo lỗi nếu đăng nhập thất bại
       showDialog(
         context: context,
         builder: (context) => AlertDialog(
-          title: Text('Login Failed'),
-          content: Text('Incorrect email or password.'),
+          title: const Text('Login Failed'),
+          content: const Text('Incorrect email or password.'),
           actions: <Widget>[
             TextButton(
               onPressed: () {
@@ -51,7 +51,7 @@ class _LoginPageState extends State<LoginPage> {
   }
     return Scaffold(
       appBar: AppBar(
-        title: Text("Login"),
+        title: const Text("Login"),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back),
           onPressed: () {
@@ -64,7 +64,7 @@ class _LoginPageState extends State<LoginPage> {
             onPressed: () {
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => Home()),
+                MaterialPageRoute(builder: (context) => const Home()),
               );
             }
           ),
@@ -73,7 +73,7 @@ class _LoginPageState extends State<LoginPage> {
       body: Center(
           child: Stack(
             children: [
-              BackGround(),
+              const BackGround(),
               Center(
                 child: Container(
                 height: 400,
@@ -81,7 +81,7 @@ class _LoginPageState extends State<LoginPage> {
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: <Widget>[
-                    Logo(),
+                    const Logo(),
                     const SizedBox(height: 20),
                     FractionallySizedBox(
                       widthFactor: 0.9,
@@ -135,9 +135,9 @@ class _LoginPageState extends State<LoginPage> {
                             },
                           ),
                         ),
-                        Container(
+                        const SizedBox(
                           width: 150,
-                          child: const Text(
+                          child: Text(
                             'Quên mật khẩu?',
                             style: TextStyle(
                             decoration: TextDecoration.underline,
@@ -149,7 +149,7 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                     const SizedBox(height: 20),
                     ElevatedButton(
-                      onPressed: _login,
+                      onPressed: login,
                       style: ElevatedButton.styleFrom(
                         foregroundColor: Colors.white, 
                         backgroundColor: Colors.green,

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 class Header extends StatefulWidget {
+  const Header({super.key});
+
   @override
   _HeaderState createState() => _HeaderState();
 }

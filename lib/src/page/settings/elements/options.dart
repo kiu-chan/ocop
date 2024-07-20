@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:ocop/src/page/account/login/loginPage.dart';
 
 class Options extends StatefulWidget {
+  const Options({super.key});
+
   @override
   _OptionsState createState() => _OptionsState();
 }
@@ -49,12 +51,10 @@ class _OptionsState extends State<Options> {
                                   ),
                                 ),
                                 const SizedBox(width: 20.0),
-                                Container(
-                                  child: const Text(
-                                    'Profile',
-                                    style: TextStyle(
-                                      fontSize: 20.0,
-                                    ),
+                                const Text(
+                                  'Profile',
+                                  style: TextStyle(
+                                    fontSize: 20.0,
                                   ),
                                 )
                               ],
@@ -111,12 +111,10 @@ class _OptionsState extends State<Options> {
                                   ),
                                 ),
                                 const SizedBox(width: 20.0),
-                                Container(
-                                  child: const Text(
-                                    'About Us',
-                                    style: TextStyle(
-                                      fontSize: 20.0,
-                                    ),
+                                const Text(
+                                  'About Us',
+                                  style: TextStyle(
+                                    fontSize: 20.0,
                                   ),
                                 )
                               ],
@@ -148,7 +146,7 @@ class _OptionsState extends State<Options> {
                         onTap: () {
                           Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => LoginPage()),
+                          MaterialPageRoute(builder: (context) => const LoginPage()),
             );
                         },
                         child: Row(
@@ -161,7 +159,7 @@ class _OptionsState extends State<Options> {
                                   height: 35.0,
                                   decoration: BoxDecoration(
                                     borderRadius: BorderRadius.circular(30.0), // Bo tròn viền
-                                    color: Color.fromARGB(75, 120, 22, 233), // Màu nền
+                                    color: const Color.fromARGB(75, 120, 22, 233), // Màu nền
                                   ),
                                   child: const Icon(
                                     Icons.login,
@@ -170,12 +168,10 @@ class _OptionsState extends State<Options> {
                                   ),
                                 ),
                                 const SizedBox(width: 20.0),
-                                Container(
-                                  child: const Text(
-                                    'Log In',
-                                    style: TextStyle(
-                                      fontSize: 20.0,
-                                    ),
+                                const Text(
+                                  'Log In',
+                                  style: TextStyle(
+                                    fontSize: 20.0,
                                   ),
                                 )
                               ],
