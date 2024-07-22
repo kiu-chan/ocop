@@ -7,6 +7,7 @@ import 'package:ocop/src/page/map/elements/menu.dart';
 import 'package:ocop/src/data/map/ImageData.dart';
 import 'package:ocop/src/data/map/MapData.dart';
 import 'package:ocop/src/page/map/elements/MarkerMap.dart';
+import 'package:ocop/databases.dart';
 
 
 class MapPage extends StatefulWidget {
@@ -18,7 +19,21 @@ class MapPage extends StatefulWidget {
 
 class _MapPageState extends State<MapPage> {
   final MapController mapController = MapController();
-  double currentZoom = 10.0;
+
+  late DefaultDatabaseOptions databaseData;
+  List<Map<String, dynamic>> products = [];
+
+  LatLng parseLatLng(String input) {
+  final pointStart = input.indexOf('POINT(') + 'POINT('.length;
+  final pointEnd = input.indexOf(')', pointStart);
+  final coordinateString = input.substring(pointStart, pointEnd);
+  final coordinates = coordinateString.split(' ');
+  final longitude = double.parse(coordinates[0]);
+  final latitude = double.parse(coordinates[1]);
+  return LatLng(latitude, longitude);
+}
+
+  double currentZoom = 9.0;
 
   int? selectedMap = 1;
   
@@ -30,32 +45,33 @@ class _MapPageState extends State<MapPage> {
   String mapUrl = "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
   final String namePackage = "com.example.app";
 
-  final LatLng mapLat = LatLng(22.406276, 105.624405);  //Tọa độ mặc định
+  final LatLng mapLat = LatLng(10.2417, 106.3748);  //Tọa độ mặc định
+  // final LatLng mapLat = LatLng(22.406276, 105.624405);  //Tọa độ mặc định
 
   List<ImageData> imageDataList = [
-    ImageData(
-      'lib/src/assets/img/settings/images.png',
-      'Ảnh 1',
-      [
-        LatLng(22.406276, 105.634405),
-        LatLng(22.406276, 105.624405),
-      ],
-    ),
-    ImageData(
-      'lib/src/assets/img/map/image.png',
-      'Ảnh 2',
-      [
-        LatLng(22.406276, 105.644405),
-        LatLng(22.416276, 105.644405),
-      ],
-    ),
-    ImageData(
-      'lib/src/assets/img/map/img.png',
-      'Ảnh 3',
-      [
-        LatLng(22.426276, 105.644405),
-      ],
-    ),
+    // ImageData(
+    //   'lib/src/assets/img/settings/images.png',
+    //   'Ảnh 1',
+    //   [
+    //     LatLng(22.406276, 105.634405),
+    //     LatLng(22.406276, 105.624405),
+    //   ],
+    // ),
+    // ImageData(
+    //   'lib/src/assets/img/map/image.png',
+    //   'Ảnh 2',
+    //   [
+    //     LatLng(22.406276, 105.644405),
+    //     LatLng(22.416276, 105.644405),
+    //   ],
+    // ),
+    // ImageData(
+    //   'lib/src/assets/img/map/img.png',
+    //   'Ảnh 3',
+    //   [
+    //     LatLng(22.426276, 105.644405),
+    //   ],
+    // ),
     // Thêm các ảnh khác vào đây
   ];
 
@@ -79,10 +95,44 @@ class _MapPageState extends State<MapPage> {
   @override
   void initState() {
     super.initState();
-    for (int i = 0; i < listPaths.length; i++) {
-    _loadGeoJsonData(listPaths[i]);
-    }
+
+    databaseData = DefaultDatabaseOptions();
+    _loadProducts();
+
+    // for (int i = 0; i < listPaths.length; i++) {
+    // _loadGeoJsonData(listPaths[i]);
+    // }
   }
+
+Future<void> _loadProducts() async {
+  await databaseData.connect();
+  var products = await databaseData.getProducts();
+
+  setState(() {
+    Map<String, List<LatLng>> groupedLatLngs = {};
+    
+    // Phân loại các sản phẩm theo tên nhóm sản phẩm
+    for (var product in products) {
+      if (!groupedLatLngs.containsKey(product.categoryName)) {
+        groupedLatLngs[product.categoryName] = [];
+      }
+      groupedLatLngs[product.categoryName]!.add(product.location);
+    }
+    
+    // Tạo imageDataList từ groupedLatLngs
+    imageDataList = groupedLatLngs.entries.map((entry) {
+      return ImageData(
+        'lib/src/assets/img/settings/images.png',
+        entry.key,  // Sử dụng tên nhóm làm tiêu đề
+        entry.value,  // Danh sách các LatLng
+      );
+    }).toList();
+  });
+
+  await databaseData.close();
+}
+
+
 
   Future<void> _loadGeoJsonData(String path) async {
   try {

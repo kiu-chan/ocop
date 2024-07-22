@@ -46,6 +46,7 @@ dependencies:
   flutter_localization: ^0.2.0
   postgres: ^2.5.0
   html: ^0.15.4
+  flutter_svg: ^2.0.9
 
 dev_dependencies:
   flutter_test:

@@ -1,4 +1,6 @@
+import 'package:latlong2/latlong.dart';
 import 'package:postgres/postgres.dart';
+import 'package:ocop/src/data/map/productData.dart';
 
 class DefaultDatabaseOptions {
   PostgreSQLConnection? connection;
@@ -16,41 +18,37 @@ class DefaultDatabaseOptions {
     print('Connected to PostgreSQL database.');
   }
 
-  Future<List<Map<String, dynamic>>> getProducts() async {
-    final result = await connection!.query('SELECT * FROM public.products');
-    List<Map<String, dynamic>> products = [];
+  // Tách tọa độ từ chuỗi
+  // RegExp regex = RegExp(r'POINT\(([^ ]+) ([^ ]+)\)');
+  // Match match = regex.firstMatch();
 
-    for (var row in result) {
-      products.add({
-        'id': row[0],
-        'geom': row[1],
-        'commune_id': row[2],
-        'company_id': row[3],
-        'category_id': row[4],
-        'group_id': row[5],
-        'sub_group_id': row[6],
-        'name': row[7],
-        'address': row[8],
-        'content': row[9],
-        'rating': row[10],
-        'max_rating': row[11],
-        'note': row[12],
-        'business_registration_number': row[13],
-        'business_registration_recognition_date': row[14],
-        'business_registration_expiration_date': row[15],
-        'created_at': row[16],
-        'updated_at': row[17],
-        'deleted_at': row[18],
-        'slug': row[19],
-        'year': row[20],
-        'published_at': row[21],
-        'applied_for_certificate_at': row[22],
-      });
-      print(row[1]);
-    }
+Future<List<ProductData>> getProducts() async {
+  try {
+    final result = await connection!.query('''
+      SELECT p.id, ST_AsText(p.geom) as geom, p.name, p.address, c.name as category_name 
+      FROM public.products p
+      JOIN public.product_categories c ON p.category_id = c.id
+    ''');
 
-    return products;
+    return result.map((row) {
+      final geomText = row[1] as String;
+      final coordinates = geomText.split('(')[1].split(')')[0].split(' ');
+      return ProductData(
+        id: row[0] as int,
+        location: LatLng(
+          double.parse(coordinates[1]),
+          double.parse(coordinates[0]),
+        ),
+        name: row[2] as String,
+        address: row[3] as String?,
+        categoryName: row[4] as String,
+      );
+    }).toList();
+  } catch (e) {
+    print('Lỗi khi truy vấn dữ liệu: $e');
+    return []; // Trả về danh sách trống nếu có lỗi
   }
+}
 
   Future<List<Map<String, dynamic>>> getProductProcesses() async {
   final result = await connection!.query('SELECT * FROM public.product_processes');

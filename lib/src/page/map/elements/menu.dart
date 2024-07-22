@@ -121,7 +121,17 @@ class _MenuState extends State<Menu> {
                 return CheckboxListTile(
                   title: Row(
                     children: [
-                      Text(imageData.title),
+                      Expanded(
+                        child: Text(
+                          imageData.title,
+                          style: const TextStyle(
+                            fontSize: 16,
+                            // fontWeight: FontWeight.bold,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
+                        ),
+                      ),
                       Text(
                         " (${imageData.locations.length})",
                         style: const TextStyle(
@@ -129,9 +139,10 @@ class _MenuState extends State<Menu> {
                           fontSize: 15,
                           fontWeight: FontWeight.bold,
                         ),
-                        ),
+                      ),
                     ],
                   ),
+
                   value: imageData.checkRender,
                   controlAffinity: ListTileControlAffinity.leading,
                   activeColor: Colors.blue,
