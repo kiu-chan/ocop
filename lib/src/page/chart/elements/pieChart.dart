@@ -17,6 +17,8 @@ class PieChartSample extends StatefulWidget {
 
 class PieChartSampleState extends State<PieChartSample> {
   int touchedIndex = -1;
+  // Đặt giới hạn độ dài cho văn bản
+  static const int maxLength = 20; // Thay đổi giá trị này tùy thuộc vào không gian bạn có
 
   @override
   Widget build(BuildContext context) {
@@ -92,8 +94,6 @@ class PieChartSampleState extends State<PieChartSample> {
 }
 
 String _buildTruncatedText(String text) {
-  // Đặt giới hạn độ dài cho văn bản
-  final maxLength = 20; // Thay đổi giá trị này tùy thuộc vào không gian bạn có
 
   if (text.length > maxLength) {
     return '${text.substring(0, maxLength)}...';
