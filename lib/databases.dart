@@ -25,7 +25,7 @@ class DefaultDatabaseOptions {
 Future<List<ProductData>> getProducts() async {
   try {
     final result = await connection!.query('''
-      SELECT p.id, ST_AsText(p.geom) as geom, p.name, p.address, c.name as category_name 
+      SELECT p.id, ST_AsText(p.geom) as geom, p.name, p.address, c.name as category_name, p.rating
       FROM public.products p
       JOIN public.product_categories c ON p.category_id = c.id
     ''');
@@ -42,11 +42,47 @@ Future<List<ProductData>> getProducts() async {
         name: row[2] as String,
         address: row[3] as String?,
         categoryName: row[4] as String,
+        rating: row[5] as int,
       );
     }).toList();
   } catch (e) {
     print('Lỗi khi truy vấn dữ liệu: $e');
     return []; // Trả về danh sách trống nếu có lỗi
+  }
+}
+
+Future<Map<String, int>> getProductRatingCounts() async {
+  try {
+    final result = await connection!.query('''
+      SELECT 
+        rating,
+        COUNT(*) as count
+      FROM 
+        public.products
+      WHERE 
+        rating BETWEEN 1 AND 5
+      GROUP BY 
+        rating
+      ORDER BY 
+        rating
+    ''');
+
+    Map<String, int> groupedRating = {
+      '1': 0, '2': 0, '3': 0, '4': 0, '5': 0
+    };
+
+    for (final row in result) {
+      int rating = row[0] as int;
+      int count = row[1] as int;
+      groupedRating[rating.toString()] = count;
+    }
+
+    return groupedRating;
+  } catch (e) {
+    print('Lỗi khi truy vấn dữ liệu rating: $e');
+    return {
+      '1': 0, '2': 0, '3': 0, '4': 0, '5': 0
+    };
   }
 }
 

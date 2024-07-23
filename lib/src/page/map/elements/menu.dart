@@ -8,9 +8,11 @@ class Menu extends StatefulWidget {
   final ValueChanged<MapData> onClickMapData;
   final List<ImageData> imageDataList;
   final List<MapData> polygonData;
+
   @override
   _MenuState createState() => _MenuState();
-  const Menu({super.key, 
+  const Menu({
+    super.key, 
     required this.onClickMap,
     required this.onClickImgData,
     required this.imageDataList,

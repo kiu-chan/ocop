@@ -6,6 +6,7 @@ class ProductData {
   final String name;
   final String? address;
   final String categoryName;
+  final int rating;
 
   ProductData({
     required this.id,
@@ -13,5 +14,6 @@ class ProductData {
     required this.name,
     this.address,
     required this.categoryName,
+    required this.rating,
   });
 }

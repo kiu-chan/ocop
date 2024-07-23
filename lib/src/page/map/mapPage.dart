@@ -46,34 +46,8 @@ class _MapPageState extends State<MapPage> {
   final String namePackage = "com.example.app";
 
   final LatLng mapLat = LatLng(10.2417, 106.3748);  //Tọa độ mặc định
-  // final LatLng mapLat = LatLng(22.406276, 105.624405);  //Tọa độ mặc định
 
-  List<ImageData> imageDataList = [
-    // ImageData(
-    //   'lib/src/assets/img/settings/images.png',
-    //   'Ảnh 1',
-    //   [
-    //     LatLng(22.406276, 105.634405),
-    //     LatLng(22.406276, 105.624405),
-    //   ],
-    // ),
-    // ImageData(
-    //   'lib/src/assets/img/map/image.png',
-    //   'Ảnh 2',
-    //   [
-    //     LatLng(22.406276, 105.644405),
-    //     LatLng(22.416276, 105.644405),
-    //   ],
-    // ),
-    // ImageData(
-    //   'lib/src/assets/img/map/img.png',
-    //   'Ảnh 3',
-    //   [
-    //     LatLng(22.426276, 105.644405),
-    //   ],
-    // ),
-    // Thêm các ảnh khác vào đây
-  ];
+  List<ImageData> imageDataList = [];
 
   List<ImageData> listImgRender = [];
   List<MapData> polygonData = [];
