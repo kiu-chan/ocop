@@ -22,7 +22,10 @@ class _ChartPageState extends State<ChartPage> {
     data: {
       'data': 0
     },
-    title: "Chưa có dữ liệu"
+    title: "Chưa có dữ liệu",
+    x_title: "Chưa có dữ liệu",
+    y_title: "Chưa có dữ liệu",
+    name: "Chưa có dữ liệu"
   );
 
   late DefaultDatabaseOptions databaseData;
@@ -48,7 +51,10 @@ class _ChartPageState extends State<ChartPage> {
     Future.delayed(const Duration(seconds: 1), () {
       setState(() {
         chartData = ChartData(
-          title: "Biểu đồ  thống kê sản phẩm theo số sao",
+          name: "Biểu đồ thống kê sản phẩm theo số sao",
+          title: "sao",
+          x_title: "Số sao",
+          y_title: "Số lượng sản phẩm",
           data: groupedRating,
         );
         setCheckData();
@@ -64,7 +70,10 @@ class _ChartPageState extends State<ChartPage> {
     Future.delayed(const Duration(seconds: 1), () {
       setState(() {
         chartData = ChartData(
-          title: "Biểu đồ thống kê sản phẩn theo phân loại",
+          name: "Biểu đồ thống kê sản phẩn theo phân loại",
+          title: "",
+          x_title: "phân loại",
+          y_title: "Số lượng sản phẩm",
           data: groupedRating,
         );
         setCheckData();
@@ -166,7 +175,7 @@ class _ChartPageState extends State<ChartPage> {
                   },
                 ),
                 RadioListTile<int>(
-                  title: const Text('Theo nhóm ngành'),
+                  title: const Text('Theo loại sản phẩm'),
                   value: 2,
                   groupValue: selectedLoadData,
                   onChanged: (value) {

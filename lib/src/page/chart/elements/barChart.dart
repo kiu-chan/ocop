@@ -8,20 +8,29 @@ class BarChartSample extends StatefulWidget {
   BarChartSample({
     required this.chartData,
   });
-
+  
   @override
   _BarChartSampleState createState() => _BarChartSampleState();
 }
 
 class _BarChartSampleState extends State<BarChartSample> {
+  String _truncateString(String text, int maxLength) {
+    if (text.length <= maxLength) {
+      return text;
+    }
+    return '${text.substring(0, maxLength)}...';
+  }
+
   @override
   Widget build(BuildContext context) {
     final titles = widget.chartData.data.keys.toList();
     final values = widget.chartData.data.values.toList();
+    
     final barGroups = titles.asMap().entries.map((entry) {
       final index = entry.key;
       final title = entry.value;
       final value = values[index];
+      
       return BarChartGroupData(
         x: index,
         barRods: [
@@ -37,7 +46,7 @@ class _BarChartSampleState extends State<BarChartSample> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.chartData.title),
+        title: Text(widget.chartData.name),
       ),
       body: Padding(
         padding: const EdgeInsets.all(8.0),
@@ -57,7 +66,7 @@ class _BarChartSampleState extends State<BarChartSample> {
                     );
                   },
                 ),
-                axisNameWidget: Text('Quantity'), // Y-axis name
+                axisNameWidget: Text(widget.chartData.y_title), // Y-axis name
               ),
               bottomTitles: AxisTitles(
                 sideTitles: SideTitles(
@@ -68,7 +77,10 @@ class _BarChartSampleState extends State<BarChartSample> {
                     if (index >= 0 && index < titles.length) {
                       return SideTitleWidget(
                         axisSide: meta.axisSide,
-                        child: Text(titles[index]),
+                        child: Text(
+                          _truncateString(titles[index], 10),
+                          style: TextStyle(fontSize: 10),
+                        ),
                       );
                     }
                     return SideTitleWidget(
@@ -77,12 +89,12 @@ class _BarChartSampleState extends State<BarChartSample> {
                     );
                   },
                 ),
-                axisNameWidget: Text('Star'), // X-axis name
+                axisNameWidget: Text(widget.chartData.x_title), // X-axis name
               ),
-              rightTitles: AxisTitles(
+              rightTitles: const AxisTitles(
                 sideTitles: SideTitles(showTitles: false),
               ),
-              topTitles: AxisTitles(
+              topTitles: const AxisTitles(
                 sideTitles: SideTitles(showTitles: false),
               ),
             ),

@@ -112,14 +112,14 @@ Future<Map<String, int>> getProductCategoryCounts() async {
     };
 
     for (final row in result) {
-      String category = row[0] as String;
+      String group = row[0] as String;
       int count = row[1] as int;
-      groupedCategory[category] = count;
+      groupedCategory[group] = count;
     }
 
     return groupedCategory;
   } catch (e) {
-    print('Lỗi khi truy vấn dữ liệu category: $e');
+    print('Lỗi khi truy vấn dữ liệu group: $e');
     return {
       'Dịch vụ du lịch cộng đồng, du lịch sinh thái và điểm du lịch': 0, 
       'Đồ uống': 0, 
@@ -127,6 +127,74 @@ Future<Map<String, int>> getProductCategoryCounts() async {
       'Sinh vật cảnh': 0, 
       'Thủ công mỹ nghệ': 0,
       'Thực phẩm': 0,
+    };
+  }
+}
+
+
+Future<Map<String, int>> getProductGroupCounts() async {
+  try {
+    final result = await connection!.query('''
+      SELECT 
+        pg.name AS group_name,
+      COUNT(p.id) AS product_count
+      FROM 
+        product_groups pg
+      LEFT JOIN 
+        products p ON pg.id = p.group_id
+      GROUP BY 
+        pg.name
+      ORDER BY 
+        pg.name;
+    ''');
+
+    Map<String, int> groupedGroup = {
+      'Cà phê, cao cao': 0, 
+      'Cây cảnh': 0, 
+      'Chè': 0, 
+      'Dịch vụ du lịch cộng đồng, du lịch sinh thái và điểm du lịch': 0, 
+      'Động vật cảnh': 0,
+      'Đồ uống có cồn': 0,
+      'Đồ uống không cồn': 0,
+      'Gia vị': 0,
+      'Hoa': 0,
+      'Mỹ phẩm có thành phần từ thảo dược': 0,
+      'Thủ công mỹ nghệ gia dụng, trang trí': 0,
+      'Thực phẩm chế biến': 0,
+      'Thực phẩm chức năng, thuốc từ dược liệu, thuốc Y học cổ truyền': 0,
+      'Thực phẩm thô, sơ chế': 0,
+      'Thực phẩm tươi sống': 0,
+      'Tinh dầu và thảo dược khác': 0,
+      'Vải, may mặc': 0,
+    };
+
+    for (final row in result) {
+      String category = row[0] as String;
+      int count = row[1] as int;
+      groupedGroup[category] = count;
+    }
+
+    return groupedGroup;
+  } catch (e) {
+    print('Lỗi khi truy vấn dữ liệu category: $e');
+    return {
+      'Cà phê, cao cao': 0, 
+      'Cây cảnh': 0, 
+      'Chè': 0, 
+      'Dịch vụ du lịch cộng đồng, du lịch sinh thái và điểm du lịch': 0, 
+      'Động vật cảnh': 0,
+      'Đồ uống có cồn': 0,
+      'Đồ uống không cồn': 0,
+      'Gia vị': 0,
+      'Hoa': 0,
+      'Mỹ phẩm có thành phần từ thảo dược': 0,
+      'Thủ công mỹ nghệ gia dụng, trang trí': 0,
+      'Thực phẩm chế biến': 0,
+      'Thực phẩm chức năng, thuốc từ dược liệu, thuốc Y học cổ truyền': 0,
+      'Thực phẩm thô, sơ chế': 0,
+      'Thực phẩm tươi sống': 0,
+      'Tinh dầu và thảo dược khác': 0,
+      'Vải, may mặc': 0,
     };
   }
 }

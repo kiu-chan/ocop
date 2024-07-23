@@ -78,18 +78,30 @@ class PieChartSampleState extends State<PieChartSample> {
   }
 
   List<Widget> _buildIndicators() {
-    return widget.chartData.data.entries.map((entry) {
-      final index = widget.chartData.data.keys.toList().indexOf(entry.key);
-      return Padding(
-        padding: const EdgeInsets.symmetric(vertical: 2),
-        child: Indicator(
-          color: _getSectionColor(index),
-          text: '${entry.key} ${widget.chartData.title}',
-          isSquare: true,
-        ),
-      );
-    }).toList();
+  return widget.chartData.data.entries.map((entry) {
+    final index = widget.chartData.data.keys.toList().indexOf(entry.key);
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 2),
+      child: Indicator(
+        color: _getSectionColor(index),
+        text: _buildTruncatedText('${entry.key} ${widget.chartData.title}'),
+        isSquare: true,
+      ),
+    );
+  }).toList();
+}
+
+String _buildTruncatedText(String text) {
+  // Đặt giới hạn độ dài cho văn bản
+  final maxLength = 20; // Thay đổi giá trị này tùy thuộc vào không gian bạn có
+
+  if (text.length > maxLength) {
+    return '${text.substring(0, maxLength)}...';
+  } else {
+    return text;
   }
+}
+
 
   List<PieChartSectionData> showingSections() {
     final int total = widget.chartData.data.values.fold(0, (sum, value) => sum + value);
@@ -140,14 +152,14 @@ class PieChartSampleState extends State<PieChartSample> {
 
     return DataTable(
       columns: const [
-        DataColumn(label: Text('Số sao')),
+        DataColumn(label: Text('Đầu mục')),
         DataColumn(label: Text('Số lượng')),
         DataColumn(label: Text('Tỉ lệ %')),
       ],
       rows: widget.chartData.data.entries.map((entry) {
         final percentage = (entry.value / total * 100).toStringAsFixed(1);
         return DataRow(cells: [
-          DataCell(Text(entry.key)),
+          DataCell(Text(_buildTruncatedText('${entry.key} ${widget.chartData.title}'))),
           DataCell(Text(entry.value.toString())),
           DataCell(Text('$percentage%')),
         ]);
