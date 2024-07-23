@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:ocop/src/page/map/mapPage.dart';
 import 'package:ocop/src/page/home/homePage.dart';
 import 'package:ocop/src/page/settings/settingPage.dart';
+import 'package:ocop/src/page/chart/chartPage.dart';
 
 
 class Home extends StatefulWidget {
@@ -31,7 +32,13 @@ class _HomeState extends State<Home> {
 
       case 2:
       {
-        currentWidget = SettingPage();
+        currentWidget = const ChartPage();
+        break;
+      }
+
+      case 3:
+      {
+        currentWidget = const SettingPage();
         break;
       }
     }
@@ -64,6 +71,12 @@ class _HomeState extends State<Home> {
             ),
             label: "Map",
           ),
+          BottomNavigationBarItem(
+              icon: Icon(
+                Icons.ssid_chart,
+                // color: Colors.black,
+              ),
+              label: "Chart"),
           BottomNavigationBarItem(
               icon: Icon(
                 Icons.settings,
