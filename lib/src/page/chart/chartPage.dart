@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:ocop/src/page/chart/elements/pieChart.dart';
 import 'package:ocop/databases.dart';
 import 'package:ocop/src/data/chart/chartData.dart';
+import 'package:ocop/src/page/chart/elements/barChart.dart';
 
 class ChartPage extends StatefulWidget {
   const ChartPage({super.key});
@@ -13,6 +14,8 @@ class ChartPage extends StatefulWidget {
 class _ChartPageState extends State<ChartPage> {
   int? selectedChart = 1;
 
+  int? selectedLoadData = 1;
+
   bool checkData = false;
 
   ChartData chartData = ChartData(
@@ -20,8 +23,7 @@ class _ChartPageState extends State<ChartPage> {
       'data': 0
     },
     title: "Chưa có dữ liệu"
-    );
-
+  );
 
   late DefaultDatabaseOptions databaseData;
 
@@ -29,7 +31,7 @@ class _ChartPageState extends State<ChartPage> {
   void initState() {
     super.initState();
     databaseData = DefaultDatabaseOptions();
-    _loadProduct();
+    _loadProductRating();
   }
 
   void setCheckData() {
@@ -37,28 +39,44 @@ class _ChartPageState extends State<ChartPage> {
       checkData = !checkData;
     });
   }
-  Future<void> _loadProduct() async {
+
+  Future<void> _loadProductRating() async {
     await databaseData.connect();
     var groupedRating = await databaseData.getProductRatingCounts();
     
-    setState(() {
-      chartData = ChartData(
-        title: "Sao",
-        data: groupedRating,
-      );
-      checkData = true;
-      // print(ListRating);
+    // Đặt độ trễ tối thiểu 1 giây trước khi cập nhật trạng thái
+    Future.delayed(const Duration(seconds: 1), () {
+      setState(() {
+        chartData = ChartData(
+          title: "Biểu đồ  thống kê sản phẩm theo số sao",
+          data: groupedRating,
+        );
+        setCheckData();
+      });
     });
   }
 
+  Future<void> _loadProductCategory() async {
+    await databaseData.connect();
+    var groupedRating = await databaseData.getProductCategoryCounts();
+    
+    // Đặt độ trễ tối thiểu 1 giây trước khi cập nhật trạng thái
+    Future.delayed(const Duration(seconds: 1), () {
+      setState(() {
+        chartData = ChartData(
+          title: "Biểu đồ thống kê sản phẩn theo phân loại",
+          data: groupedRating,
+        );
+        setCheckData();
+      });
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text(
-          'Biểu đồ'
-        ),
+        title: const Text('Biểu đồ'),
         automaticallyImplyLeading: false,
         actions: [
           Builder(
@@ -81,7 +99,7 @@ class _ChartPageState extends State<ChartPage> {
               height: 80,
               child: DrawerHeader(
                 decoration: const BoxDecoration(
-                  color: Colors.blue
+                  color: Colors.blue,
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.start,
@@ -105,11 +123,9 @@ class _ChartPageState extends State<ChartPage> {
             ),
             ExpansionTile(
               leading: const Icon(Icons.auto_graph),
-              title: const Text(
-                "Biểu đồ"
-              ),
+              title: const Text("Biểu đồ"),
               subtitle: const Text("Lựa chọn dạng biểu đồ"),
-              children: <Widget> [
+              children: <Widget>[
                 RadioListTile<int>(
                   title: const Text('Biểu đồ hình tròn'),
                   value: 1,
@@ -117,9 +133,6 @@ class _ChartPageState extends State<ChartPage> {
                   onChanged: (value) {
                     setState(() {
                       selectedChart = value;
-                      // _changeMapSource(0);
-                      // widget.onClickMap(0);
-                      // Navigator.pop(context);
                     });
                   },
                 ),
@@ -130,95 +143,70 @@ class _ChartPageState extends State<ChartPage> {
                   onChanged: (value) {
                     setState(() {
                       selectedChart = value;
-                      // widget.onClickMap(1);
-                      // _changeMapSource(1);
-                      // Navigator.pop(context);
                     });
                   },
                 ),
-              ]
+              ],
             ),
             ExpansionTile(
               leading: const Icon(Icons.wysiwyg),
-              title: const Text(
-                "Thống kê sản phẩm"
-              ),
+              title: const Text("Thống kê sản phẩm"),
               subtitle: const Text("Lựa chọn đối tượng thống kê"),
-              children: <Widget> [
+              children: <Widget>[
                 RadioListTile<int>(
                   title: const Text('Theo số sao'),
                   value: 1,
-                  groupValue: selectedChart,
+                  groupValue: selectedLoadData,
                   onChanged: (value) {
                     setState(() {
-                      selectedChart = value;
-                      // _changeMapSource(0);
-                      // widget.onClickMap(0);
-                      // Navigator.pop(context);
+                      selectedLoadData = value;
+                        setCheckData();
+                      _loadProductRating();
                     });
                   },
                 ),
                 RadioListTile<int>(
                   title: const Text('Theo nhóm ngành'),
                   value: 2,
-                  groupValue: selectedChart,
+                  groupValue: selectedLoadData,
                   onChanged: (value) {
                     setState(() {
-                      selectedChart = value;
-                      // widget.onClickMap(1);
-                      // _changeMapSource(1);
-                      // Navigator.pop(context);
+                      selectedLoadData = value;
+                      setCheckData();
+                      _loadProductCategory();
                     });
                   },
                 ),
                 RadioListTile<int>(
                   title: const Text('Theo đơn vị hành chính'),
                   value: 3,
-                  groupValue: selectedChart,
+                  groupValue: selectedLoadData,
                   onChanged: (value) {
                     setState(() {
-                      selectedChart = value;
-                      // widget.onClickMap(1);
-                      // _changeMapSource(1);
-                      // Navigator.pop(context);
+                      selectedLoadData = value;
                     });
                   },
                 ),
                 RadioListTile<int>(
                   title: const Text('Theo năm'),
                   value: 4,
-                  groupValue: selectedChart,
+                  groupValue: selectedLoadData,
                   onChanged: (value) {
                     setState(() {
-                      selectedChart = value;
-                      // widget.onClickMap(1);
-                      // _changeMapSource(1);
-                      // Navigator.pop(context);
+                      selectedLoadData = value;
                     });
                   },
                 ),
-              ]
+              ],
             )
           ],
-        )
-      ),
-      // endDrawer: Menu(
-      //   onClickMap: _changeMapSource,
-      //   onClickImgData: _setStateProduct,
-      //   imageDataList: imageDataList,
-      //   polygonData: polygonData,
-      //   onClickMapData: _setPolygonData,
-      // ),
-      
-    body: checkData ? Row(
-      children: [
-        Expanded(
-          child: PieChartSample1(
-            chartData: chartData)
-            
         ),
-      ],
-    ): const Center(child: CircularProgressIndicator(),),
+      ),
+      body: checkData
+          ? (selectedChart == 1
+              ? PieChartSample(chartData: chartData,)
+              : BarChartSample(chartData: chartData))
+          : const Center(child: CircularProgressIndicator()),
     );
   }
 }

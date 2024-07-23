@@ -4,104 +4,103 @@ import 'package:ocop/src/widgets/indicator.dart';
 import 'package:ocop/src/data/app/appColors.dart';
 import 'package:ocop/src/data/chart/chartData.dart';
 
-class PieChartSample1 extends StatefulWidget {
+class PieChartSample extends StatefulWidget {
   final ChartData chartData;
-  const PieChartSample1({
+  const PieChartSample({
     super.key,
     required this.chartData,
   });
 
   @override
-  State<StatefulWidget> createState() => PieChartSample1State();
+  State<StatefulWidget> createState() => PieChartSampleState();
 }
 
-class PieChartSample1State extends State<PieChartSample1> {
+class PieChartSampleState extends State<PieChartSample> {
   int touchedIndex = -1;
 
   @override
   Widget build(BuildContext context) {
-    return AspectRatio(
-      aspectRatio: 1.3,
-      child: Row(
-        children: <Widget>[
-          const SizedBox(
-            height: 18,
-          ),
-          Expanded(
-            child: AspectRatio(
-              aspectRatio: 1,
-              child: PieChart(
-                PieChartData(
-                  pieTouchData: PieTouchData(
-                    touchCallback: (FlTouchEvent event, pieTouchResponse) {
-                      setState(() {
-                        if (!event.isInterestedForInteractions ||
-                            pieTouchResponse == null ||
-                            pieTouchResponse.touchedSection == null) {
-                          touchedIndex = -1;
-                          return;
-                        }
-                        touchedIndex = pieTouchResponse
-                            .touchedSection!.touchedSectionIndex;
-                      });
-                    },
-                  ),
-                  borderData: FlBorderData(
-                    show: false,
-                  ),
-                  sectionsSpace: 0,
-                  centerSpaceRadius: 40,
-                  sections: showingSections(),
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          AspectRatio(
+            aspectRatio: 1.3,
+            child: Row(
+              children: <Widget>[
+                const SizedBox(
+                  height: 18,
                 ),
-              ),
+                Expanded(
+                  child: AspectRatio(
+                    aspectRatio: 1,
+                    child: PieChart(
+                      PieChartData(
+                        pieTouchData: PieTouchData(
+                          touchCallback: (FlTouchEvent event, pieTouchResponse) {
+                            setState(() {
+                              if (!event.isInterestedForInteractions ||
+                                  pieTouchResponse == null ||
+                                  pieTouchResponse.touchedSection == null) {
+                                touchedIndex = -1;
+                                return;
+                              }
+                              touchedIndex = pieTouchResponse
+                                  .touchedSection!.touchedSectionIndex;
+                            });
+                          },
+                        ),
+                        borderData: FlBorderData(
+                          show: false,
+                        ),
+                        sectionsSpace: 0,
+                        centerSpaceRadius: 40,
+                        sections: showingSections(),
+                      ),
+                    ),
+                  ),
+                ),
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: _buildIndicators(),
+                ),
+                const SizedBox(
+                  width: 28,
+                ),
+              ],
             ),
           ),
-          Column(
-            mainAxisAlignment: MainAxisAlignment.end,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: _buildIndicators(),
-          ),
-          const SizedBox(
-            width: 28,
-          ),
+          const SizedBox(height: 20),
+          _buildDataTable(),
         ],
       ),
     );
   }
 
   List<Widget> _buildIndicators() {
-    final List<MapEntry<String, int>> sortedData = widget.chartData.data.entries.toList()
-      ..sort((a, b) => a.value.compareTo(b.value)); // Sắp xếp tăng dần
-
-    return sortedData.asMap().entries.map((entry) {
-      final index = entry.key;
-      final data = entry.value;
-      return Column(
-        children: [
-          Indicator(
-            color: _getSectionColor(index),
-            text: data.key,
-            isSquare: true,
-          ),
-          const SizedBox(height: 4),
-        ],
+    return widget.chartData.data.entries.map((entry) {
+      final index = widget.chartData.data.keys.toList().indexOf(entry.key);
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 2),
+        child: Indicator(
+          color: _getSectionColor(index),
+          text: '${entry.key} ${widget.chartData.title}',
+          isSquare: true,
+        ),
       );
     }).toList();
   }
 
   List<PieChartSectionData> showingSections() {
-    final List<MapEntry<String, int>> sortedData = widget.chartData.data.entries.toList()
-      ..sort((a, b) => a.value.compareTo(b.value)); // Sắp xếp tăng dần
-    
-    final int total = sortedData.fold(0, (sum, entry) => sum + entry.value);
+    final int total = widget.chartData.data.values.fold(0, (sum, value) => sum + value);
 
-    return List.generate(sortedData.length, (i) {
+    return List.generate(widget.chartData.data.length, (i) {
       final isTouched = i == touchedIndex;
       final fontSize = isTouched ? 25.0 : 16.0;
       final radius = isTouched ? 60.0 : 50.0;
       const shadows = [Shadow(color: Colors.black, blurRadius: 2)];
-      
-      final entry = sortedData[i];
+
+      final entry = widget.chartData.data.entries.elementAt(i);
       final percentage = (entry.value / total * 100).toStringAsFixed(1);
 
       return PieChartSectionData(
@@ -134,5 +133,25 @@ class PieChartSample1State extends State<PieChartSample1> {
       default:
         return Colors.grey; // Thêm màu nếu cần
     }
+  }
+
+  Widget _buildDataTable() {
+    final int total = widget.chartData.data.values.fold(0, (sum, value) => sum + value);
+
+    return DataTable(
+      columns: const [
+        DataColumn(label: Text('Số sao')),
+        DataColumn(label: Text('Số lượng')),
+        DataColumn(label: Text('Tỉ lệ %')),
+      ],
+      rows: widget.chartData.data.entries.map((entry) {
+        final percentage = (entry.value / total * 100).toStringAsFixed(1);
+        return DataRow(cells: [
+          DataCell(Text(entry.key)),
+          DataCell(Text(entry.value.toString())),
+          DataCell(Text('$percentage%')),
+        ]);
+      }).toList(),
+    );
   }
 }

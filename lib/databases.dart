@@ -86,6 +86,51 @@ Future<Map<String, int>> getProductRatingCounts() async {
   }
 }
 
+Future<Map<String, int>> getProductCategoryCounts() async {
+  try {
+    final result = await connection!.query('''
+      SELECT 
+        c.name AS category_name,
+      COUNT(p.id) AS product_count
+      FROM 
+          public.product_categories c
+      LEFT JOIN 
+          public.products p ON c.id = p.category_id
+      GROUP BY 
+          c.id, c.name
+      ORDER BY 
+        c.name;
+    ''');
+
+    Map<String, int> groupedCategory = {
+      'Dịch vụ du lịch cộng đồng, du lịch sinh thái và điểm du lịch': 0, 
+      'Đồ uống': 0, 
+      'Dược liệu và sản phẩm từ dược liệu': 0, 
+      'Sinh vật cảnh': 0, 
+      'Thủ công mỹ nghệ': 0,
+      'Thực phẩm': 0,
+    };
+
+    for (final row in result) {
+      String category = row[0] as String;
+      int count = row[1] as int;
+      groupedCategory[category] = count;
+    }
+
+    return groupedCategory;
+  } catch (e) {
+    print('Lỗi khi truy vấn dữ liệu category: $e');
+    return {
+      'Dịch vụ du lịch cộng đồng, du lịch sinh thái và điểm du lịch': 0, 
+      'Đồ uống': 0, 
+      'Dược liệu và sản phẩm từ dược liệu': 0, 
+      'Sinh vật cảnh': 0, 
+      'Thủ công mỹ nghệ': 0,
+      'Thực phẩm': 0,
+    };
+  }
+}
+
   Future<List<Map<String, dynamic>>> getProductProcesses() async {
   final result = await connection!.query('SELECT * FROM public.product_processes');
   List<Map<String, dynamic>> productProcesses = [];
