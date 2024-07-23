@@ -38,14 +38,14 @@ class PieChartSampleState extends State<PieChartSample> {
                         pieTouchData: PieTouchData(
                           touchCallback: (FlTouchEvent event, pieTouchResponse) {
                             setState(() {
-                              if (!event.isInterestedForInteractions ||
-                                  pieTouchResponse == null ||
-                                  pieTouchResponse.touchedSection == null) {
-                                touchedIndex = -1;
-                                return;
-                              }
-                              touchedIndex = pieTouchResponse
-                                  .touchedSection!.touchedSectionIndex;
+                              // if (!event.isInterestedForInteractions ||
+                              //     pieTouchResponse == null ||
+                              //     pieTouchResponse.touchedSection == null) {
+                              //   touchedIndex = -1;
+                              //   return;
+                              // }
+                              // touchedIndex = pieTouchResponse
+                              //     .touchedSection!.touchedSectionIndex;
                             });
                           },
                         ),
