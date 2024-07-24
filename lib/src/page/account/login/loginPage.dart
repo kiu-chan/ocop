@@ -164,7 +164,10 @@ class LoginPageContent extends StatelessWidget {
     return ElevatedButton(
       onPressed: state.status == LoginStatus.loading
           ? null
-          : () => context.read<LoginBloc>().add(LoginSubmitted()),
+          : () => context.read<LoginBloc>().add(LoginSubmitted(
+            email: context.read<LoginBloc>().state.email,
+            password: context.read<LoginBloc>().state.password,
+          )),
       style: ElevatedButton.styleFrom(
         foregroundColor: Colors.white,
         backgroundColor: Colors.green,

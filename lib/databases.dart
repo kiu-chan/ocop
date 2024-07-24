@@ -231,6 +231,33 @@ Future<Map<String, int>> getProductGroupCounts() async {
   return mediaList;
 }
 
+Future<Map<String, dynamic>?> checkUserCredentials(String email, String password) async {
+  try {
+    final result = await connection!.query('''
+      SELECT id, name, email, role
+      FROM province_users
+      WHERE email = @email AND password = @password AND approved = true
+    ''', substitutionValues: {
+      'email': email,
+      'password': password,
+    });
+
+    if (result.isNotEmpty) {
+      // Trả về thông tin người dùng dưới dạng Map
+      return {
+        'id': result[0][0],
+        'name': result[0][1],
+        'email': result[0][2],
+        'role': result[0][3],
+      };
+    }
+    return null; // Trả về null nếu không tìm thấy người dùng
+  } catch (e) {
+    print('Lỗi khi kiểm tra thông tin đăng nhập: $e');
+    return null;
+  }
+}
+
   Future<void> close() async {
     await connection!.close();
     print('Connection closed.');
