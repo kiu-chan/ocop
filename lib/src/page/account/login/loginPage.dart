@@ -1,187 +1,196 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ocop/src/page/elements/background.dart';
 import 'package:ocop/src/page/elements/logo.dart';
 import 'package:ocop/src/page/account/register/registerPage.dart';
 import 'package:ocop/src/page/home/home.dart';
-import 'package:ocop/src/bloc/loginBloc.dart';
+import 'package:ocop/src/bloc/login/login_bloc.dart';
+import 'package:ocop/src/bloc/login/login_event.dart';
+import 'package:ocop/src/bloc/login/login_state.dart';
+import 'package:ocop/authService.dart';
 
-class LoginPage extends StatefulWidget {
-  const LoginPage({super.key});
+class LoginPage extends StatelessWidget {
+  const LoginPage({Key? key}) : super(key: key);
+
   @override
-  _LoginPageState createState() => _LoginPageState();
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (context) {
+        final bloc = LoginBloc();
+        bloc.add(CheckLoginStatus());
+        return bloc;
+      },
+      child: const LoginPageContent(),
+    );
+  }
 }
 
-class _LoginPageState extends State<LoginPage> {
-  LoginBloc bloc = LoginBloc();
-
-  final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _passwordController = TextEditingController();
+class LoginPageContent extends StatelessWidget {
+  const LoginPageContent({Key? key}) : super(key: key);
 
   @override
-  Widget build(BuildContext context) {  
-    void login() {
-    final email = _emailController.text;
-    final password = _passwordController.text;
-
-    // Kiểm tra thông tin đăng nhập
-    if (email == 'user@example.com' && password == 'password') {
-      // Điều hướng tới trang khác nếu đăng nhập thành công
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (context) => const Home()),
-      );
-    } else {
-      // Hiển thị thông báo lỗi nếu đăng nhập thất bại
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('Login Failed'),
-          content: const Text('Incorrect email or password.'),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text('OK'),
+  Widget build(BuildContext context) {
+    return BlocConsumer<LoginBloc, LoginState>(
+      listener: (context, state) {
+        if (state.status == LoginStatus.success) {
+          Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (context) => const Home()),
+          );
+        } else if (state.status == LoginStatus.failure) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text(state.error ?? 'An error occurred')),
+          );
+        }
+      },
+      builder: (context, state) {
+        return Scaffold(
+          appBar: AppBar(
+            title: const Text("Login"),
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back),
+              onPressed: () => Navigator.pop(context),
             ),
-          ],
-        ),
-      );
-    }
-  }
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Login"),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            Navigator.pop(context); // Quay lại trang trước đó
-          },
-        ),
-        actions: <Widget>[
-          IconButton(
-            icon: const Icon(Icons.home),
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (context) => const Home()),
-              );
-            }
+            actions: <Widget>[
+              IconButton(
+                icon: const Icon(Icons.home),
+                onPressed: () => Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const Home()),
+                ),
+              ),
+            ],
           ),
-          ]
-      ),
-      body: Center(
-          child: Stack(
-            children: [
-              const BackGround(),
-              Center(
-                child: Container(
-                height: 400,
-                color: Colors.white,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: <Widget>[
-                    const Logo(),
-                    const SizedBox(height: 20),
-                    FractionallySizedBox(
-                      widthFactor: 0.9,
+          body: Center(
+            child: Stack(
+              children: [
+                const BackGround(),
+                Center(
+                  child: Container(
+                    height: 400,
+                    color: Colors.white,
+                    child: SingleChildScrollView(
                       child: Column(
-                        children: [
-                          TextField(
-                            controller: _emailController,
-                            decoration: const InputDecoration(
-                              labelText: 'Email',
-
-                              border: OutlineInputBorder(),
-                              enabledBorder: UnderlineInputBorder(
-                                borderSide: BorderSide(color: Colors.grey),
-                              ),
-                              focusedBorder: UnderlineInputBorder(
-                                borderSide: BorderSide(color: Colors.blue),
-                              ),
-                              // border: OutlineInputBorder(),
-                            ),
-                          ),
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: <Widget>[
+                          const Logo(),
                           const SizedBox(height: 20),
-                          TextField(
-                            controller: _passwordController,
-                            decoration: const InputDecoration(
-                              labelText: 'Password',
-                              enabledBorder: UnderlineInputBorder(
-                                borderSide: BorderSide(color: Colors.grey),
-                              ),
-                              focusedBorder: UnderlineInputBorder(
-                                borderSide: BorderSide(color: Colors.blue),
-                              ),
-                              // border: OutlineInputBorder(),
-                            ),
-                            obscureText: true,
-                          ),
+                          _buildEmailField(context),
+                          const SizedBox(height: 20),
+                          _buildPasswordField(context),
+                          const SizedBox(height: 20),
+                          _buildRememberMeAndForgotPassword(context),
+                          const SizedBox(height: 20),
+                          _buildLoginButton(context, state),
+                          const SizedBox(height: 10),
+                          _buildRegisterLink(context),
                         ],
                       ),
                     ),
-                    const SizedBox(height: 20,),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Expanded(
-                          child: CheckboxListTile(
-                            title: const Text('Ghi nhớ đăng nhập'),
-                            value: true,
-                            controlAffinity: ListTileControlAffinity.leading,
-                            activeColor: Colors.blue,
-                            onChanged: (bool? value) {
-                              // _changeMapSource(0);
-                            },
-                          ),
-                        ),
-                        const SizedBox(
-                          width: 150,
-                          child: Text(
-                            'Quên mật khẩu?',
-                            style: TextStyle(
-                            decoration: TextDecoration.underline,
-                            color: Colors.blue,
-                          ),
-                            ),
-                        )
-                      ],
-                    ),
-                    const SizedBox(height: 20),
-                    ElevatedButton(
-                      onPressed: login,
-                      style: ElevatedButton.styleFrom(
-                        foregroundColor: Colors.white, 
-                        backgroundColor: Colors.green,
-                      ),
-                      child: const Text('Login'),
-                    ),
-                    const SizedBox(height: 10),
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => const RegisterPage()),
-                        );
-                      },
-                      child: const Text(
-                        'Đăng ký',
-                        style: TextStyle(
-                          fontSize: 16,
-                          decoration: TextDecoration.underline, // Hiển thị chữ dưới gạch chân
-                          color: Colors.blue, // Màu chữ xanh
-                        ),
-                      ),
-                    ),
-                  ],
                   ),
                 ),
-              ),
-            ]
+              ],
+            ),
           ),
+        );
+      },
+    );
+  }
+
+  Widget _buildEmailField(BuildContext context) {
+    return FractionallySizedBox(
+      widthFactor: 0.9,
+      child: TextFormField(
+        decoration: const InputDecoration(
+          labelText: 'Email',
+          enabledBorder: UnderlineInputBorder(
+            borderSide: BorderSide(color: Colors.grey),
+          ),
+          focusedBorder: UnderlineInputBorder(
+            borderSide: BorderSide(color: Colors.blue),
+          ),
+        ),
+        onChanged: (value) => context.read<LoginBloc>().add(EmailChanged(value)),
       ),
     );
+  }
 
-    
+  Widget _buildPasswordField(BuildContext context) {
+    return FractionallySizedBox(
+      widthFactor: 0.9,
+      child: TextFormField(
+        decoration: const InputDecoration(
+          labelText: 'Password',
+          enabledBorder: UnderlineInputBorder(
+            borderSide: BorderSide(color: Colors.grey),
+          ),
+          focusedBorder: UnderlineInputBorder(
+            borderSide: BorderSide(color: Colors.blue),
+          ),
+        ),
+        obscureText: true,
+        onChanged: (value) => context.read<LoginBloc>().add(PasswordChanged(value)),
+      ),
+    );
+  }
+
+  Widget _buildRememberMeAndForgotPassword(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Expanded(
+          child: CheckboxListTile(
+            title: const Text('Ghi nhớ đăng nhập'),
+            value: context.watch<LoginBloc>().state.rememberMe,
+            controlAffinity: ListTileControlAffinity.leading,
+            activeColor: Colors.blue,
+            onChanged: (value) => context.read<LoginBloc>().add(RememberMeChanged(value ?? false)),
+          ),
+        ),
+        const SizedBox(
+          width: 150,
+          child: Text(
+            'Quên mật khẩu?',
+            style: TextStyle(
+              decoration: TextDecoration.underline,
+              color: Colors.blue,
+            ),
+          ),
+        )
+      ],
+    );
+  }
+
+  Widget _buildLoginButton(BuildContext context, LoginState state) {
+    return ElevatedButton(
+      onPressed: state.status == LoginStatus.loading
+          ? null
+          : () => context.read<LoginBloc>().add(LoginSubmitted()),
+      style: ElevatedButton.styleFrom(
+        foregroundColor: Colors.white,
+        backgroundColor: Colors.green,
+      ),
+      child: state.status == LoginStatus.loading
+          ? const CircularProgressIndicator()
+          : const Text('Login'),
+    );
+  }
+
+  Widget _buildRegisterLink(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => RegisterPage()),
+        );
+      },
+      child: const Text(
+        'Đăng ký',
+        style: TextStyle(
+          fontSize: 16,
+          decoration: TextDecoration.underline,
+          color: Colors.blue,
+        ),
+      ),
+    );
   }
 }

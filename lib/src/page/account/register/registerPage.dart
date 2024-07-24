@@ -1,187 +1,155 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ocop/src/page/elements/background.dart';
 import 'package:ocop/src/page/elements/logo.dart';
 import 'package:ocop/src/page/home/home.dart';
 import 'package:ocop/src/page/account/login/loginPage.dart';
+import 'register_bloc.dart';
+import 'register_event.dart';
+import 'register_state.dart';
 
-class RegisterPage extends StatefulWidget {
-  const RegisterPage({super.key});
-  @override
-  _RegisterPageState createState() => _RegisterPageState();
-}
+class RegisterPage extends StatelessWidget {
+  RegisterPage({Key? key}) : super(key: key);
 
-class _RegisterPageState extends State<RegisterPage> {
+  final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  @override
-  Widget build(BuildContext context) {  
-    void login() {
-    final email = _emailController.text;
-    final password = _passwordController.text;
+  final TextEditingController _confirmPasswordController = TextEditingController();
 
-    // Kiểm tra thông tin đăng nhập
-    if (email == 'user@example.com' && password == 'password') {
-      // Điều hướng tới trang khác nếu đăng nhập thành công
-      // Navigator.push(
-      //   context,
-      //   MaterialPageRoute(builder: (context) => homePage()),
-      // );
-    } else {
-      // Hiển thị thông báo lỗi nếu đăng nhập thất bại
-      showDialog(
-        context: context,
-        builder: (context) => AlertDialog(
-          title: const Text('Login Failed'),
-          content: const Text('Incorrect email or password.'),
+  @override
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (context) => RegisterBloc(),
+      child: Scaffold(
+        appBar: AppBar(
+          title: const Text("Register"),
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back),
+            onPressed: () => Navigator.pop(context),
+          ),
           actions: <Widget>[
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text('OK'),
+            IconButton(
+              icon: const Icon(Icons.home),
+              onPressed: () => Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => const Home()),
+              ),
             ),
           ],
         ),
-      );
-    }
-  }
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text("Register"),
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back),
-          onPressed: () {
-            Navigator.pop(context); // Quay lại trang trước đó
-          },
-        ),
-        actions: <Widget>[
-          IconButton(
-            icon: const Icon(Icons.home),
-            onPressed: () {
-              Navigator.push(
+        body: BlocListener<RegisterBloc, RegisterState>(
+          listener: (context, state) {
+            if (state is RegisterSuccess) {
+              Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(builder: (context) => const Home()),
               );
+            } else if (state is RegisterFailure) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text(state.error)),
+              );
             }
-          ),
-          ]
-      ),
-      body: Center(
-          child: Stack(
-            children: [
-              const BackGround(),
-              Center(
-                child: Container(
-                  width: double.infinity,
-                  height: 600,
-                  color: Colors.white,
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: <Widget>[
-                      const Logo(),
-                      const SizedBox(height: 20),
-                      FractionallySizedBox(
-                        widthFactor: 0.9,
+          },
+          child: BlocBuilder<RegisterBloc, RegisterState>(
+            builder: (context, state) {
+              return Center(
+                child: Stack(
+                  children: [
+                    const BackGround(),
+                    Center(
+                      child: Container(
+                        width: double.infinity,
+                        height: 600,
+                        color: Colors.white,
                         child: Column(
-                          children: [
-                            TextField(
-                              controller: _emailController,
-                              decoration: const InputDecoration(
-                                labelText: 'Họ tên',
-
-                                border: OutlineInputBorder(),
-                                enabledBorder: UnderlineInputBorder(
-                                  borderSide: BorderSide(color: Colors.grey),
-                                ),
-                                focusedBorder: UnderlineInputBorder(
-                                  borderSide: BorderSide(color: Colors.blue),
-                                ),
-                                // border: OutlineInputBorder(),
-                              ),
-                            ),
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: <Widget>[
+                            const Logo(),
                             const SizedBox(height: 20),
-                            TextField(
-                              controller: _passwordController,
-                              decoration: const InputDecoration(
-                                labelText: 'Địa chỉ email',
-                                enabledBorder: UnderlineInputBorder(
-                                  borderSide: BorderSide(color: Colors.grey),
-                                ),
-                                focusedBorder: UnderlineInputBorder(
-                                  borderSide: BorderSide(color: Colors.blue),
-                                ),
-                                // border: OutlineInputBorder(),
-                              ),
-                              obscureText: true,
-                            ),
+                            _buildTextField(_nameController, 'Họ tên'),
                             const SizedBox(height: 20),
-                            TextField(
-                              controller: _passwordController,
-                              decoration: const InputDecoration(
-                                labelText: 'Mật khẩu',
-                                enabledBorder: UnderlineInputBorder(
-                                  borderSide: BorderSide(color: Colors.grey),
-                                ),
-                                focusedBorder: UnderlineInputBorder(
-                                  borderSide: BorderSide(color: Colors.blue),
-                                ),
-                                // border: OutlineInputBorder(),
-                              ),
-                              obscureText: true,
-                            ),
+                            _buildTextField(_emailController, 'Địa chỉ email'),
                             const SizedBox(height: 20),
-                            TextField(
-                              controller: _passwordController,
-                              decoration: const InputDecoration(
-                                labelText: 'Xác nhận mật khẩu',
-                                enabledBorder: UnderlineInputBorder(
-                                  borderSide: BorderSide(color: Colors.grey),
-                                ),
-                                focusedBorder: UnderlineInputBorder(
-                                  borderSide: BorderSide(color: Colors.blue),
-                                ),
-                                // border: OutlineInputBorder(),
-                              ),
-                              obscureText: true,
-                            ),
+                            _buildTextField(_passwordController, 'Mật khẩu', isPassword: true),
+                            const SizedBox(height: 20),
+                            _buildTextField(_confirmPasswordController, 'Xác nhận mật khẩu', isPassword: true),
+                            const SizedBox(height: 40),
+                            _buildRegisterButton(context, state),
+                            const SizedBox(height: 10),
+                            _buildLoginLink(context),
                           ],
                         ),
                       ),
-                      const SizedBox(height: 40,),
-                      ElevatedButton(
-                        onPressed: login,
-                        style: ElevatedButton.styleFrom(
-                          foregroundColor: Colors.white, 
-                          backgroundColor: Colors.green,
-                        ),
-                        child: const Text('Register'),
-                      ),
-                    const SizedBox(height: 10),
-                    GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(builder: (context) => const LoginPage()),
-                        );
-                      },
-                      child: const Text(
-                        'Đăng nhập',
-                        style: TextStyle(
-                          fontSize: 16,
-                          decoration: TextDecoration.underline, // Hiển thị chữ dưới gạch chân
-                          color: Colors.blue, // Màu chữ xanh
-                        ),
-                      ),
                     ),
-                    ],
-                          ),
-                              ),
-              ),
-            ]
+                  ],
+                ),
+              );
+            },
           ),
+        ),
       ),
     );
+  }
 
-    
+  Widget _buildTextField(TextEditingController controller, String label, {bool isPassword = false}) {
+    return FractionallySizedBox(
+      widthFactor: 0.9,
+      child: TextField(
+        controller: controller,
+        decoration: InputDecoration(
+          labelText: label,
+          enabledBorder: const UnderlineInputBorder(
+            borderSide: BorderSide(color: Colors.grey),
+          ),
+          focusedBorder: const UnderlineInputBorder(
+            borderSide: BorderSide(color: Colors.blue),
+          ),
+        ),
+        obscureText: isPassword,
+      ),
+    );
+  }
+
+  Widget _buildRegisterButton(BuildContext context, RegisterState state) {
+    return ElevatedButton(
+      onPressed: state is RegisterLoading
+          ? null
+          : () {
+              BlocProvider.of<RegisterBloc>(context).add(
+                RegisterButtonPressed(
+                  name: _nameController.text,
+                  email: _emailController.text,
+                  password: _passwordController.text,
+                  confirmPassword: _confirmPasswordController.text,
+                ),
+              );
+            },
+      style: ElevatedButton.styleFrom(
+        foregroundColor: Colors.white,
+        backgroundColor: Colors.green,
+      ),
+      child: state is RegisterLoading
+          ? const CircularProgressIndicator()
+          : const Text('Register'),
+    );
+  }
+
+  Widget _buildLoginLink(BuildContext context) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (context) => LoginPage()),
+        );
+      },
+      child: const Text(
+        'Đăng nhập',
+        style: TextStyle(
+          fontSize: 16,
+          decoration: TextDecoration.underline,
+          color: Colors.blue,
+        ),
+      ),
+    );
   }
 }
