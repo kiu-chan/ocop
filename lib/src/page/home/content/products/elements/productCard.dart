@@ -10,32 +10,54 @@ class ProductCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return SizedBox(
       width: 160,
-      margin: const EdgeInsets.all(8),
-      child: InkWell(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => ProductInformation(product: product),
-            ),
-          );
-        },
-        child: Card(
+      height: 220,
+      child: Card(
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => ProductInformation(product: product),
+              ),
+            );
+          },
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: <Widget>[
-              Image.asset(
-                'lib/src/assets/img/home/image.png',
-                height: 100,
-                width: 100,
-                fit: BoxFit.cover,
+              Expanded(
+                flex: 3,
+                child: Center(
+                  child: Image.asset(
+                    'lib/src/assets/img/home/image.png',
+                    fit: BoxFit.cover,
+                  ),
+                ),
               ),
-              const SizedBox(height: 8),
-              Text(product.name, style: const TextStyle(fontWeight: FontWeight.bold)),
-              const SizedBox(height: 8),
-              const Star(value: 2),
+              Expanded(
+                flex: 2,
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Text(
+                        product.name,
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 4),
+                      Star(value: product.star),
+                    ],
+                  ),
+                ),
+              ),
             ],
           ),
         ),

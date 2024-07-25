@@ -335,6 +335,47 @@ Future<Map<String, int>> getProductGroupCounts() async {
     }
   }
 
+  Future<List<Map<String, dynamic>>> getRandomProducts() async {
+  try {
+    final result = await connection!.query('''
+      SELECT id, name, rating
+      FROM public.products
+      ORDER BY RANDOM()
+      LIMIT 10
+    ''');
+
+    return result.map((row) => {
+      'id': row[0] as int,
+      'name': row[1] as String,
+      'rating': row[2] as int,
+    }).toList();
+  } catch (e) {
+    print('Lỗi khi truy vấn 10 sản phẩm ngẫu nhiên: $e');
+    return []; // Trả về danh sách trống nếu có lỗi
+  }
+}
+
+Future<List<Map<String, dynamic>>> getAllProducts() async {
+  try {
+    final result = await connection!.query('''
+      SELECT p.id, p.name, p.rating, c.name as category_name
+      FROM public.products p
+      LEFT JOIN public.product_categories c ON p.category_id = c.id
+      ORDER BY p.name
+    ''');
+
+    return result.map((row) => {
+      'id': row[0] as int,
+      'name': row[1] as String,
+      'rating': row[2] as int,
+      'category': row[3] as String?, // Có thể null nếu không có danh mục
+    }).toList();
+  } catch (e) {
+    print('Lỗi khi truy vấn tất cả sản phẩm: $e');
+    return [];
+  }
+}
+
   Future<void> close() async {
     await connection!.close();
     print('Connection closed.');

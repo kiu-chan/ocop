@@ -1,16 +1,38 @@
 import 'package:flutter/material.dart';
+import 'package:ocop/databases.dart';
 import 'package:ocop/src/data/home/productData.dart';
 import 'package:ocop/src/page/home/content/products/elements/productCard.dart';
+import 'package:ocop/src/page/home/content/products/elements/productsList.dart'; // Thêm import này
 
-class ProductList extends StatelessWidget {
-  final List<Product> products = [
-    Product(name: 'Sản phẩm 1', star: 5, category: 'Thực phẩm'),
-    Product(name: 'Sản phẩm 2', star: 1, category: 'Thực phẩm'),
-    Product(name: 'Sản phẩm 3', star: 3, category: 'Thực phẩm'),
-    // Thêm các sản phẩm khác vào đây
-  ];
+class ProductList extends StatefulWidget {
+  const ProductList({Key? key}) : super(key: key);
 
-  ProductList({super.key});
+  @override
+  _ProductListState createState() => _ProductListState();
+}
+
+class _ProductListState extends State<ProductList> {
+  List<Product> products = [];
+  final DefaultDatabaseOptions db = DefaultDatabaseOptions();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProducts();
+  }
+
+  Future<void> _loadProducts() async {
+    await db.connect();
+    final randomProducts = await db.getRandomProducts();
+    setState(() {
+      products = randomProducts.map((product) => Product(
+        name: product['name'],
+        star: product['rating'],
+        category: product['category'] ?? 'Unknown',
+      )).toList();
+    });
+    await db.close();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -20,52 +42,51 @@ class ProductList extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             Container(
-            padding: const EdgeInsets.only(left: 10.0), 
-            child: const Text(
-              "Danh sách sản phẩm",
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 20
-                ), // Văn bản in đậm
+              padding: const EdgeInsets.only(left: 10.0),
+              child: const Text(
+                "Danh sách sản phẩm",
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 20
+                ),
+              ),
             ),
-          ),
-          // GestureDetector(
-          //             onTap: () {
-          //               Navigator.push(
-          //                 context,
-          //                 MaterialPageRoute(builder: (context) => ProductInformation()),
-          //               );
-          //             },
-          //             child: const Text(
-          //               'Đăng ký',
-          //               style: TextStyle(
-          //                 fontSize: 16,
-          //                 decoration: TextDecoration.underline, // Hiển thị chữ dưới gạch chân
-          //                 color: Colors.blue, // Màu chữ xanh
-          //               ),
-          //             ),
-          //           ),
             Container(
-            padding: const EdgeInsets.only(right: 10.0), 
-            child: const Text(
-              "All",
-              style: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 20
-                ), // Văn bản in đậm
+              padding: const EdgeInsets.only(right: 10.0),
+              child: GestureDetector(
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const ProductsList()),
+                  );
+                },
+                child: const Text(
+                  "All",
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 20
+                  ),
+                ),
+              ),
             ),
-          ),
           ],
         ),
         SizedBox(
-            height: 200,
-            child: ListView.builder(
-              scrollDirection: Axis.horizontal,
-              itemCount: products.length,
-              itemBuilder: (context, index) {
-                return ProductCard(product: products[index]);
-              },
-            )),
+  height: 250,  // Điều chỉnh chiều cao nếu cần
+  child: ListView.builder(
+    scrollDirection: Axis.horizontal,
+    itemCount: products.length,
+    itemBuilder: (context, index) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 4),
+        child: SizedBox(
+          width: 180,  // Điều chỉnh chiều rộng nếu cần
+          child: ProductCard(product: products[index]),
+        ),
+      );
+    },
+  ),
+),
       ],
     );
   }
