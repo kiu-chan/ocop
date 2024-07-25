@@ -4,9 +4,9 @@ import 'package:ocop/src/page/elements/background.dart';
 import 'package:ocop/src/page/elements/logo.dart';
 import 'package:ocop/src/page/home/home.dart';
 import 'package:ocop/src/page/account/login/loginPage.dart';
-import 'register_bloc.dart';
-import 'register_event.dart';
-import 'register_state.dart';
+import '../../../bloc/register/register_bloc.dart';
+import '../../../bloc/register/register_event.dart';
+import '../../../bloc/register/register_state.dart';
 
 class RegisterPage extends StatelessWidget {
   RegisterPage({Key? key}) : super(key: key);
