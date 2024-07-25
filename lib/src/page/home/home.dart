@@ -20,7 +20,7 @@ class _HomeState extends State<Home> {
     switch(currentIndex) {
       case 0:
       {
-        currentWidget = const homePage();
+        currentWidget = const HomePage();
         break;
       }
       

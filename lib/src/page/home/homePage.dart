@@ -3,30 +3,28 @@ import 'package:ocop/src/page/home/content/products/products.dart';
 import 'package:ocop/src/page/home/content/news/news.dart';
 import 'package:ocop/src/page/elements/logo.dart';
 
-class homePage extends StatefulWidget {
-  const homePage({super.key});
+class HomePage extends StatefulWidget {
+  const HomePage({super.key});
 
   @override
-  _homePageState createState() => _homePageState();
+  _HomePageState createState() => _HomePageState();
 }
 
-class _homePageState extends State<homePage> {
+class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: [
-          const SizedBox(
-            height: 30,
-          ),
-          const Logo(),
-          const SizedBox(
-            height: 10,
-          ),
-          ProductList(),
-          NewsList(),
-        ],
+      body: SingleChildScrollView(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            const SizedBox(height: 30),
+            const Logo(),
+            const SizedBox(height: 10),
+            ProductList(),
+            NewsList(),
+          ],
+        ),
       ),
     );
   }

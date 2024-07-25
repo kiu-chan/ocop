@@ -47,6 +47,8 @@ class _MapPageState extends State<MapPage> {
 
   final LatLng mapLat = LatLng(10.2417, 106.3748);  //Tọa độ mặc định
 
+  final LatLng mapLatFinal = LatLng(10.2417, 106.3748);  //Tọa độ mặc định
+
   List<ImageData> imageDataList = [];
 
   List<ImageData> listImgRender = [];
@@ -166,15 +168,24 @@ Future<void> _loadProducts() async {
   }
 }
 
-  void _zoomIn() {
-    currentZoom = currentZoom + 1;
-    mapController.move(mapController.center, currentZoom);
-  }
+void _location() {
+  setState(() {
+    currentZoom = 9.0; // Or any other default zoom level you prefer
+    mapController.move(mapLat, currentZoom);
+  });
+}
 
-  void _zoomOut() {
-    currentZoom = currentZoom - 1;
-    mapController.move(mapController.center, currentZoom);
-  }
+void _zoomIn() {
+  double zoomFactor = 1.1; // Increase zoom by 10%
+  currentZoom = (mapController.zoom * zoomFactor).clamp(1.0, 18.0);
+  mapController.move(mapController.center, currentZoom);
+}
+
+void _zoomOut() {
+  double zoomFactor = 0.9; // Decrease zoom by 20%
+  currentZoom = (mapController.zoom * zoomFactor).clamp(1.0, 18.0);
+  mapController.move(mapController.center, currentZoom);
+}
 
 
   void _changeMapSource(int mapValue) {
@@ -272,6 +283,12 @@ Future<void> _loadProducts() async {
             bottom: 20,
             child: Column(
               children: [
+                FloatingActionButton(
+                  onPressed: _location,
+                  heroTag: "zoomIn",
+                  child: const Icon(Icons.location_on),
+                ),
+                const SizedBox(height: 10),
                 FloatingActionButton(
                   onPressed: _zoomIn,
                   heroTag: "zoomIn",
