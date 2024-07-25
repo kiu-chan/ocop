@@ -35,7 +35,7 @@ class PieChartSampleState extends State<PieChartSample> {
             ),
           Center(
             child: SizedBox(
-              height: 300,
+              height: 500,
               child: AspectRatio(
                 aspectRatio: 1.3,
                 child: Row(

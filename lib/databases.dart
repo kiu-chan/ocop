@@ -376,6 +376,27 @@ Future<List<Map<String, dynamic>>> getAllProducts() async {
   }
 }
 
+
+Future<String?> getProductContent(int productId) async {
+  try {
+    final result = await connection!.query('''
+      SELECT content
+      FROM public.products
+      WHERE id = @id
+    ''', substitutionValues: {
+      'id': productId,
+    });
+
+    if (result.isNotEmpty) {
+      return result[0][0] as String?;
+    }
+    return null;
+  } catch (e) {
+    print('Lỗi khi truy vấn nội dung sản phẩm: $e');
+    return null;
+  }
+}
+
   Future<void> close() async {
     await connection!.close();
     print('Connection closed.');

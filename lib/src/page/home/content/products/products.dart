@@ -3,6 +3,8 @@ import 'package:ocop/databases.dart';
 import 'package:ocop/src/data/home/productData.dart';
 import 'package:ocop/src/page/home/content/products/elements/productCard.dart';
 import 'package:ocop/src/page/home/content/products/elements/productsList.dart'; // Thêm import này
+import 'package:latlong2/latlong.dart';
+
 
 class ProductList extends StatefulWidget {
   const ProductList({Key? key}) : super(key: key);
@@ -25,11 +27,13 @@ class _ProductListState extends State<ProductList> {
     await db.connect();
     final randomProducts = await db.getRandomProducts();
     setState(() {
-      products = randomProducts.map((product) => Product(
-        name: product['name'],
-        star: product['rating'],
-        category: product['category'] ?? 'Unknown',
-      )).toList();
+products = randomProducts.map((product) => Product(
+  id: product['id'],  // Thêm id
+  name: product['name'],
+  star: product['rating'],
+  category: product['category'] ?? 'Unknown',
+  // location: LatLng(0, 0),  // Giả sử là một vị trí mặc định
+)).toList();
     });
     await db.close();
   }
