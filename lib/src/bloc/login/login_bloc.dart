@@ -35,6 +35,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
 
   Future<void> _onLoginSubmitted(LoginSubmitted event, Emitter<LoginState> emit) async {
     emit(state.copyWith(status: LoginStatus.loading));
+    await Future.delayed(const Duration(seconds: 1));
     try {
       final userInfo = await _databaseOptions.checkUserCredentials(state.email, state.password);
       if (userInfo != null) {

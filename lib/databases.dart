@@ -1,6 +1,7 @@
 import 'package:latlong2/latlong.dart';
 import 'package:postgres/postgres.dart';
 import 'package:ocop/src/data/map/productData.dart';
+import 'package:bcrypt/bcrypt.dart';
 
 class DefaultDatabaseOptions {
   PostgreSQLConnection? connection;
@@ -231,32 +232,87 @@ Future<Map<String, int>> getProductGroupCounts() async {
   return mediaList;
 }
 
-Future<Map<String, dynamic>?> checkUserCredentials(String email, String password) async {
-  try {
-    final result = await connection!.query('''
-      SELECT id, name, email, role
-      FROM province_users
-      WHERE email = @email AND password = @password AND approved = true
-    ''', substitutionValues: {
-      'email': email,
-      'password': password,
-    });
+  Future<Map<String, dynamic>?> checkUserCredentials(String email, String password) async {
+    try {
+      final result = await connection!.query('''
+        SELECT id, name, email, role, password
+        FROM province_users
+        WHERE email = @email AND approved = true
+      ''', substitutionValues: {
+        'email': email,
+      });
 
-    if (result.isNotEmpty) {
-      // Trả về thông tin người dùng dưới dạng Map
-      return {
-        'id': result[0][0],
-        'name': result[0][1],
-        'email': result[0][2],
-        'role': result[0][3],
-      };
+      if (result.isNotEmpty) {
+        String storedHash = result[0][4]; // Assuming password is the 5th column
+        if (BCrypt.checkpw(password, storedHash)) {
+          return {
+            'id': result[0][0],
+            'name': result[0][1],
+            'email': result[0][2],
+            'role': result[0][3],
+          };
+        }
+      }
+      return null;
+    } catch (e) {
+      print('Error checking user credentials: $e');
+      return null;
     }
-    return null; // Trả về null nếu không tìm thấy người dùng
+  }
+
+Future<bool> checkUserExists(String email) async {
+  try {
+    final result = await connection!.query(
+      'SELECT COUNT(*) FROM province_users WHERE email = @email',
+      substitutionValues: {'email': email},
+    );
+    return (result[0][0] as int) > 0;
   } catch (e) {
-    print('Lỗi khi kiểm tra thông tin đăng nhập: $e');
-    return null;
+    print('Error checking if user exists: $e');
+    return false;
   }
 }
+
+  Future<bool> createUser(String name, String email, String password) async {
+    try {
+      // Mã hóa mật khẩu sử dụng bcrypt
+      String hashedPassword = BCrypt.hashpw(password, BCrypt.gensalt());
+
+      await connection!.query('''
+        INSERT INTO province_users (
+          approved,
+          created_at,
+          updated_at,
+          deleted_at,
+          email_verified_at,
+          role,
+          name,
+          email,
+          password,
+          remember_token
+        ) VALUES (
+          true,
+          CURRENT_TIMESTAMP,
+          CURRENT_TIMESTAMP,
+          NULL,
+          CURRENT_TIMESTAMP,
+          'user',
+          @name,
+          @email,
+          @hashedPassword,
+          NULL
+        )
+      ''', substitutionValues: {
+        'name': name,
+        'email': email,
+        'hashedPassword': hashedPassword,
+      });
+      return true;
+    } catch (e) {
+      print('Error creating user: $e');
+      return false;
+    }
+  }
 
   Future<void> close() async {
     await connection!.close();
