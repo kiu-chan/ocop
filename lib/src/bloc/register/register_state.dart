@@ -11,3 +11,9 @@ class RegisterFailure extends RegisterState {
 
   RegisterFailure({required this.error});
 }
+
+class RegisterValidationFailure extends RegisterState {
+  final String error;
+
+  RegisterValidationFailure({required this.error});
+}
