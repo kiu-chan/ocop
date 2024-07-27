@@ -1,7 +1,7 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'register_event.dart';
 import 'register_state.dart';
-import 'package:ocop/databases.dart';
+import 'package:ocop/mainData/database/databases.dart';
 
 
 class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {

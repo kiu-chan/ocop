@@ -1,6 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <application
-        android:label="ocop"
+        android:label="Ocop Bến Tre"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

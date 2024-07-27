@@ -4,6 +4,8 @@ import 'package:ocop/src/data/map/productData.dart';
 import 'package:bcrypt/bcrypt.dart';
 
 class DefaultDatabaseOptions {
+  bool _connectionFailed = false;
+  
   PostgreSQLConnection? connection;
 
   Future<void> connect() async {

@@ -7,7 +7,7 @@ import 'package:ocop/src/page/map/elements/menu.dart';
 import 'package:ocop/src/data/map/ImageData.dart';
 import 'package:ocop/src/data/map/MapData.dart';
 import 'package:ocop/src/page/map/elements/MarkerMap.dart';
-import 'package:ocop/databases.dart';
+import 'package:ocop/mainData/database/databases.dart';
 
 
 class MapPage extends StatefulWidget {

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:ocop/src/data/home/productData.dart';
 import 'package:ocop/src/page/elements/star.dart';
 import 'package:ocop/src/page/elements/logo.dart';
-import 'package:ocop/databases.dart';
+import 'package:ocop/mainData/database/databases.dart';
 import 'package:html/parser.dart' show parse;
 
 class ProductInformation extends StatefulWidget {

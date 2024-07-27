@@ -7,7 +7,7 @@ import 'package:ocop/src/page/account/login/loginPage.dart';
 import '../../../bloc/register/register_bloc.dart';
 import '../../../bloc/register/register_event.dart';
 import '../../../bloc/register/register_state.dart';
-import 'package:ocop/databases.dart';
+import 'package:ocop/mainData/database/databases.dart';
 
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});

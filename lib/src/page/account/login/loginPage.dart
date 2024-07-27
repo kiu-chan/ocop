@@ -7,7 +7,7 @@ import 'package:ocop/src/page/home/home.dart';
 import 'package:ocop/src/bloc/login/login_bloc.dart';
 import 'package:ocop/src/bloc/login/login_event.dart';
 import 'package:ocop/src/bloc/login/login_state.dart';
-import 'package:ocop/authService.dart';
+import 'package:ocop/mainData/user/authService.dart';
 
 class LoginPage extends StatelessWidget {
   const LoginPage({Key? key}) : super(key: key);
