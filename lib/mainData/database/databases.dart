@@ -5,21 +5,28 @@ import 'package:bcrypt/bcrypt.dart';
 
 class DefaultDatabaseOptions {
   bool _connectionFailed = false;
-  
+
   PostgreSQLConnection? connection;
 
   Future<void> connect() async {
-    connection = PostgreSQLConnection(
-      '163.44.193.74',  // Địa chỉ máy chủ PostgreSQL
-      5432,         // Cổng của PostgreSQL
-      'bentre_ocop', // Tên cơ sở dữ liệu
-      username: 'postgres', // Tên người dùng
-      password: 'yfti*m0xZYtRy3QfF)tV',       // Mật khẩu
-    );
-    
-    await connection!.open();
-    print('Connected to PostgreSQL database.');
+    try {
+      connection = PostgreSQLConnection(
+        '163.44.193.74',
+        5432,
+        'bentre_ocop',
+        username: 'postgres',
+        password: 'yfti*m0xZYtRy3QfF)tV',
+      );
+      
+      await connection!.open();
+      print('Connected to PostgreSQL database.');
+      _connectionFailed = false;
+    } catch (e) {
+      print('Failed to connect to database: $e');
+      _connectionFailed = true;
+    }
   }
+  bool get connectionFailed => _connectionFailed;
 
   // Tách tọa độ từ chuỗi
   // RegExp regex = RegExp(r'POINT\(([^ ]+) ([^ ]+)\)');
@@ -215,7 +222,6 @@ Future<Map<String, int>> getProductGroupCounts() async {
       'updated_at': row[4],
     });
   }
-
     return productProcesses;
   }
 
@@ -398,6 +404,93 @@ Future<String?> getProductContent(int productId) async {
     return null;
   }
 }
+
+Future<List<Map<String, dynamic>>> getRandomNews({int limit = 10}) async {
+  try {
+    final result = await connection!.query('''
+      SELECT id, title, published_at
+      FROM posts 
+      ORDER BY RANDOM() 
+      LIMIT @limit
+    ''', substitutionValues: {
+      'limit': limit,
+    });
+
+    return result.map((row) => {
+      'id': row[0] as int,
+      'title': row[1] as String,
+      'published_at': row[2] as DateTime,
+    }).toList();
+  } catch (e) {
+    print('Lỗi khi truy vấn tin tức ngẫu nhiên: $e');
+    return [];
+  }
+}
+
+Future<String?> getFullNewsContent(String newsTitle) async {
+  try {
+    final result = await connection!.query('''
+      SELECT content
+      FROM posts
+      WHERE title = @title
+      LIMIT 1
+    ''', substitutionValues: {
+      'title': newsTitle,
+    });
+
+    if (result.isNotEmpty) {
+      return result[0][0] as String?;
+    }
+    return null;
+  } catch (e) {
+    print('Lỗi khi truy vấn nội dung đầy đủ của tin tức: $e');
+    return null;
+  }
+}
+
+  Future<List<Map<String, dynamic>>> getAllNews({int page = 1, int perPage = 10}) async {
+    try {
+      final offset = (page - 1) * perPage;
+      final result = await connection!.query('''
+        SELECT id, title, published_at
+        FROM posts 
+        ORDER BY published_at DESC
+        LIMIT @limit OFFSET @offset
+      ''', substitutionValues: {
+        'limit': perPage,
+        'offset': offset,
+      });
+
+      return result.map((row) => {
+        'id': row[0] as int,
+        'title': row[1] as String,
+        'published_at': row[2] as DateTime,
+      }).toList();
+    } catch (e) {
+      print('Lỗi khi truy vấn tất cả tin tức: $e');
+      return [];
+    }
+  }
+
+  Future<String?> getNewsContent(int newsId) async {
+    try {
+      final result = await connection!.query('''
+        SELECT content
+        FROM posts
+        WHERE id = @id
+      ''', substitutionValues: {
+        'id': newsId,
+      });
+
+      if (result.isNotEmpty) {
+        return result[0][0] as String?;
+      }
+      return null;
+    } catch (e) {
+      print('Lỗi khi truy vấn nội dung tin tức: $e');
+      return null;
+    }
+  }
 
   Future<void> close() async {
     await connection!.close();

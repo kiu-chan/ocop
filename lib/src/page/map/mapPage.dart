@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_map/flutter_map.dart';
@@ -8,7 +9,7 @@ import 'package:ocop/src/data/map/ImageData.dart';
 import 'package:ocop/src/data/map/MapData.dart';
 import 'package:ocop/src/page/map/elements/MarkerMap.dart';
 import 'package:ocop/mainData/database/databases.dart';
-
+import 'package:ocop/src/data/map/productData.dart';
 
 class MapPage extends StatefulWidget {
   const MapPage({super.key});
@@ -24,14 +25,14 @@ class _MapPageState extends State<MapPage> {
   List<Map<String, dynamic>> products = [];
 
   LatLng parseLatLng(String input) {
-  final pointStart = input.indexOf('POINT(') + 'POINT('.length;
-  final pointEnd = input.indexOf(')', pointStart);
-  final coordinateString = input.substring(pointStart, pointEnd);
-  final coordinates = coordinateString.split(' ');
-  final longitude = double.parse(coordinates[0]);
-  final latitude = double.parse(coordinates[1]);
-  return LatLng(latitude, longitude);
-}
+    final pointStart = input.indexOf('POINT(') + 'POINT('.length;
+    final pointEnd = input.indexOf(')', pointStart);
+    final coordinateString = input.substring(pointStart, pointEnd);
+    final coordinates = coordinateString.split(' ');
+    final longitude = double.parse(coordinates[0]);
+    final latitude = double.parse(coordinates[1]);
+    return LatLng(latitude, longitude);
+  }
 
   double currentZoom = 9.0;
 
@@ -45,6 +46,7 @@ class _MapPageState extends State<MapPage> {
   String mapUrl = "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
   final String namePackage = "com.example.app";
 
+  // final LatLng mapLat = LatLng(22.406276, 105.624405);  //Tọa độ Ba bể
   final LatLng mapLat = LatLng(10.2417, 106.3748);  //Tọa độ mặc định
 
   final LatLng mapLatFinal = LatLng(10.2417, 106.3748);  //Tọa độ mặc định
@@ -58,86 +60,114 @@ class _MapPageState extends State<MapPage> {
     'lib/src/assets/geodata/vungLoi.geojson',
   ];
   final List<Color> orderedColors = [
-  Colors.red,
-  Colors.blue,
-  Colors.green,
-  Colors.yellow,
-  Colors.orange,
-  Colors.purple,
-  Colors.teal,
-  Colors.pink,
-  // Thêm màu khác nếu cần
-];
+    Colors.red,
+    Colors.blue,
+    Colors.green,
+    Colors.yellow,
+    Colors.orange,
+    Colors.purple,
+    Colors.teal,
+    Colors.pink,
+  ];
+
+  bool isOfflineMode = false;
+
   @override
   void initState() {
     super.initState();
-
     databaseData = DefaultDatabaseOptions();
     _loadProducts();
-
-    // for (int i = 0; i < listPaths.length; i++) {
-    // _loadGeoJsonData(listPaths[i]);
-    // }
   }
 
-Future<void> _loadProducts() async {
-  await databaseData.connect();
-  var products = await databaseData.getProducts();
-
-  setState(() {
-    Map<String, List<LatLng>> groupedLatLngs = {};
-    
-    // Phân loại các sản phẩm theo tên nhóm sản phẩm
-    for (var product in products) {
-      if (!groupedLatLngs.containsKey(product.categoryName)) {
-        groupedLatLngs[product.categoryName] = [];
-      }
-      groupedLatLngs[product.categoryName]!.add(product.location);
+  Future<void> _loadProducts() async {
+    await databaseData.connect();
+    if (databaseData.connectionFailed) {
+      _showConnectionFailedDialog();
+    } else {
+      await _loadOnlineProducts();
     }
-    
-    // Tạo imageDataList từ groupedLatLngs
-    imageDataList = groupedLatLngs.entries.map((entry) {
-      return ImageData(
-        'lib/src/assets/img/settings/images.png',
-        entry.key,  // Sử dụng tên nhóm làm tiêu đề
-        entry.value,  // Danh sách các LatLng
-      );
-    }).toList();
-  });
+  }
 
-  await databaseData.close();
-}
+  Future<void> _loadOnlineProducts() async {
+    var products = await databaseData.getProducts();
+    _updateProductList(products);
+    await databaseData.close();
+  }
 
+  Future<void> _loadOfflineProducts() async {
+    String jsonString = await rootBundle.loadString('lib/src/assets/offline_products.json');
+    List<dynamic> jsonList = json.decode(jsonString);
+    var products = jsonList.map((json) => ProductData.fromJson(json)).toList();
+    _updateProductList(products);
+  }
 
+  void _updateProductList(List<ProductData> products) {
+    setState(() {
+      Map<String, List<LatLng>> groupedLatLngs = {};
+      for (var product in products) {
+        if (!groupedLatLngs.containsKey(product.categoryName)) {
+          groupedLatLngs[product.categoryName] = [];
+        }
+        groupedLatLngs[product.categoryName]!.add(product.location);
+      }
+      imageDataList = groupedLatLngs.entries.map((entry) {
+        return ImageData(
+          'lib/src/assets/img/settings/images.png',
+          entry.key,
+          entry.value,
+        );
+      }).toList();
+    });
+  }
+
+  Future<void> _showConnectionFailedDialog() async {
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Kết nối thất bại'),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Text('Không thể kết nối đến cơ sở dữ liệu.'),
+                Text('Bạn có muốn sử dụng dữ liệu offline không?'),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: Text('Có'),
+              onPressed: () {
+                Navigator.of(context).pop();
+                setState(() {
+                  isOfflineMode = true;
+                });
+                _loadOfflineProducts();
+              },
+            ),
+            TextButton(
+              child: Text('Không'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   Future<void> _loadGeoJsonData(String path) async {
-  try {
-    // Đọc tệp GeoJSON từ assets
-    final contents = await rootBundle.loadString(path);
+    try {
+      final contents = await rootBundle.loadString(path);
+      final geoJson = GeoJson();
+      await geoJson.parse(contents, verbose: true);
+      List<List<LatLng>> tempPolygonData = [];
 
-    // Phân tích nội dung GeoJSON
-    final geoJson = GeoJson();
-    await geoJson.parse(contents, verbose: true);
-
-    // Khởi tạo danh sách để lưu dữ liệu đa giác
-    List<List<LatLng>> tempPolygonData = [];
-
-    // Lặp qua các đối tượng GeoJSON đã phân tích
-    for (final feature in geoJson.features) {
-      if (feature.geometry is GeoJsonPolygon) {
-        // Xử lý khi đối tượng là một đa giác
-        final polygon = feature.geometry as GeoJsonPolygon;
-        List<LatLng> polygonPoints = [];
-        for (final geoSeries in polygon.geoSeries) {
-          for (final point in geoSeries.geoPoints) {
-            polygonPoints.add(LatLng(point.latitude, point.longitude));
-          }
-        }
-        tempPolygonData.add(polygonPoints);
-      } else if (feature.geometry is GeoJsonMultiPolygon) {
-        // Xử lý khi đối tượng là một nhiều đa giác
-        final multiPolygon = feature.geometry as GeoJsonMultiPolygon;
-        for (final polygon in multiPolygon.polygons) {
+      for (final feature in geoJson.features) {
+        if (feature.geometry is GeoJsonPolygon) {
+          final polygon = feature.geometry as GeoJsonPolygon;
           List<LatLng> polygonPoints = [];
           for (final geoSeries in polygon.geoSeries) {
             for (final point in geoSeries.geoPoints) {
@@ -145,48 +175,54 @@ Future<void> _loadProducts() async {
             }
           }
           tempPolygonData.add(polygonPoints);
+        } else if (feature.geometry is GeoJsonMultiPolygon) {
+          final multiPolygon = feature.geometry as GeoJsonMultiPolygon;
+          for (final polygon in multiPolygon.polygons) {
+            List<LatLng> polygonPoints = [];
+            for (final geoSeries in polygon.geoSeries) {
+              for (final point in geoSeries.geoPoints) {
+                polygonPoints.add(LatLng(point.latitude, point.longitude));
+              }
+            }
+            tempPolygonData.add(polygonPoints);
+          }
         }
       }
-    }
-  // print(tempPolygonData.length);
-    // Cập nhật trạng thái với dữ liệu đa giác
-    setState(() {
-      List<LatLng> data = [];
-      for(final listData in tempPolygonData)
-        // ignore: curly_braces_in_flow_control_structures
-        for(final point in listData) {
-          data.add(point);
+
+      setState(() {
+        List<LatLng> data = [];
+        for(final listData in tempPolygonData) {
+          for(final point in listData) {
+            data.add(point);
+          }
         }
-      polygonData.add(MapData(path, data));
-    });
+        polygonData.add(MapData(path, data));
+      });
 
-    // Đóng GeoJSON để giải phóng bộ nhớ
-    geoJson.dispose();
-  } catch (e) {
-    // ignore: avoid_print
-    print('Error loading GeoJSON data: $e');
+      geoJson.dispose();
+    } catch (e) {
+      print('Error loading GeoJSON data: $e');
+    }
   }
-}
 
-void _location() {
-  setState(() {
-    currentZoom = 9.0; // Or any other default zoom level you prefer
-    mapController.move(mapLat, currentZoom);
-  });
-}
+  void _location() {
+    setState(() {
+      currentZoom = 9.0;
+      mapController.move(mapLat, currentZoom);
+    });
+  }
 
-void _zoomIn() {
-  double zoomFactor = 1.1; // Increase zoom by 10%
-  currentZoom = (mapController.zoom * zoomFactor).clamp(1.0, 18.0);
-  mapController.move(mapController.center, currentZoom);
-}
+  void _zoomIn() {
+    double zoomFactor = 1.1;
+    currentZoom = (mapController.zoom * zoomFactor).clamp(1.0, 18.0);
+    mapController.move(mapController.center, currentZoom);
+  }
 
-void _zoomOut() {
-  double zoomFactor = 0.9; // Decrease zoom by 20%
-  currentZoom = (mapController.zoom * zoomFactor).clamp(1.0, 18.0);
-  mapController.move(mapController.center, currentZoom);
-}
-
+  void _zoomOut() {
+    double zoomFactor = 0.9;
+    currentZoom = (mapController.zoom * zoomFactor).clamp(1.0, 18.0);
+    mapController.move(mapController.center, currentZoom);
+  }
 
   void _changeMapSource(int mapValue) {
     setState(() {
@@ -240,6 +276,7 @@ void _zoomOut() {
             options: MapOptions(
               center: mapLat,
               zoom: currentZoom,
+              interactiveFlags: InteractiveFlag.all & ~InteractiveFlag.rotate,
             ),
             nonRotatedChildren: [
               TileLayer(
@@ -250,12 +287,9 @@ void _zoomOut() {
                 polygons: List.generate(polygonData.length, (index) {
                   if (polygonData[index].getCheck()) {
                     final polygonPoints = polygonData[index].getMapData();
-
-                    // Sử dụng màu theo đúng thứ tự, không lặp lại
                     final color = index < orderedColors.length 
                         ? orderedColors[index] 
-                        : Colors.grey; // Màu mặc định nếu hết màu trong danh sách
-                    
+                        : Colors.grey;
                     return Polygon(
                       points: polygonPoints,
                       color: color.withOpacity(0.3),
@@ -275,7 +309,7 @@ void _zoomOut() {
               ),
               MarkerMap(
                 imageDataList: imageDataList,
-                ),
+              ),
             ],
           ),
           Positioned(
@@ -285,7 +319,7 @@ void _zoomOut() {
               children: [
                 FloatingActionButton(
                   onPressed: _location,
-                  heroTag: "zoomIn",
+                  heroTag: "location",
                   child: const Icon(Icons.location_on),
                 ),
                 const SizedBox(height: 10),

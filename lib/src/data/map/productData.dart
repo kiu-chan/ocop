@@ -16,4 +16,15 @@ class ProductData {
     required this.categoryName,
     required this.rating,
   });
+
+  factory ProductData.fromJson(Map<String, dynamic> json) {
+    return ProductData(
+      id: json['id'],
+      location: LatLng(json['location']['latitude'], json['location']['longitude']),
+      name: json['name'],
+      address: json['address'],
+      categoryName: json['categoryName'],
+      rating: json['rating'],
+    );
+  }
 }

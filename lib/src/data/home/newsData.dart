@@ -1,6 +1,19 @@
-class News {
-  final String name;
-  final String news;
+import 'package:intl/intl.dart';
 
-  News({required this.name, required this.news});
+class News {
+  final int id;
+  final String title;
+  final DateTime publishedAt;
+  String? content;
+
+  News({
+    required this.id, 
+    required this.title, 
+    required this.publishedAt,
+    this.content
+  });
+
+  String get formattedDate {
+    return DateFormat('dd/MM/yyyy').format(publishedAt);
+  }
 }

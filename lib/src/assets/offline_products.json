@@ -1,0 +1,18 @@
+[
+    {
+      "id": 1,
+      "location": {"latitude": 10.2417, "longitude": 106.3748},
+      "name": "Sản phẩm 1",
+      "address": "Địa chỉ 1",
+      "categoryName": "Thực phẩm",
+      "rating": 4
+    },
+    {
+      "id": 2,
+      "location": {"latitude": 10.2517, "longitude": 106.3848},
+      "name": "Sản phẩm 2",
+      "address": "Địa chỉ 2",
+      "categoryName": "Đồ uống",
+      "rating": 5
+    }
+  ]

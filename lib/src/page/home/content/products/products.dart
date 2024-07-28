@@ -64,11 +64,11 @@ class _ProductListState extends State<ProductList> {
                     MaterialPageRoute(builder: (context) => const ProductsList()),
                   );
                 },
-                child: const Text(
-                  "All",
+                child: Text(
+                  "Xem tất cả",
                   style: TextStyle(
+                    color: Colors.blue,
                     fontWeight: FontWeight.bold,
-                    fontSize: 20
                   ),
                 ),
               ),

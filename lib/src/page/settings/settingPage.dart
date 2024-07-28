@@ -13,21 +13,23 @@ class _SettingPageState extends State<SettingPage> {
   @override
   Widget build(BuildContext context) {
     return const Scaffold(
-      body: Column(
-        mainAxisAlignment: MainAxisAlignment.start,
-        children: [
-          SizedBox(
-            height: 200, 
-            child: Profile()
-            ),
-          FractionallySizedBox(
-            widthFactor: 0.8,
-            child: SizedBox(
-              height: 300,
-              child: Options(),
-            ),
-          )
-        ],
+      body: SingleChildScrollView(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            SizedBox(
+              height: 200, 
+              child: Profile()
+              ),
+            FractionallySizedBox(
+              widthFactor: 0.8,
+              child: SizedBox(
+                height: 300,
+                child: Options(),
+              ),
+            )
+          ],
+        ),
       ),
     );
   }
