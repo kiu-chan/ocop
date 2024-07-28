@@ -155,12 +155,12 @@ class _RegisterPageState extends State<RegisterPage> {
             _selectedCommuneId = value;
           });
         },
-        decoration: InputDecoration(
+        decoration: const InputDecoration(
           labelText: 'Chọn xã',
-          enabledBorder: const UnderlineInputBorder(
+          enabledBorder: UnderlineInputBorder(
             borderSide: BorderSide(color: Colors.grey),
           ),
-          focusedBorder: const UnderlineInputBorder(
+          focusedBorder: UnderlineInputBorder(
             borderSide: BorderSide(color: Colors.blue),
           ),
         ),
@@ -175,7 +175,7 @@ class _RegisterPageState extends State<RegisterPage> {
           : () {
               if (_selectedCommuneId == null) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('Vui lòng chọn xã')),
+                  const SnackBar(content: Text('Vui lòng chọn xã')),
                 );
                 return;
               }
@@ -204,7 +204,7 @@ class _RegisterPageState extends State<RegisterPage> {
       onTap: () {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => LoginPage()),
+          MaterialPageRoute(builder: (context) => const LoginPage()),
         );
       },
       child: const Text(

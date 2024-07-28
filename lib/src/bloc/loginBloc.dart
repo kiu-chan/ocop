@@ -2,9 +2,9 @@ import 'dart:async';
 import 'package:ocop/src/validations/validations.dart';
 
 class LoginBloc {
-  StreamController _userController = new StreamController();
-  StreamController _passController = new StreamController();
-  StreamController _passController2 = new StreamController();
+  final StreamController _userController = StreamController();
+  final StreamController _passController = StreamController();
+  final StreamController _passController2 = StreamController();
 
   Stream get userStream => _userController.stream;
   Stream get passStream => _passController.stream;
@@ -26,7 +26,7 @@ class LoginBloc {
     return true;
   }
 
-  bool isValidNewInfo(String username, String password, String check_pass) {
+  bool isValidNewInfo(String username, String password, String checkPass) {
     if (!Validations.isValidUser(username)) {
       _userController.sink.addError("Tài khoản không hợp lệ");
       return false;
@@ -39,7 +39,7 @@ class LoginBloc {
     }
     _passController.sink.add("ok");
 
-    if (!Validations.isValidPassword2(password, check_pass)) {
+    if (!Validations.isValidPassword2(password, checkPass)) {
       _passController2.sink.addError("Mật khẩu không đúng");
       return false;
     }

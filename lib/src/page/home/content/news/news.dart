@@ -5,7 +5,7 @@ import '../../../home/content/news/elements/allNews.dart';
 import 'package:ocop/src/page/home/content/news/elements/newsContent.dart';
 
 class NewsList extends StatefulWidget {
-  NewsList({Key? key}) : super(key: key);
+  const NewsList({super.key});
 
   @override
   _NewsListState createState() => _NewsListState();
@@ -45,7 +45,7 @@ class _NewsListState extends State<NewsList> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
+              const Text(
                 "Tin tức",
                 style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24),
               ),
@@ -53,10 +53,10 @@ class _NewsListState extends State<NewsList> {
                 onTap: () {
                   Navigator.push(
                     context,
-                    MaterialPageRoute(builder: (context) => AllNews()),
+                    MaterialPageRoute(builder: (context) => const AllNews()),
                   );
                 },
-                child: Text(
+                child: const Text(
                   "Xem tất cả",
                   style: TextStyle(
                     color: Colors.blue,
@@ -68,8 +68,8 @@ class _NewsListState extends State<NewsList> {
           ),
         ),
         isLoading
-            ? Center(child: CircularProgressIndicator())
-            : Container(
+            ? const Center(child: CircularProgressIndicator())
+            : SizedBox(
                 height: 600,  // Tăng chiều cao để chứa nhiều tin hơn
                 child: ListView.builder(
                   itemCount: news.length,
@@ -86,12 +86,12 @@ class _NewsListState extends State<NewsList> {
 class NewsCard extends StatelessWidget {
   final News news;
 
-  const NewsCard({Key? key, required this.news}) : super(key: key);
+  const NewsCard({super.key, required this.news});
 
   @override
   Widget build(BuildContext context) {
     return Card(
-      margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       elevation: 4,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(10),
@@ -109,7 +109,7 @@ class NewsCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
             ClipRRect(
-              borderRadius: BorderRadius.only(
+              borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(10),
                 bottomLeft: Radius.circular(10),
               ),
@@ -128,14 +128,14 @@ class NewsCard extends StatelessWidget {
                   children: [
                     Text(
                       news.title,
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    SizedBox(height: 8),
+                    const SizedBox(height: 8),
                     Text(
                       news.formattedDate,
-                      style: TextStyle(color: Colors.grey, fontSize: 12),
+                      style: const TextStyle(color: Colors.grey, fontSize: 12),
                     ),
                   ],
                 ),

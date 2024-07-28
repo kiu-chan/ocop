@@ -16,7 +16,7 @@ class _ContentState extends State<Content> {
       body: Column(
         children: [
           const Text("data"),
-          ProductList(),
+          const ProductList(),
           // Thêm các thành phần khác vào sau ListView nằm ngang
           Container(
             height: 100.0,

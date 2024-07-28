@@ -4,7 +4,7 @@ import 'package:ocop/mainData/database/databases.dart';
 import 'package:ocop/src/page/home/content/news/elements/newsContent.dart';
 
 class AllNews extends StatefulWidget {
-  const AllNews({Key? key}) : super(key: key);
+  const AllNews({super.key});
 
   @override
   _AllNewsState createState() => _AllNewsState();
@@ -15,7 +15,7 @@ class _AllNewsState extends State<AllNews> {
   List<News> filteredNews = [];
   bool isLoading = true;
   TextEditingController searchController = TextEditingController();
-  ScrollController _scrollController = ScrollController();
+  final ScrollController _scrollController = ScrollController();
   int _currentPage = 1;
   bool _hasMoreNews = true;
   static const int _newsPerPage = 10;
@@ -77,7 +77,7 @@ class _AllNewsState extends State<AllNews> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Tất cả tin tức'),
+        title: const Text('Tất cả tin tức'),
       ),
       body: Column(
         children: [
@@ -87,7 +87,7 @@ class _AllNewsState extends State<AllNews> {
               controller: searchController,
               decoration: InputDecoration(
                 labelText: 'Tìm kiếm tin tức',
-                suffixIcon: Icon(Icons.search),
+                suffixIcon: const Icon(Icons.search),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10.0),
                 ),
@@ -97,7 +97,7 @@ class _AllNewsState extends State<AllNews> {
           ),
           Expanded(
             child: isLoading && allNews.isEmpty
-                ? Center(child: CircularProgressIndicator())
+                ? const Center(child: CircularProgressIndicator())
                 : ListView.builder(
                     controller: _scrollController,
                     itemCount: filteredNews.length + (_hasMoreNews ? 1 : 0),
@@ -105,9 +105,9 @@ class _AllNewsState extends State<AllNews> {
                       if (index < filteredNews.length) {
                         return NewsCard(news: filteredNews[index]);
                       } else if (_hasMoreNews) {
-                        return Center(child: CircularProgressIndicator());
+                        return const Center(child: CircularProgressIndicator());
                       } else {
-                        return SizedBox();
+                        return const SizedBox();
                       }
                     },
                   ),
@@ -128,12 +128,12 @@ class _AllNewsState extends State<AllNews> {
 class NewsCard extends StatelessWidget {
   final News news;
 
-  const NewsCard({Key? key, required this.news}) : super(key: key);
+  const NewsCard({super.key, required this.news});
 
   @override
   Widget build(BuildContext context) {
     return Card(
-      margin: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       elevation: 4,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(10),
@@ -151,7 +151,7 @@ class NewsCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
             ClipRRect(
-              borderRadius: BorderRadius.only(
+              borderRadius: const BorderRadius.only(
                 topLeft: Radius.circular(10),
                 bottomLeft: Radius.circular(10),
               ),
@@ -170,14 +170,14 @@ class NewsCard extends StatelessWidget {
                   children: [
                     Text(
                       news.title,
-                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    SizedBox(height: 8),
+                    const SizedBox(height: 8),
                     Text(
                       news.formattedDate,
-                      style: TextStyle(color: Colors.grey, fontSize: 12),
+                      style: const TextStyle(color: Colors.grey, fontSize: 12),
                     ),
                   ],
                 ),

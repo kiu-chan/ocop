@@ -126,8 +126,8 @@ class _MapPageState extends State<MapPage> {
       barrierDismissible: false,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Kết nối thất bại'),
-          content: SingleChildScrollView(
+          title: const Text('Kết nối thất bại'),
+          content: const SingleChildScrollView(
             child: ListBody(
               children: <Widget>[
                 Text('Không thể kết nối đến cơ sở dữ liệu.'),
@@ -137,7 +137,7 @@ class _MapPageState extends State<MapPage> {
           ),
           actions: <Widget>[
             TextButton(
-              child: Text('Có'),
+              child: const Text('Có'),
               onPressed: () {
                 Navigator.of(context).pop();
                 setState(() {
@@ -147,7 +147,7 @@ class _MapPageState extends State<MapPage> {
               },
             ),
             TextButton(
-              child: Text('Không'),
+              child: const Text('Không'),
               onPressed: () {
                 Navigator.of(context).pop();
               },

@@ -13,14 +13,14 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return const Scaffold(
       body: SingleChildScrollView(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
-            const SizedBox(height: 30),
-            const Logo(),
-            const SizedBox(height: 10),
+            SizedBox(height: 30),
+            Logo(),
+            SizedBox(height: 10),
             ProductList(),
             NewsList(),
           ],

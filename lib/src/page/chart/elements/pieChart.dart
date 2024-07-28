@@ -158,11 +158,11 @@ String _buildTruncatedText(String text) {
         return AppColors.contentColorBlue;
       case 5:
         return AppColors.contentColorBlue2;
-      case 5:
-        return AppColors.contentColorPink;
       case 6:
-        return AppColors.contentColorRed2;
+        return AppColors.contentColorPink;
       case 7:
+        return AppColors.contentColorRed2;
+      case 8:
         return AppColors.contentColorPurple2;
       default:
         return Colors.grey; // Thêm màu nếu cần

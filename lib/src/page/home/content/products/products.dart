@@ -2,12 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:ocop/mainData/database/databases.dart';
 import 'package:ocop/src/data/home/productData.dart';
 import 'package:ocop/src/page/home/content/products/elements/productCard.dart';
-import 'package:ocop/src/page/home/content/products/elements/productsList.dart'; // Thêm import này
-import 'package:latlong2/latlong.dart';
+import 'package:ocop/src/page/home/content/products/elements/productsList.dart';
 
 
 class ProductList extends StatefulWidget {
-  const ProductList({Key? key}) : super(key: key);
+  const ProductList({super.key});
 
   @override
   _ProductListState createState() => _ProductListState();
@@ -64,7 +63,7 @@ class _ProductListState extends State<ProductList> {
                     MaterialPageRoute(builder: (context) => const ProductsList()),
                   );
                 },
-                child: Text(
+                child: const Text(
                   "Xem tất cả",
                   style: TextStyle(
                     color: Colors.blue,

@@ -7,10 +7,9 @@ import 'package:ocop/src/page/home/home.dart';
 import 'package:ocop/src/bloc/login/login_bloc.dart';
 import 'package:ocop/src/bloc/login/login_event.dart';
 import 'package:ocop/src/bloc/login/login_state.dart';
-import 'package:ocop/mainData/user/authService.dart';
 
 class LoginPage extends StatelessWidget {
-  const LoginPage({Key? key}) : super(key: key);
+  const LoginPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -26,7 +25,7 @@ class LoginPage extends StatelessWidget {
 }
 
 class LoginPageContent extends StatelessWidget {
-  const LoginPageContent({Key? key}) : super(key: key);
+  const LoginPageContent({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -183,7 +182,7 @@ class LoginPageContent extends StatelessWidget {
       onTap: () {
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (context) => RegisterPage()),
+          MaterialPageRoute(builder: (context) => const RegisterPage()),
         );
       },
       child: const Text(

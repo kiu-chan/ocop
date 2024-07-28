@@ -5,7 +5,7 @@ import 'package:ocop/src/page/home/content/news/elements/newsContent.dart';
 class NewsCard extends StatelessWidget {
   final News news;
 
-  const NewsCard({Key? key, required this.news}) : super(key: key);
+  const NewsCard({super.key, required this.news});
 
   @override
   Widget build(BuildContext context) {

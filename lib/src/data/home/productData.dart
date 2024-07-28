@@ -1,7 +1,5 @@
-import 'package:latlong2/latlong.dart';
-
 class Product {
-  final int id;  // Thêm trường id
+  final int id;
   final String name;
   final int star;
   final String category;
@@ -9,7 +7,7 @@ class Product {
   String? describe = "";
 
   Product({
-    required this.id,  // Thêm id vào constructor
+    required this.id,
     required this.name,
     required this.star,
     required this.category,

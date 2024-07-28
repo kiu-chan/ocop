@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:ocop/mainData/database/databases.dart';
 import 'package:ocop/src/data/home/productData.dart';
-import 'package:ocop/src/page/home/content/products/elements/productCard.dart';import 'package:latlong2/latlong.dart';
+import 'package:ocop/src/page/home/content/products/elements/productCard.dart';
 
 
 class ProductsList extends StatefulWidget {
-  const ProductsList({Key? key}) : super(key: key);
+  const ProductsList({super.key});
 
   @override
   _ProductsListState createState() => _ProductsListState();
@@ -109,7 +109,7 @@ allProducts = products.map((product) => Product(
           Builder(
             builder: (BuildContext context) {
               return IconButton(
-                icon: Icon(Icons.search),
+                icon: const Icon(Icons.search),
                 onPressed: () {
                   Scaffold.of(context).openEndDrawer();
                 },
@@ -128,7 +128,7 @@ allProducts = products.map((product) => Product(
                   controller: searchController,
                   decoration: InputDecoration(
                     labelText: 'Tìm kiếm sản phẩm',
-                    prefixIcon: Icon(Icons.search),
+                    prefixIcon: const Icon(Icons.search),
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
                     ),
@@ -136,13 +136,13 @@ allProducts = products.map((product) => Product(
                   onChanged: (value) => filterProducts(),
                 ),
               ),
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0),
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 8.0),
                 child: Text('Lọc theo số sao:', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
               ),
               buildStarFilter(),
-              Padding(
-                padding: const EdgeInsets.symmetric(vertical: 8.0),
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 8.0),
                 child: Text('Lọc theo danh mục:', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
               ),
               buildCategoryFilter(),
@@ -155,7 +155,7 @@ allProducts = products.map((product) => Product(
                     filterProducts();
                   });
                 },
-                child: Text('Xóa bộ lọc'),
+                child: const Text('Xóa bộ lọc'),
               ),
             ],
           ),
@@ -167,7 +167,7 @@ allProducts = products.map((product) => Product(
             padding: const EdgeInsets.all(8.0),
             child: Text(
               'Hiển thị ${displayedProducts.length} sản phẩm',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
             ),
           ),
           Expanded(

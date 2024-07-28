@@ -1,5 +1,3 @@
-import 'package:flutter/material.dart';
-
 class ChartData {
   final String name;
   final String title;

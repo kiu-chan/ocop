@@ -5,7 +5,7 @@ import 'package:ocop/src/data/chart/chartData.dart';
 class BarChartSample extends StatefulWidget {
   final ChartData chartData;
   
-  BarChartSample({
+  const BarChartSample({super.key, 
     required this.chartData,
   });
   
@@ -28,7 +28,6 @@ class _BarChartSampleState extends State<BarChartSample> {
     
     final barGroups = titles.asMap().entries.map((entry) {
       final index = entry.key;
-      final title = entry.value;
       final value = values[index];
       
       return BarChartGroupData(
@@ -79,13 +78,13 @@ class _BarChartSampleState extends State<BarChartSample> {
                         axisSide: meta.axisSide,
                         child: Text(
                           _truncateString(titles[index], 10),
-                          style: TextStyle(fontSize: 10),
+                          style: const TextStyle(fontSize: 10),
                         ),
                       );
                     }
                     return SideTitleWidget(
                       axisSide: meta.axisSide,
-                      child: Text(''),
+                      child: const Text(''),
                     );
                   },
                 ),

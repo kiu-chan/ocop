@@ -8,7 +8,7 @@ import 'package:intl/intl.dart';
 class NewContent extends StatefulWidget {
   final News news;
 
-  const NewContent({Key? key, required this.news}) : super(key: key);
+  const NewContent({super.key, required this.news});
 
   @override
   _NewContentState createState() => _NewContentState();
@@ -55,7 +55,7 @@ class _NewContentState extends State<NewContent> {
         title: Text(widget.news.title),
       ),
       body: isLoading
-          ? Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -75,26 +75,26 @@ class _NewContentState extends State<NewContent> {
                       children: [
                         Text(
                           widget.news.title,
-                          style: TextStyle(
+                          style: const TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 24,
                           ),
                         ),
-                        SizedBox(height: 8),
+                        const SizedBox(height: 8),
                         Text(
                           'Ngày đăng: ${_formatDate(widget.news.publishedAt)}',
-                          style: TextStyle(
+                          style: const TextStyle(
                             color: Colors.grey,
                             fontSize: 14,
                           ),
                         ),
-                        SizedBox(height: 16),
+                        const SizedBox(height: 16),
                         Html(
                           data: widget.news.content,
                           style: {
                             "body": Style(
                               fontSize: FontSize(16),
-                              lineHeight: LineHeight(1.5),
+                              lineHeight: const LineHeight(1.5),
                             ),
                           },
                         ),

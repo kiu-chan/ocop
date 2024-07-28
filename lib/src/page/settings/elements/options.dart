@@ -42,7 +42,6 @@ class Options extends StatelessWidget {
       ),
       child: InkWell(
         onTap: () {
-          // TODO: Implement profile page navigation
         },
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
