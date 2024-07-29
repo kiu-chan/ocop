@@ -10,9 +10,10 @@ import 'package:ocop/src/data/map/MapData.dart';
 import 'package:ocop/src/page/map/elements/MarkerMap.dart';
 import 'package:ocop/mainData/database/databases.dart';
 import 'package:ocop/src/data/map/productData.dart';
+import 'package:ocop/src/data/map/companiesData.dart';
 
 class MapPage extends StatefulWidget {
-  const MapPage({super.key});
+  const MapPage({Key? key}) : super(key: key);
 
   @override
   _MapPageState createState() => _MapPageState();
@@ -22,7 +23,10 @@ class _MapPageState extends State<MapPage> {
   final MapController mapController = MapController();
 
   late DefaultDatabaseOptions databaseData;
-  List<Map<String, dynamic>> products = [];
+  List<ProductData> products = [];
+  List<CompanyData> companies = [];
+  List<CompanyData> filteredCompanies = [];
+  Set<String> selectedProductTypes = Set<String>();
 
   LatLng parseLatLng(String input) {
     final pointStart = input.indexOf('POINT(') + 'POINT('.length;
@@ -46,9 +50,7 @@ class _MapPageState extends State<MapPage> {
   String mapUrl = "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
   final String namePackage = "com.example.app";
 
-  // final LatLng mapLat = LatLng(22.406276, 105.624405);  //Tọa độ Ba bể
   final LatLng mapLat = LatLng(10.2417, 106.3748);  //Tọa độ mặc định
-
   final LatLng mapLatFinal = LatLng(10.2417, 106.3748);  //Tọa độ mặc định
 
   List<ImageData> imageDataList = [];
@@ -76,33 +78,38 @@ class _MapPageState extends State<MapPage> {
   void initState() {
     super.initState();
     databaseData = DefaultDatabaseOptions();
-    _loadProducts();
+    _loadData();
   }
 
-  Future<void> _loadProducts() async {
+  Future<void> _loadData() async {
     await databaseData.connect();
     if (databaseData.connectionFailed) {
       _showConnectionFailedDialog();
     } else {
-      await _loadOnlineProducts();
+      await _loadOnlineData();
     }
   }
 
-  Future<void> _loadOnlineProducts() async {
-    var products = await databaseData.getProducts();
-    _updateProductList(products);
+  Future<void> _loadOnlineData() async {
+    var productsData = await databaseData.getProducts();
+    var companiesData = await databaseData.getCompanies();
+    _updateProductList(productsData);
+    _updateCompanyList(companiesData);
     await databaseData.close();
   }
 
-  Future<void> _loadOfflineProducts() async {
+  Future<void> _loadOfflineData() async {
     String jsonString = await rootBundle.loadString('lib/src/assets/offline_products.json');
     List<dynamic> jsonList = json.decode(jsonString);
-    var products = jsonList.map((json) => ProductData.fromJson(json)).toList();
-    _updateProductList(products);
+    var productsData = jsonList.map((json) => ProductData.fromJson(json)).toList();
+    _updateProductList(productsData);
+    // Load offline company data if available
+    // _updateCompanyList(offlineCompaniesData);
   }
 
-  void _updateProductList(List<ProductData> products) {
+  void _updateProductList(List<ProductData> productsData) {
     setState(() {
+      products = productsData;
       Map<String, List<LatLng>> groupedLatLngs = {};
       for (var product in products) {
         if (!groupedLatLngs.containsKey(product.categoryName)) {
@@ -117,6 +124,13 @@ class _MapPageState extends State<MapPage> {
           entry.value,
         );
       }).toList();
+    });
+  }
+
+  void _updateCompanyList(List<CompanyData> companiesData) {
+    setState(() {
+      companies = companiesData;
+      filteredCompanies = []; // Initially, no companies are shown
     });
   }
 
@@ -143,7 +157,7 @@ class _MapPageState extends State<MapPage> {
                 setState(() {
                   isOfflineMode = true;
                 });
-                _loadOfflineProducts();
+                _loadOfflineData();
               },
             ),
             TextButton(
@@ -243,6 +257,18 @@ class _MapPageState extends State<MapPage> {
     });
   }
 
+  void _filterCompanies(List<String> selectedTypes) {
+    setState(() {
+      selectedProductTypes = Set<String>.from(selectedTypes);
+      if (selectedTypes.isEmpty) {
+        filteredCompanies = [];
+      } else {
+        filteredCompanies = companies.where((company) => 
+          selectedTypes.contains(company.productTypeName)).toList();
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -266,8 +292,11 @@ class _MapPageState extends State<MapPage> {
         onClickMap: _changeMapSource,
         onClickImgData: _setStateProduct,
         imageDataList: imageDataList,
+        companyDataList: companies,
         polygonData: polygonData,
         onClickMapData: _setPolygonData,
+        onFilterCompanies: _filterCompanies,
+        selectedProductTypes: selectedProductTypes,
       ),
       body: Stack(
         children: [
@@ -309,6 +338,7 @@ class _MapPageState extends State<MapPage> {
               ),
               MarkerMap(
                 imageDataList: imageDataList,
+                companies: filteredCompanies,
               ),
             ],
           ),

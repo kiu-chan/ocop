@@ -1,14 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:ocop/src/data/map/ImageData.dart';
+import 'package:ocop/src/data/map/companiesData.dart';
 
 class MarkerMap extends StatelessWidget {
   final List<ImageData> imageDataList;
-  const MarkerMap({super.key, required this.imageDataList});
+  final List<CompanyData> companies;
+  
+  const MarkerMap({
+    Key? key, 
+    required this.imageDataList, 
+    required this.companies
+  }) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return MarkerLayer(
-      markers: _buildMarkers(),
+      markers: _buildMarkers() + _buildCompanyMarkers(),
     );
   }
 
@@ -38,8 +47,8 @@ class MarkerMap extends StatelessWidget {
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
                     border: Border.all(
-                      color: Colors.black,  // Màu viền
-                      width: 1.0,  // Độ dày viền
+                      color: Colors.black,
+                      width: 1.0,
                     ),
                     image: DecorationImage(
                       image: AssetImage(imageData.imagePath),
@@ -55,4 +64,42 @@ class MarkerMap extends StatelessWidget {
     }
     return markers;
   }
+
+  List<Marker> _buildCompanyMarkers() {
+    return companies.map((company) {
+      return Marker(
+        width: 50.0,
+        height: 50.0,
+        point: company.location,
+        builder: (ctx) => GestureDetector(
+          onTap: () {
+            showDialog(
+              context: ctx,
+              builder: (BuildContext context) {
+                return AlertDialog(
+                  title: Text(company.name),
+                  content: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('Loại sản phẩm: ${company.productTypeName}'),
+                      Text('Vị trí: ${company.location.latitude}, ${company.location.longitude}'),
+                    ],
+                  ),
+                );
+              },
+            );
+          },
+          child: Container(
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color: Colors.blue,
+              border: Border.all(color: Colors.white, width: 2),
+            ),
+            child: Icon(Icons.business, color: Colors.white, size: 30),
+          ),
+        ),
+      );
+    }).toList();
   }
+}
