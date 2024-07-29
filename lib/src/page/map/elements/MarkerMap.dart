@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
-import 'package:latlong2/latlong.dart';
 import 'package:ocop/src/data/map/ImageData.dart';
 import 'package:ocop/src/data/map/companiesData.dart';
 
@@ -9,10 +8,10 @@ class MarkerMap extends StatelessWidget {
   final List<CompanyData> companies;
   
   const MarkerMap({
-    Key? key, 
+    super.key, 
     required this.imageDataList, 
     required this.companies
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -96,7 +95,7 @@ class MarkerMap extends StatelessWidget {
               color: Colors.blue,
               border: Border.all(color: Colors.white, width: 2),
             ),
-            child: Icon(Icons.business, color: Colors.white, size: 30),
+            child: const Icon(Icons.business, color: Colors.white, size: 30),
           ),
         ),
       );
