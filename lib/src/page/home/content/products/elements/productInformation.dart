@@ -8,7 +8,7 @@ import 'package:html/parser.dart' show parse;
 class ProductInformation extends StatefulWidget {
   final ProductHome product;
 
-  const ProductInformation({Key? key, required this.product}) : super(key: key);
+  const ProductInformation({super.key, required this.product});
 
   @override
   _ProductInformationState createState() => _ProductInformationState();
@@ -32,22 +32,24 @@ class _ProductInformationState extends State<ProductInformation> {
     super.dispose();
   }
 
-  Future<void> _loadProductDetails() async {
-    setState(() {
-      isLoading = true;
-    });
-    await db.connect();
-    final content = await db.getProductContent(widget.product.id);
-    final images = await db.getProductImages(widget.product.id);
-    setState(() {
-      if (content != null) {
-        widget.product.describe = _convertHtmlToPlainText(content);
-      }
-      widget.product.imageUrls = images;
-      isLoading = false;
-    });
-    await db.close();
-  }
+Future<void> _loadProductDetails() async {
+  setState(() {
+    isLoading = true;
+  });
+  await db.connect();
+  final content = await db.getProductContent(widget.product.id);
+  final images = await db.getProductImages(widget.product.id);
+  final address = await db.getProductAddress(widget.product.id);
+  setState(() {
+    if (content != null) {
+      widget.product.describe = _convertHtmlToPlainText(content);
+    }
+    widget.product.imageUrls = images;
+    widget.product.address = address ?? 'Không có thông tin';
+    isLoading = false;
+  });
+  await db.close();
+}
 
   String _convertHtmlToPlainText(String htmlString) {
     final document = parse(htmlString);
@@ -62,7 +64,7 @@ class _ProductInformationState extends State<ProductInformation> {
         title: Text(widget.product.name),
       ),
       body: isLoading
-          ? Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator())
           : ListView(
               children: <Widget>[
                 AspectRatio(
@@ -99,7 +101,7 @@ class _ProductInformationState extends State<ProductInformation> {
                 if (widget.product.imageUrls.isNotEmpty)
                   Container(
                     height: 80,
-                    margin: EdgeInsets.symmetric(vertical: 10),
+                    margin: const EdgeInsets.symmetric(vertical: 10),
                     child: ListView.builder(
                       scrollDirection: Axis.horizontal,
                       itemCount: widget.product.imageUrls.length,
@@ -108,14 +110,14 @@ class _ProductInformationState extends State<ProductInformation> {
                           onTap: () {
                             _pageController.animateToPage(
                               index,
-                              duration: Duration(milliseconds: 300),
+                              duration: const Duration(milliseconds: 300),
                               curve: Curves.easeInOut,
                             );
                           },
                           child: Container(
                             width: 80,
                             height: 80,
-                            margin: EdgeInsets.symmetric(horizontal: 4),
+                            margin: const EdgeInsets.symmetric(horizontal: 4),
                             decoration: BoxDecoration(
                               border: Border.all(
                                 color: currentImageIndex == index ? Colors.blue : Colors.grey,
@@ -142,7 +144,7 @@ class _ProductInformationState extends State<ProductInformation> {
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
                   child: Text(
                     widget.product.name,
-                    style: TextStyle(
+                    style: const TextStyle(
                       fontWeight: FontWeight.bold,
                       fontSize: 24,
                     ),
@@ -164,7 +166,7 @@ class _ProductInformationState extends State<ProductInformation> {
                     children: <Widget>[
                       Text(
                         "Tên sản phẩm: ${widget.product.name}",
-                        style: TextStyle(
+                        style: const TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
                         ),
@@ -172,7 +174,7 @@ class _ProductInformationState extends State<ProductInformation> {
                       const SizedBox(height: 8),
                       Row(
                         children: [
-                          Text(
+                          const Text(
                             "Số sao đạt:",
                             style: TextStyle(
                               color: Colors.white,
@@ -185,7 +187,15 @@ class _ProductInformationState extends State<ProductInformation> {
                       const SizedBox(height: 8),
                       Text(
                         "Danh mục: ${widget.product.category}",
-                        style: TextStyle(
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        "Địa chỉ: ${widget.product.address}",
+                        style: const TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.bold,
                         ),
@@ -194,8 +204,8 @@ class _ProductInformationState extends State<ProductInformation> {
                   ),
                 ),
                 const SizedBox(height: 20),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                const Padding(
+                  padding: EdgeInsets.symmetric(horizontal: 16.0),
                   child: Center(
                     child: Text(
                       "Câu chuyện sản phẩm",
@@ -211,10 +221,10 @@ class _ProductInformationState extends State<ProductInformation> {
                   padding: const EdgeInsets.all(16.0),
                   child: widget.product.describe != null && widget.product.describe!.isNotEmpty
                       ? Text(widget.product.describe!)
-                      : Text('Không có mô tả cho sản phẩm này.'),
+                      : const Text('Không có mô tả cho sản phẩm này.'),
                 ),
                 const SizedBox(height: 20),
-                Center(child: Logo()),
+                const Center(child: Logo()),
               ],
             ),
     );

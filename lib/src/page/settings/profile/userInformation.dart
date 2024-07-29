@@ -10,7 +10,7 @@ class UserInformation extends StatelessWidget {
       appBar: AppBar(
         title: const Text("Profile"),
       ),
-      body: Row(
+      body: const Row(
         children: [
           Text("fuwgfuw")
       ],)

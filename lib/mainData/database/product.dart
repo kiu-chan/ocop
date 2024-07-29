@@ -334,4 +334,37 @@ Future<List<String>> getProductImages(int productId) async {
   }
 }
 
+Future<String?> getProductAddress(int productId) async {
+  try {
+    final result = await connection.query('''
+      SELECT p.address, mc.name as commune_name, md.name as district_name
+      FROM public.products p
+      LEFT JOIN public.map_communes mc ON p.commune_id = mc.id
+      LEFT JOIN public.map_districts md ON mc.district_id = md.id
+      WHERE p.id = @id
+    ''', substitutionValues: {
+      'id': productId,
+    });
+
+    if (result.isNotEmpty) {
+      String? address = result[0][0] as String?;
+      String? communeName = result[0][1] as String?;
+      String? districtName = result[0][2] as String?;
+      
+      List<String> addressParts = [];
+      if (address != null && address.isNotEmpty) addressParts.add(address);
+      if (communeName != null) addressParts.add(communeName);
+      if (districtName != null) addressParts.add(districtName);
+      
+      if (addressParts.isNotEmpty) {
+        return addressParts.join(', ');
+      }
+    }
+    return null;
+  } catch (e) {
+    print('Lỗi khi truy vấn địa chỉ sản phẩm: $e');
+    return null;
+  }
+}
+
 }

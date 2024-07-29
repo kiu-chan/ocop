@@ -13,7 +13,7 @@ import 'package:ocop/src/data/map/productMapData.dart';
 import 'package:ocop/src/data/map/companiesData.dart';
 
 class MapPage extends StatefulWidget {
-  const MapPage({Key? key}) : super(key: key);
+  const MapPage({super.key});
 
   @override
   _MapPageState createState() => _MapPageState();
@@ -26,7 +26,7 @@ class _MapPageState extends State<MapPage> {
   List<ProductData> products = [];
   List<CompanyData> companies = [];
   List<CompanyData> filteredCompanies = [];
-  Set<String> selectedProductTypes = Set<String>();
+  Set<String> selectedProductTypes = <String>{};
 
   LatLng parseLatLng(String input) {
     final pointStart = input.indexOf('POINT(') + 'POINT('.length;

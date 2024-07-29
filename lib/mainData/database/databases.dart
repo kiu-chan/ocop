@@ -82,9 +82,13 @@ class DefaultDatabaseOptions {
     return await productDatabase.getProductContent(productId);
   }
 
-Future<List<String>> getProductImages(int productId) async {
+  Future<List<String>> getProductImages(int productId) async {
     return await productDatabase.getProductImages(productId);
   }
+
+  Future<String?> getProductAddress(int productId) async {
+  return await productDatabase.getProductAddress(productId);
+}
 
   Future<List<Map<String, dynamic>>> getRandomNews({int limit = 10}) async {
     return await newsDatabase.getRandomNews(limit: limit);

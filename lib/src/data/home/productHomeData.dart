@@ -5,6 +5,7 @@ class ProductHome {
   final String category;
   String? img = "";
   String? describe = "";
+  String? address = ""; // Thêm dòng này
   List<String> imageUrls = [];
 
   ProductHome({
@@ -14,6 +15,7 @@ class ProductHome {
     required this.category,
     this.img,
     this.describe,
+    this.address, // Thêm dòng này
     this.imageUrls = const [],
   });
 }

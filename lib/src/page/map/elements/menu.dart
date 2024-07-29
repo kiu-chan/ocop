@@ -14,7 +14,7 @@ class Menu extends StatefulWidget {
   final Set<String> selectedProductTypes;
 
   const Menu({
-    Key? key,
+    super.key,
     required this.onClickMap,
     required this.onClickImgData,
     required this.imageDataList,
@@ -23,7 +23,7 @@ class Menu extends StatefulWidget {
     required this.onClickMapData,
     required this.onFilterCompanies,
     required this.selectedProductTypes,
-  }) : super(key: key);
+  });
 
   @override
   _MenuState createState() => _MenuState();
