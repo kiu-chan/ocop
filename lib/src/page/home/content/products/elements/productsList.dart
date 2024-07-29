@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:ocop/mainData/database/databases.dart';
-import 'package:ocop/src/data/home/productData.dart';
+import 'package:ocop/src/data/home/productHomeData.dart';
 import 'package:ocop/src/page/home/content/products/elements/productCard.dart';
 
 
@@ -12,8 +12,8 @@ class ProductsList extends StatefulWidget {
 }
 
 class _ProductsListState extends State<ProductsList> {
-  List<Product> allProducts = [];
-  List<Product> displayedProducts = [];
+  List<ProductHome> allProducts = [];
+  List<ProductHome> displayedProducts = [];
   final DefaultDatabaseOptions db = DefaultDatabaseOptions();
   bool isLoading = true;
   TextEditingController searchController = TextEditingController();
@@ -34,7 +34,7 @@ Future<void> _loadAllProducts() async {
   await db.connect();
   final products = await db.getAllProducts();
   setState(() {
-    allProducts = products.map((product) => Product(
+    allProducts = products.map((product) => ProductHome(
       id: product['id'],
       name: product['name'],
       star: product['rating'],

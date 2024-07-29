@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:ocop/src/data/home/productData.dart';
+import 'package:ocop/src/data/home/productHomeData.dart';
 import 'package:ocop/src/page/elements/star.dart';
 import 'package:ocop/src/page/elements/logo.dart';
 import 'package:ocop/mainData/database/databases.dart';
 import 'package:html/parser.dart' show parse;
 
 class ProductInformation extends StatefulWidget {
-  final Product product;
+  final ProductHome product;
 
   const ProductInformation({Key? key, required this.product}) : super(key: key);
 

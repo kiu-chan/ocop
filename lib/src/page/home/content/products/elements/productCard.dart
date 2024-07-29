@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:ocop/src/data/home/productData.dart';
+import 'package:ocop/src/data/home/productHomeData.dart';
 import 'package:ocop/src/page/home/content/products/elements/productInformation.dart';
 import 'package:ocop/src/page/elements/star.dart';
 
 class ProductCard extends StatelessWidget {
-  final Product product;
+  final ProductHome product;
   
   const ProductCard({Key? key, required this.product}) : super(key: key);
 

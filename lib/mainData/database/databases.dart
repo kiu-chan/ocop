@@ -1,5 +1,5 @@
 import 'package:postgres/postgres.dart';
-import 'package:ocop/src/data/map/productData.dart';
+import 'package:ocop/src/data/map/productMapData.dart';
 import 'package:ocop/mainData/database/product.dart';
 import 'package:ocop/src/data/map/companiesData.dart';
 import 'package:ocop/mainData/database/media.dart';
@@ -7,7 +7,6 @@ import 'package:ocop/mainData/database/account.dart';
 import 'package:ocop/mainData/database/area.dart';
 import 'package:ocop/mainData/database/news.dart';
 import 'package:ocop/mainData/database/company.dart';
-import 'package:ocop/src/data/home/productData.dart';
 
 class DefaultDatabaseOptions {
   bool _connectionFailed = false;

@@ -8,7 +8,7 @@ class AccountDatabase {
   
   Future<Map<String, dynamic>?> checkUserCredentials(String email, String password) async {
     try {
-      final result = await connection!.query('''
+      final result = await connection.query('''
         SELECT id, name, email, password, commune_id
         FROM company_users
         WHERE email = @email AND approved = true
@@ -36,7 +36,7 @@ class AccountDatabase {
 
 Future<bool> checkUserExists(String email) async {
     try {
-      final result = await connection!.query(
+      final result = await connection.query(
         'SELECT COUNT(*) FROM company_users WHERE email = @email',
         substitutionValues: {'email': email},
       );
@@ -52,7 +52,7 @@ Future<bool> checkUserExists(String email) async {
       // Mã hóa mật khẩu sử dụng bcrypt
       String hashedPassword = BCrypt.hashpw(password, BCrypt.gensalt());
 
-      await connection!.query('''
+      await connection.query('''
         INSERT INTO company_users (
           approved,
           created_at,

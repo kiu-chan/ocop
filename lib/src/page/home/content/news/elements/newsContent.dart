@@ -60,14 +60,14 @@ class _NewContentState extends State<NewContent> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  AspectRatio(
-                    aspectRatio: 16 / 9, 
-                    child: Image.asset(
-                      'lib/src/assets/img/map/img.png',
-                      width: double.infinity,
-                      fit: BoxFit.cover,
-                    ),
-                  ),
+                  // AspectRatio(
+                  //   aspectRatio: 16 / 9, 
+                  //   child: Image.asset(
+                  //     'lib/src/assets/img/map/img.png',
+                  //     width: double.infinity,
+                  //     fit: BoxFit.cover,
+                  //   ),
+                  // ),
                   Padding(
                     padding: const EdgeInsets.all(16.0),
                     child: Column(

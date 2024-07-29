@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:ocop/mainData/database/databases.dart';
-import 'package:ocop/src/data/home/productData.dart';
+import 'package:ocop/src/data/home/productHomeData.dart';
 import 'package:ocop/src/page/home/content/products/elements/productCard.dart';
 import 'package:ocop/src/page/home/content/products/elements/productsList.dart';
 
@@ -13,7 +13,7 @@ class ProductList extends StatefulWidget {
 }
 
 class _ProductListState extends State<ProductList> {
-  List<Product> products = [];
+  List<ProductHome> products = [];
   final DefaultDatabaseOptions db = DefaultDatabaseOptions();
 
   @override
@@ -26,7 +26,7 @@ Future<void> _loadProducts() async {
   await db.connect();
   final randomProducts = await db.getRandomProducts();
   setState(() {
-    products = randomProducts.map((product) => Product(
+    products = randomProducts.map((product) => ProductHome(
       id: product['id'],
       name: product['name'],
       star: product['rating'],

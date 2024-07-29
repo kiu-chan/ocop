@@ -1,7 +1,6 @@
 import 'package:latlong2/latlong.dart';
 import 'package:postgres/postgres.dart';
-import 'package:ocop/src/data/map/productData.dart';
-import 'package:ocop/src/data/home/productData.dart';
+import 'package:ocop/src/data/map/productMapData.dart';
 
 class ProductDatabase {
   final PostgreSQLConnection connection;
@@ -185,7 +184,7 @@ Future<Map<String, int>> getProductGroupCounts() async {
 }
 
 Future<List<Map<String, dynamic>>> getProductProcesses() async {
-final result = await connection!.query('SELECT * FROM public.product_processes');
+final result = await connection.query('SELECT * FROM public.product_processes');
 List<Map<String, dynamic>> productProcesses = [];
 
 for (var row in result) {
@@ -202,7 +201,7 @@ for (var row in result) {
 
 Future<List<Map<String, dynamic>>> getRandomProducts() async {
   try {
-    final result = await connection!.query('''
+    final result = await connection.query('''
       SELECT p.id, p.name, p.rating, pc.name as category_name, 
              m.id as media_id, m.file_name
       FROM public.products p
@@ -243,7 +242,7 @@ Future<List<Map<String, dynamic>>> getRandomProducts() async {
 
 Future<List<Map<String, dynamic>>> getAllProducts() async {
   try {
-    final result = await connection!.query('''
+    final result = await connection.query('''
       SELECT p.id, p.name, p.rating, pc.name as category_name,
              m.id as media_id, m.file_name
       FROM public.products p
@@ -283,7 +282,7 @@ Future<List<Map<String, dynamic>>> getAllProducts() async {
 
 Future<String?> getProductContent(int productId) async {
   try {
-    final result = await connection!.query('''
+    final result = await connection.query('''
       SELECT content
       FROM public.products
       WHERE id = @id
@@ -303,7 +302,7 @@ Future<String?> getProductContent(int productId) async {
 
 Future<List<String>> getProductImages(int productId) async {
   try {
-    final result = await connection!.query('''
+    final result = await connection.query('''
       SELECT id, file_name, collection_name
       FROM media
       WHERE model_id = @productId

@@ -1,5 +1,4 @@
 import 'package:postgres/postgres.dart';
-import 'package:bcrypt/bcrypt.dart';
 
 class AreaDatabase {
   final PostgreSQLConnection connection;
@@ -8,7 +7,7 @@ class AreaDatabase {
   
   Future<List<Map<String, dynamic>>> getApprovedCommunes() async {
     try {
-      final result = await connection!.query('''
+      final result = await connection.query('''
         SELECT id, name
         FROM commune_users
         WHERE approved = true

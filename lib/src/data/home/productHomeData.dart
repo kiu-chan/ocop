@@ -1,4 +1,4 @@
-class Product {
+class ProductHome {
   final int id;
   final String name;
   final int star;
@@ -7,7 +7,7 @@ class Product {
   String? describe = "";
   List<String> imageUrls = [];
 
-  Product({
+  ProductHome({
     required this.id,
     required this.name,
     required this.star,

@@ -1,6 +1,4 @@
-import 'package:latlong2/latlong.dart';
 import 'package:postgres/postgres.dart';
-import 'package:ocop/src/data/map/productData.dart';
 import 'dart:convert';
 
 class NewsDatabase {
@@ -10,7 +8,7 @@ class NewsDatabase {
 
   Future<List<Map<String, dynamic>>> getRandomNews({int limit = 10}) async {
     try {
-      final result = await connection!.query('''
+      final result = await connection.query('''
         SELECT id, title, published_at
         FROM posts 
         ORDER BY RANDOM() 
@@ -32,7 +30,7 @@ class NewsDatabase {
 
   Future<String?> getFullNewsContent(String newsTitle) async {
   try {
-    final result = await connection!.query('''
+    final result = await connection.query('''
       SELECT content
       FROM posts
       WHERE title = @title
@@ -53,7 +51,7 @@ class NewsDatabase {
 
   Future<String?> getNewsContent(int newsId) async {
     try {
-      final result = await connection!.query('''
+      final result = await connection.query('''
         SELECT content
         FROM posts
         WHERE id = @id
@@ -74,7 +72,7 @@ class NewsDatabase {
   Future<List<Map<String, dynamic>>> getAllNews({int page = 1, int perPage = 10}) async {
     try {
       final offset = (page - 1) * perPage;
-      final result = await connection!.query('''
+      final result = await connection.query('''
         SELECT id, title, published_at
         FROM posts 
         ORDER BY published_at DESC
@@ -96,7 +94,7 @@ class NewsDatabase {
   }
 Future<String?> getNewsImage(int newsId) async {
   try {
-    final result = await connection!.query('''
+    final result = await connection.query('''
       SELECT id, file_name, generated_conversions
       FROM media
       WHERE model_id = @newsId

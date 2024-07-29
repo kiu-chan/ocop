@@ -9,7 +9,7 @@ class CompanyDatabase {
   
   Future<List<CompanyData>> getCompanies() async {
   try {
-    final result = await connection!.query('''
+    final result = await connection.query('''
       SELECT 
         ST_AsText(pc.geom) as geom,
         pc.type_id,

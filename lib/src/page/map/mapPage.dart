@@ -9,7 +9,7 @@ import 'package:ocop/src/data/map/ImageData.dart';
 import 'package:ocop/src/data/map/MapData.dart';
 import 'package:ocop/src/page/map/elements/MarkerMap.dart';
 import 'package:ocop/mainData/database/databases.dart';
-import 'package:ocop/src/data/map/productData.dart';
+import 'package:ocop/src/data/map/productMapData.dart';
 import 'package:ocop/src/data/map/companiesData.dart';
 
 class MapPage extends StatefulWidget {
