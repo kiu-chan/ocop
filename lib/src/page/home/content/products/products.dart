@@ -22,20 +22,20 @@ class _ProductListState extends State<ProductList> {
     _loadProducts();
   }
 
-  Future<void> _loadProducts() async {
-    await db.connect();
-    final randomProducts = await db.getRandomProducts();
-    setState(() {
-      products = randomProducts.map((product) => Product(
-        id: product['id'],  // Thêm id
-        name: product['name'],
-        star: product['rating'],
-        category: product['category'] ?? 'Unknown',
-        // location: LatLng(0, 0),  // Giả sử là một vị trí mặc định
-      )).toList();
-    });
-    await db.close();
-  }
+Future<void> _loadProducts() async {
+  await db.connect();
+  final randomProducts = await db.getRandomProducts();
+  setState(() {
+    products = randomProducts.map((product) => Product(
+      id: product['id'],
+      name: product['name'],
+      star: product['rating'],
+      category: product['category'] ?? 'Unknown',
+      img: product['img'],
+    )).toList();
+  });
+  await db.close();
+}
 
   @override
   Widget build(BuildContext context) {

@@ -5,6 +5,7 @@ class Product {
   final String category;
   String? img = "";
   String? describe = "";
+  List<String> imageUrls = [];
 
   Product({
     required this.id,
@@ -13,5 +14,6 @@ class Product {
     required this.category,
     this.img,
     this.describe,
+    this.imageUrls = const [],
   });
 }

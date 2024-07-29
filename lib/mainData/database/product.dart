@@ -1,6 +1,7 @@
 import 'package:latlong2/latlong.dart';
 import 'package:postgres/postgres.dart';
 import 'package:ocop/src/data/map/productData.dart';
+import 'package:ocop/src/data/home/productData.dart';
 
 class ProductDatabase {
   final PostgreSQLConnection connection;
@@ -202,37 +203,77 @@ for (var row in result) {
 Future<List<Map<String, dynamic>>> getRandomProducts() async {
   try {
     final result = await connection!.query('''
-      SELECT id, name, rating
-      FROM public.products
+      SELECT p.id, p.name, p.rating, pc.name as category_name, 
+             m.id as media_id, m.file_name
+      FROM public.products p
+      LEFT JOIN public.product_categories pc ON p.category_id = pc.id
+      LEFT JOIN public.media m ON m.model_id = p.id AND m.model_type = 'App\\Models\\Product\\Product' AND m.collection_name = 'product_featured_image'
       ORDER BY RANDOM()
       LIMIT 10
     ''');
 
-    return result.map((row) => {
-      'id': row[0] as int,
-      'name': row[1] as String,
-      'rating': row[2] as int,
+    return result.map((row) {
+      String? imageUrl;
+      if (row[4] != null && row[5] != null) {
+        String fileName = row[5] as String;
+        // Xử lý tên file
+        List<String> parts = fileName.split('.');
+        if (parts.length > 1) {
+          // Nếu có nhiều hơn một phần, giữ lại tất cả trừ phần cuối cùng
+          fileName = parts.sublist(0, parts.length - 1).join('.');
+        } else {
+          // Nếu chỉ có một phần, giữ nguyên
+          fileName = parts[0];
+        }
+        imageUrl = 'https://ocop.bentre.gov.vn/storage/images/product/${row[4]}/conversions/$fileName-md.jpg';
+      }
+      return {
+        'id': row[0] as int,
+        'name': row[1] as String,
+        'rating': row[2] as int,
+        'category': row[3] as String,
+        'img': imageUrl,
+      };
     }).toList();
   } catch (e) {
     print('Lỗi khi truy vấn 10 sản phẩm ngẫu nhiên: $e');
-    return []; // Trả về danh sách trống nếu có lỗi
+    return [];
   }
 }
 
 Future<List<Map<String, dynamic>>> getAllProducts() async {
   try {
     final result = await connection!.query('''
-      SELECT p.id, p.name, p.rating, c.name as category_name
+      SELECT p.id, p.name, p.rating, pc.name as category_name,
+             m.id as media_id, m.file_name
       FROM public.products p
-      LEFT JOIN public.product_categories c ON p.category_id = c.id
+      LEFT JOIN public.product_categories pc ON p.category_id = pc.id
+      LEFT JOIN public.media m ON m.model_id = p.id AND m.model_type = 'App\\Models\\Product\\Product' AND m.collection_name = 'product_featured_image'
       ORDER BY p.name
     ''');
 
-    return result.map((row) => {
-      'id': row[0] as int,
-      'name': row[1] as String,
-      'rating': row[2] as int,
-      'category': row[3] as String?, // Có thể null nếu không có danh mục
+    return result.map((row) {
+      String? imageUrl;
+      if (row[4] != null && row[5] != null) {
+        String fileName = row[5] as String;
+        // Xử lý tên file
+        List<String> parts = fileName.split('.');
+        if (parts.length > 1) {
+          // Nếu có nhiều hơn một phần, giữ lại tất cả trừ phần cuối cùng
+          fileName = parts.sublist(0, parts.length - 1).join('.');
+        } else {
+          // Nếu chỉ có một phần, giữ nguyên
+          fileName = parts[0];
+        }
+        imageUrl = 'https://ocop.bentre.gov.vn/storage/images/product/${row[4]}/conversions/$fileName-md.jpg';
+      }
+      return {
+        'id': row[0] as int,
+        'name': row[1] as String,
+        'rating': row[2] as int,
+        'category': row[3] as String,
+        'img': imageUrl,
+      };
     }).toList();
   } catch (e) {
     print('Lỗi khi truy vấn tất cả sản phẩm: $e');
@@ -257,6 +298,40 @@ Future<String?> getProductContent(int productId) async {
   } catch (e) {
     print('Lỗi khi truy vấn nội dung sản phẩm: $e');
     return null;
+  }
+}
+
+Future<List<String>> getProductImages(int productId) async {
+  try {
+    final result = await connection!.query('''
+      SELECT id, file_name, collection_name
+      FROM media
+      WHERE model_id = @productId
+      AND model_type = 'App\\Models\\Product\\Product'
+      AND (collection_name = 'product_featured_image'
+      OR collection_name = 'product_images')
+    ''', substitutionValues: {
+      'productId': productId,
+    });
+
+    return result.map((row) {
+      int id = row[0] as int;
+      String fileName = row[1] as String;
+      String collectionName = row[2] as String;
+
+      List<String> parts = fileName.split('.');
+      if (parts.length > 1) {
+        fileName = parts.sublist(0, parts.length - 1).join('.');
+      } else {
+        fileName = parts[0];
+      }
+
+      String conversion = collectionName == 'product_featured_image' ? 'md' : 'thumb';
+      return 'https://ocop.bentre.gov.vn/storage/images/product/$id/conversions/$fileName-$conversion.jpg';
+    }).toList();
+  } catch (e) {
+    print('Lỗi khi truy vấn hình ảnh sản phẩm: $e');
+    return [];
   }
 }
 

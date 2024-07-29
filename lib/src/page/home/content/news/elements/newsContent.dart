@@ -61,7 +61,7 @@ class _NewContentState extends State<NewContent> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
                   AspectRatio(
-                    aspectRatio: 16 / 9, // Tỷ lệ khung hình 16:9
+                    aspectRatio: 16 / 9, 
                     child: Image.asset(
                       'lib/src/assets/img/map/img.png',
                       width: double.infinity,

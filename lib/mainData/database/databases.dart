@@ -7,6 +7,7 @@ import 'package:ocop/mainData/database/account.dart';
 import 'package:ocop/mainData/database/area.dart';
 import 'package:ocop/mainData/database/news.dart';
 import 'package:ocop/mainData/database/company.dart';
+import 'package:ocop/src/data/home/productData.dart';
 
 class DefaultDatabaseOptions {
   bool _connectionFailed = false;
@@ -80,6 +81,10 @@ class DefaultDatabaseOptions {
 
   Future<String?> getProductContent(int productId) async {
     return await productDatabase.getProductContent(productId);
+  }
+
+Future<List<String>> getProductImages(int productId) async {
+    return await productDatabase.getProductImages(productId);
   }
 
   Future<List<Map<String, dynamic>>> getRandomNews({int limit = 10}) async {

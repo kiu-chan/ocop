@@ -6,7 +6,7 @@ import 'package:ocop/src/page/elements/star.dart';
 class ProductCard extends StatelessWidget {
   final Product product;
   
-  const ProductCard({super.key, required this.product});
+  const ProductCard({Key? key, required this.product}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -31,10 +31,21 @@ class ProductCard extends StatelessWidget {
               Expanded(
                 flex: 3,
                 child: Center(
-                  child: Image.asset(
-                    'lib/src/assets/img/home/image.png',
-                    fit: BoxFit.cover,
-                  ),
+                  child: product.img != null && product.img!.isNotEmpty
+                    ? Image.network(
+                        product.img!,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return Image.asset(
+                            'lib/src/assets/img/home/image.png',
+                            fit: BoxFit.cover,
+                          );
+                        },
+                      )
+                    : Image.asset(
+                        'lib/src/assets/img/home/image.png',
+                        fit: BoxFit.cover,
+                      ),
                 ),
               ),
               Expanded(

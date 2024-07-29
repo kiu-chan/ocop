@@ -27,26 +27,26 @@ class _ProductsListState extends State<ProductsList> {
     _loadAllProducts();
   }
 
-  Future<void> _loadAllProducts() async {
-    setState(() {
-      isLoading = true;
-    });
-    await db.connect();
-    final products = await db.getAllProducts();
-    setState(() {
-allProducts = products.map((product) => Product(
-  id: product['id'],  // Thêm id
-  name: product['name'],
-  star: product['rating'],
-  category: product['category'] ?? 'Unknown',
-  // location: LatLng(0, 0),  // Giả sử là một vị trí mặc định
-)).toList();
-      displayedProducts = List.from(allProducts);
-      allCategories = allProducts.map((p) => p.category).toSet().toList();
-      isLoading = false;
-    });
-    await db.close();
-  }
+Future<void> _loadAllProducts() async {
+  setState(() {
+    isLoading = true;
+  });
+  await db.connect();
+  final products = await db.getAllProducts();
+  setState(() {
+    allProducts = products.map((product) => Product(
+      id: product['id'],
+      name: product['name'],
+      star: product['rating'],
+      category: product['category'] ?? 'Unknown',
+      img: product['img'],
+    )).toList();
+    displayedProducts = List.from(allProducts);
+    allCategories = allProducts.map((p) => p.category).toSet().toList();
+    isLoading = false;
+  });
+  await db.close();
+}
 
   void filterProducts() {
     setState(() {
