@@ -24,13 +24,19 @@ class _NewsListState extends State<NewsList> {
 
   Future<void> _loadNews() async {
     await db.connect();
-    final newsData = await db.getRandomNews(limit: 10);  // Thay đổi limit thành 10
+    final newsData = await db.getRandomNews(limit: 10);
+    for (var item in newsData) {
+      final imageUrl = await db.getNewsImage(item['id']);
+      setState(() {
+        news.add(News(
+          id: item['id'] ?? 0,
+          title: item['title'] ?? 'Không có tiêu đề',
+          publishedAt: item['published_at'] ?? DateTime.now(),
+          imageUrl: imageUrl,
+        ));
+      });
+    }
     setState(() {
-      news = newsData.map((item) => News(
-        id: item['id'] ?? 0,
-        title: item['title'] ?? 'Không có tiêu đề',
-        publishedAt: item['published_at'] ?? DateTime.now(),
-      )).toList();
       isLoading = false;
     });
     await db.close();
@@ -70,7 +76,7 @@ class _NewsListState extends State<NewsList> {
         isLoading
             ? const Center(child: CircularProgressIndicator())
             : SizedBox(
-                height: 600,  // Tăng chiều cao để chứa nhiều tin hơn
+                height: 600,
                 child: ListView.builder(
                   itemCount: news.length,
                   itemBuilder: (context, index) {
@@ -113,12 +119,27 @@ class NewsCard extends StatelessWidget {
                 topLeft: Radius.circular(10),
                 bottomLeft: Radius.circular(10),
               ),
-              child: Image.asset(
-                'lib/src/assets/img/map/img.png',
-                height: 100,
-                width: 100,
-                fit: BoxFit.cover,
-              ),
+              child: news.imageUrl != null
+                ? Image.network(
+                    news.imageUrl!,
+                    height: 100,
+                    width: 100,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Image.asset(
+                        'lib/src/assets/img/map/img.png',
+                        height: 100,
+                        width: 100,
+                        fit: BoxFit.cover,
+                      );
+                    },
+                  )
+                : Image.asset(
+                    'lib/src/assets/img/map/img.png',
+                    height: 100,
+                    width: 100,
+                    fit: BoxFit.cover,
+                  ),
             ),
             Expanded(
               child: Padding(

@@ -5,12 +5,14 @@ class News {
   final String title;
   final DateTime publishedAt;
   String? content;
+  String? imageUrl;
 
   News({
     required this.id, 
     required this.title, 
     required this.publishedAt,
-    this.content
+    this.content,
+    this.imageUrl,
   });
 
   String get formattedDate {

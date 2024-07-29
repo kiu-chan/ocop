@@ -19,6 +19,7 @@ class _AllNewsState extends State<AllNews> {
   int _currentPage = 1;
   bool _hasMoreNews = true;
   static const int _newsPerPage = 10;
+  final DefaultDatabaseOptions db = DefaultDatabaseOptions();
 
   @override
   void initState() {
@@ -30,20 +31,26 @@ class _AllNewsState extends State<AllNews> {
   Future<void> _loadAllNews() async {
     if (!_hasMoreNews) return;
     
-    final db = DefaultDatabaseOptions();
     await db.connect();
     
     try {
       final newsData = await db.getAllNews(page: _currentPage, perPage: _newsPerPage);
+      List<News> newNews = [];
+      for (var item in newsData) {
+        final imageUrl = await db.getNewsImage(item['id']);
+        newNews.add(News(
+          id: item['id'] ?? 0,
+          title: item['title'] ?? 'Không có tiêu đề',
+          publishedAt: item['published_at'] ?? DateTime.now(),
+          imageUrl: imageUrl,
+        ));
+      }
+      
       setState(() {
-        if (newsData.isEmpty) {
+        if (newNews.isEmpty) {
           _hasMoreNews = false;
         } else {
-          allNews.addAll(newsData.map((item) => News(
-            id: item['id'] ?? 0,
-            title: item['title'] ?? 'Không có tiêu đề',
-            publishedAt: item['published_at'] ?? DateTime.now(),
-          )));
+          allNews.addAll(newNews);
           filteredNews = List.from(allNews);
           _currentPage++;
         }
@@ -155,12 +162,27 @@ class NewsCard extends StatelessWidget {
                 topLeft: Radius.circular(10),
                 bottomLeft: Radius.circular(10),
               ),
-              child: Image.asset(
-                'lib/src/assets/img/map/img.png', // Thay thế bằng hình ảnh thực tế của tin tức
-                height: 100,
-                width: 100,
-                fit: BoxFit.cover,
-              ),
+              child: news.imageUrl != null
+                ? Image.network(
+                    news.imageUrl!,
+                    height: 100,
+                    width: 100,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) {
+                      return Image.asset(
+                        'lib/src/assets/img/map/img.png',
+                        height: 100,
+                        width: 100,
+                        fit: BoxFit.cover,
+                      );
+                    },
+                  )
+                : Image.asset(
+                    'lib/src/assets/img/map/img.png',
+                    height: 100,
+                    width: 100,
+                    fit: BoxFit.cover,
+                  ),
             ),
             Expanded(
               child: Padding(

@@ -1,6 +1,7 @@
 import 'package:latlong2/latlong.dart';
 import 'package:postgres/postgres.dart';
 import 'package:ocop/src/data/map/productData.dart';
+import 'dart:convert';
 
 class NewsDatabase {
   final PostgreSQLConnection connection;
@@ -93,4 +94,56 @@ class NewsDatabase {
       return [];
     }
   }
+Future<String?> getNewsImage(int newsId) async {
+  try {
+    final result = await connection!.query('''
+      SELECT id, file_name, generated_conversions
+      FROM media
+      WHERE model_id = @newsId
+      AND model_type = 'App\\Models\\Admin\\Post'
+      LIMIT 1
+    ''', substitutionValues: {
+      'newsId': newsId,
+    });
+
+    if (result.isNotEmpty) {
+      int id = result[0][0] as int;
+      String fileName = result[0][1] as String;
+      var generatedConversions = result[0][2];
+      
+      // Kiểm tra nếu generated_conversions là rỗng hoặc không có conversion md
+      bool hasConversions = false;
+      if (generatedConversions != null) {
+        if (generatedConversions is Map<String, dynamic>) {
+          hasConversions = generatedConversions['md'] == true;
+        } else if (generatedConversions is String) {
+          try {
+            Map<String, dynamic> conversions = json.decode(generatedConversions);
+            hasConversions = conversions['md'] == true;
+          } catch (e) {
+            print('Error decoding JSON: $e');
+          }
+        }
+      }
+
+      List<String> parts = fileName.split('.');
+      String fileNameWithoutExtension;
+      if (parts.length > 1) {
+        fileNameWithoutExtension = parts.sublist(0, parts.length - 1).join('.');
+      } else {
+        fileNameWithoutExtension = parts[0];
+      }
+      
+      if (hasConversions) {
+        return 'https://ocop.bentre.gov.vn/storage/images/post/$id/conversions/$fileNameWithoutExtension-md.jpg';
+      } else {
+        return 'https://ocop.bentre.gov.vn/storage/images/post/$id/$fileName';
+      }
+    }
+    return null;
+  } catch (e) {
+    print('Lỗi khi truy vấn hình ảnh tin tức: $e');
+    return null;
+  }
+}
 }

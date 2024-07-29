@@ -95,13 +95,17 @@ Future<List<String>> getProductImages(int productId) async {
     return await newsDatabase.getFullNewsContent(newsTitle);
   }
 
-    Future<String?> getNewsContent(int newsId) async {
-      return await newsDatabase.getNewsContent(newsId);
-    }
+  Future<String?> getNewsContent(int newsId) async {
+    return await newsDatabase.getNewsContent(newsId);
+  }
 
-    Future<List<Map<String, dynamic>>> getAllNews({int page = 1, int perPage = 10}) async {
-      return await newsDatabase.getAllNews(page: page, perPage: perPage);
-    }
+  Future<List<Map<String, dynamic>>> getAllNews({int page = 1, int perPage = 10}) async {
+    return await newsDatabase.getAllNews(page: page, perPage: perPage);
+  }
+
+  Future<String?> getNewsImage(int newsId) async {
+    return await newsDatabase.getNewsImage(newsId);
+  }
 
   Future<List<Map<String, dynamic>>> getMedia() async {
     return await mediaDatabase.getMedia();
