@@ -13,7 +13,7 @@ import 'package:ocop/src/data/map/productMapData.dart';
 import 'package:ocop/src/data/map/companiesData.dart';
 
 class MapPage extends StatefulWidget {
-  const MapPage({super.key});
+  const MapPage({Key? key}) : super(key: key);
 
   @override
   _MapPageState createState() => _MapPageState();
@@ -27,16 +27,6 @@ class _MapPageState extends State<MapPage> {
   List<CompanyData> companies = [];
   List<CompanyData> filteredCompanies = [];
   Set<String> selectedProductTypes = <String>{};
-
-  LatLng parseLatLng(String input) {
-    final pointStart = input.indexOf('POINT(') + 'POINT('.length;
-    final pointEnd = input.indexOf(')', pointStart);
-    final coordinateString = input.substring(pointStart, pointEnd);
-    final coordinates = coordinateString.split(' ');
-    final longitude = double.parse(coordinates[0]);
-    final latitude = double.parse(coordinates[1]);
-    return LatLng(latitude, longitude);
-  }
 
   double currentZoom = 9.0;
 
@@ -339,6 +329,7 @@ class _MapPageState extends State<MapPage> {
               MarkerMap(
                 imageDataList: imageDataList,
                 companies: filteredCompanies,
+                products: products,
               ),
             ],
           ),

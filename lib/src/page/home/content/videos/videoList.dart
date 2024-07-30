@@ -89,7 +89,7 @@ class _VideoListState extends State<VideoList> {
         const Padding(
           padding: EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
           child: Text(
-            "Video giới thiệu",
+            "Video",
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,

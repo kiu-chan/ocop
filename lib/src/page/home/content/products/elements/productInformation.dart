@@ -9,7 +9,7 @@ import 'package:url_launcher/url_launcher.dart';
 class ProductInformation extends StatefulWidget {
   final ProductHome product;
 
-  const ProductInformation({Key? key, required this.product}) : super(key: key);
+  const ProductInformation({super.key, required this.product});
 
   @override
   _ProductInformationState createState() => _ProductInformationState();

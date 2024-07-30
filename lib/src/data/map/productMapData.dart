@@ -7,6 +7,8 @@ class ProductData {
   final String? address;
   final String categoryName;
   final int rating;
+  final String? imageUrl;
+  final String? contactInfo;
 
   ProductData({
     required this.id,
@@ -15,6 +17,8 @@ class ProductData {
     this.address,
     required this.categoryName,
     required this.rating,
+    this.imageUrl,
+    this.contactInfo,
   });
 
   factory ProductData.fromJson(Map<String, dynamic> json) {

@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:latlong2/latlong.dart';
 import 'package:postgres/postgres.dart';
 import 'package:ocop/src/data/map/productMapData.dart';
@@ -7,34 +9,50 @@ class ProductDatabase {
 
   ProductDatabase(this.connection);
 
-  Future<List<ProductData>> getProducts() async {
-    try {
-      final result = await connection.query('''
-        SELECT p.id, ST_AsText(p.geom) as geom, p.name, p.address, c.name as category_name, p.rating
-        FROM public.products p
-        JOIN public.product_categories c ON p.category_id = c.id
-      ''');
+Future<List<ProductData>> getProducts() async {
+  try {
+    final result = await connection.query('''
+      SELECT p.id, ST_AsText(p.geom) as geom, p.name, p.address, c.name as category_name, p.rating,
+             m.id as media_id, m.file_name, pc.phone_number
+      FROM public.products p
+      JOIN public.product_categories c ON p.category_id = c.id
+      LEFT JOIN public.media m ON m.model_id = p.id AND m.model_type = 'App\\Models\\Product\\Product' AND m.collection_name = 'product_featured_image'
+      LEFT JOIN public.product_companies pc ON p.company_id = pc.id
+    ''');
 
-      return result.map((row) {
-        final geomText = row[1] as String;
-        final coordinates = geomText.split('(')[1].split(')')[0].split(' ');
-        return ProductData(
-          id: row[0] as int,
-          location: LatLng(
-            double.parse(coordinates[1]),
-            double.parse(coordinates[0]),
-          ),
-          name: row[2] as String,
-          address: row[3] as String?,
-          categoryName: row[4] as String,
-          rating: row[5] as int,
-        );
-      }).toList();
-    } catch (e) {
-      print('Lỗi khi truy vấn dữ liệu sản phẩm: $e');
-      return [];
-    }
+    return result.map((row) {
+      final geomText = row[1] as String;
+      final coordinates = geomText.split('(')[1].split(')')[0].split(' ');
+      String? imageUrl;
+      if (row[6] != null && row[7] != null) {
+        String fileName = row[7] as String;
+        List<String> parts = fileName.split('.');
+        if (parts.length > 1) {
+          fileName = parts.sublist(0, parts.length - 1).join('.');
+        } else {
+          fileName = parts[0];
+        }
+        imageUrl = 'https://ocop.bentre.gov.vn/storage/images/product/${row[6]}/conversions/$fileName-md.jpg';
+      }
+      return ProductData(
+        id: row[0] as int,
+        location: LatLng(
+          double.parse(coordinates[1]),
+          double.parse(coordinates[0]),
+        ),
+        name: row[2] as String,
+        address: row[3] as String?,
+        categoryName: row[4] as String,
+        rating: row[5] as int,
+        imageUrl: imageUrl,
+        contactInfo: row[8] as String?,
+      );
+    }).toList();
+  } catch (e) {
+    print('Lỗi khi truy vấn dữ liệu sản phẩm: $e');
+    return [];
   }
+}
 
 Future<Map<String, int>> getProductRatingCounts() async {
   try {
@@ -303,7 +321,7 @@ Future<String?> getProductContent(int productId) async {
 Future<List<String>> getProductImages(int productId) async {
   try {
     final result = await connection.query('''
-      SELECT id, file_name, collection_name
+      SELECT id, file_name, collection_name, generated_conversions
       FROM media
       WHERE model_id = @productId
       AND model_type = 'App\\Models\\Product\\Product'
@@ -317,16 +335,34 @@ Future<List<String>> getProductImages(int productId) async {
       int id = row[0] as int;
       String fileName = row[1] as String;
       String collectionName = row[2] as String;
+      var generatedConversions = row[3];
 
-      List<String> parts = fileName.split('.');
-      if (parts.length > 1) {
-        fileName = parts.sublist(0, parts.length - 1).join('.');
-      } else {
-        fileName = parts[0];
+      bool hasConversions = false;
+      if (generatedConversions != null) {
+        if (generatedConversions is Map<String, dynamic>) {
+          hasConversions = generatedConversions['md'] == true || generatedConversions['thumb'] == true;
+        } else if (generatedConversions is String) {
+          try {
+            Map<String, dynamic> conversions = json.decode(generatedConversions);
+            hasConversions = conversions['md'] == true || conversions['thumb'] == true;
+          } catch (e) {
+            print('Error decoding JSON: $e');
+          }
+        }
       }
 
-      String conversion = collectionName == 'product_featured_image' ? 'md' : 'thumb';
-      return 'https://ocop.bentre.gov.vn/storage/images/product/$id/conversions/$fileName-$conversion.jpg';
+      if (hasConversions) {
+        List<String> parts = fileName.split('.');
+        if (parts.length > 1) {
+          fileName = parts.sublist(0, parts.length - 1).join('.');
+        } else {
+          fileName = parts[0];
+        }
+        String conversion = collectionName == 'product_featured_image' ? 'md' : 'thumb';
+        return 'https://ocop.bentre.gov.vn/storage/images/product/$id/conversions/$fileName-$conversion.jpg';
+      } else {
+        return 'https://ocop.bentre.gov.vn/storage/images/product/$id/$fileName';
+      }
     }).toList();
   } catch (e) {
     print('Lỗi khi truy vấn hình ảnh sản phẩm: $e');
