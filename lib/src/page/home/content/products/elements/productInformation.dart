@@ -4,11 +4,12 @@ import 'package:ocop/src/page/elements/star.dart';
 import 'package:ocop/src/page/elements/logo.dart';
 import 'package:ocop/mainData/database/databases.dart';
 import 'package:html/parser.dart' show parse;
+import 'package:url_launcher/url_launcher.dart';
 
 class ProductInformation extends StatefulWidget {
   final ProductHome product;
 
-  const ProductInformation({super.key, required this.product});
+  const ProductInformation({Key? key, required this.product}) : super(key: key);
 
   @override
   _ProductInformationState createState() => _ProductInformationState();
@@ -32,29 +33,79 @@ class _ProductInformationState extends State<ProductInformation> {
     super.dispose();
   }
 
-Future<void> _loadProductDetails() async {
-  setState(() {
-    isLoading = true;
-  });
-  await db.connect();
-  final content = await db.getProductContent(widget.product.id);
-  final images = await db.getProductImages(widget.product.id);
-  final address = await db.getProductAddress(widget.product.id);
-  setState(() {
-    if (content != null) {
-      widget.product.describe = _convertHtmlToPlainText(content);
-    }
-    widget.product.imageUrls = images;
-    widget.product.address = address ?? 'Không có thông tin';
-    isLoading = false;
-  });
-  await db.close();
-}
+  Future<void> _loadProductDetails() async {
+    setState(() {
+      isLoading = true;
+    });
+    await db.connect();
+    final content = await db.getProductContent(widget.product.id);
+    final images = await db.getProductImages(widget.product.id);
+    final address = await db.getProductAddress(widget.product.id);
+    final details = await db.getProductDetails(widget.product.id);
+    setState(() {
+      if (content != null) {
+        widget.product.describe = _convertHtmlToPlainText(content);
+      }
+      widget.product.imageUrls = images;
+      widget.product.address = address ?? 'Không có thông tin';
+      widget.product.companyName = details['company_name'];
+      widget.product.phoneNumber = details['phone_number'];
+      widget.product.representative = details['representative'];
+      widget.product.email = details['email'];
+      widget.product.website = details['website'];
+      widget.product.latitude = details['latitude'];
+      widget.product.longitude = details['longitude'];
+      isLoading = false;
+    });
+    await db.close();
+  }
 
   String _convertHtmlToPlainText(String htmlString) {
     final document = parse(htmlString);
     final String parsedString = parse(document.body!.text).documentElement!.text;
     return parsedString;
+  }
+
+  void _openMap(double? latitude, double? longitude) async {
+    if (latitude != null && longitude != null) {
+      final uri = Uri.parse('https://www.google.com/maps/search/?api=1&query=$latitude,$longitude');
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } else {
+        print('Không thể mở bản đồ');
+      }
+    } else {
+      print('Không có thông tin vị trí');
+    }
+  }
+
+  void _launchURL(String? url) async {
+    if (url != null && url.isNotEmpty) {
+      final uri = Uri.parse(url);
+      if (await canLaunchUrl(uri)) {
+        await launchUrl(uri, mode: LaunchMode.externalApplication);
+      } else {
+        print('Không thể mở URL: $url');
+      }
+    } else {
+      print('URL không hợp lệ');
+    }
+  }
+
+  void _makePhoneCall(String? phoneNumber) async {
+    if (phoneNumber != null && phoneNumber.isNotEmpty) {
+      final Uri launchUri = Uri(
+        scheme: 'tel',
+        path: phoneNumber,
+      );
+      if (await canLaunchUrl(launchUri)) {
+        await launchUrl(launchUri);
+      } else {
+        print('Không thể gọi điện thoại đến số: $phoneNumber');
+      }
+    } else {
+      print('Số điện thoại không hợp lệ');
+    }
   }
 
   @override
@@ -166,20 +217,14 @@ Future<void> _loadProductDetails() async {
                     children: <Widget>[
                       Text(
                         "Tên sản phẩm: ${widget.product.name}",
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 8),
                       Row(
                         children: [
                           const Text(
                             "Số sao đạt:",
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                            ),
+                            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                           ),
                           Star(value: widget.product.star),
                         ],
@@ -187,18 +232,84 @@ Future<void> _loadProductDetails() async {
                       const SizedBox(height: 8),
                       Text(
                         "Danh mục: ${widget.product.category}",
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                        ),
+                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 8),
                       Text(
                         "Địa chỉ: ${widget.product.address}",
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
+                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        "Cơ sở sản xuất: ${widget.product.companyName ?? 'Không có thông tin'}",
+                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 8),
+                      if (widget.product.phoneNumber != null && widget.product.phoneNumber!.isNotEmpty)
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              "Số điện thoại: ",
+                              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                            ),
+                            InkWell(
+                              onTap: () => _makePhoneCall(widget.product.phoneNumber),
+                              child: Text(
+                                widget.product.phoneNumber!,
+                                style: TextStyle(
+                                  color: Colors.blue[100],
+                                  decoration: TextDecoration.underline,
+                                ),
+                              ),
+                            ),
+                          ],
+                        )
+                      else
+                        const Text(
+                          "Số điện thoại: Không có thông tin",
+                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
                         ),
+                      const SizedBox(height: 8),
+                      Text(
+                        "Người đại diện: ${widget.product.representative ?? 'Không có thông tin'}",
+                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        "Email: ${widget.product.email ?? 'Không có thông tin'}",
+                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                      ),
+                      const SizedBox(height: 8),
+                      if (widget.product.website != null && widget.product.website!.isNotEmpty)
+                        Row(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              "Trang web: ",
+                              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                            ),
+                            InkWell(
+                              onTap: () => _launchURL(widget.product.website),
+                              child: Text(
+                                widget.product.website!,
+                                style: TextStyle(
+                                  color: Colors.blue[100],
+                                  decoration: TextDecoration.underline,
+                                ),
+                              ),
+                            ),
+                          ],
+                        )
+                      else
+                        const Text(
+                          "Trang web: Không có thông tin",
+                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                        ),
+                      const SizedBox(height: 8),
+                      ElevatedButton(
+                        onPressed: () => _openMap(widget.product.latitude, widget.product.longitude),
+                        child: const Text('Xem trên bản đồ'),
                       ),
                     ],
                   ),

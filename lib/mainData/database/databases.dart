@@ -7,6 +7,8 @@ import 'package:ocop/mainData/database/account.dart';
 import 'package:ocop/mainData/database/area.dart';
 import 'package:ocop/mainData/database/news.dart';
 import 'package:ocop/mainData/database/company.dart';
+import 'package:ocop/mainData/database/videos.dart';
+import 'package:ocop/src/data/home/videosData.dart';
 
 class DefaultDatabaseOptions {
   bool _connectionFailed = false;
@@ -17,6 +19,7 @@ class DefaultDatabaseOptions {
   late AreaDatabase areaDatabase;
   late NewsDatabase newsDatabase;
   late CompanyDatabase companyDatabase;
+  late VideosDatabase videosDatabase;
 
   Future<void> connect() async {
     try {
@@ -39,6 +42,7 @@ class DefaultDatabaseOptions {
       areaDatabase = AreaDatabase(connection!);
       areaDatabase = AreaDatabase(connection!);
       companyDatabase = CompanyDatabase(connection!);
+      videosDatabase = VideosDatabase(connection!);
     } catch (e) {
       print('Failed to connect to database: $e');
       _connectionFailed = true;
@@ -88,7 +92,11 @@ class DefaultDatabaseOptions {
 
   Future<String?> getProductAddress(int productId) async {
   return await productDatabase.getProductAddress(productId);
-}
+  }
+
+  Future<Map<String, dynamic>> getProductDetails(int productId) async {
+    return await productDatabase.getProductDetails(productId);
+  }
 
   Future<List<Map<String, dynamic>>> getRandomNews({int limit = 10}) async {
     return await newsDatabase.getRandomNews(limit: limit);
@@ -130,9 +138,13 @@ class DefaultDatabaseOptions {
     return await areaDatabase.getApprovedCommunes();
   }
 
-    Future<List<CompanyData>> getCompanies() async {
-      return await companyDatabase.getCompanies();
-    }
+  Future<List<CompanyData>> getCompanies() async {
+    return await companyDatabase.getCompanies();
+  }
+
+  Future<List<VideoData>> getAllVideo() async {
+    return await videosDatabase.getAllVideo();
+  }
 
   Future<void> close() async {
     await connection!.close();

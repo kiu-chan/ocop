@@ -367,4 +367,34 @@ Future<String?> getProductAddress(int productId) async {
   }
 }
 
+Future<Map<String, dynamic>> getProductDetails(int productId) async {
+  try {
+    final result = await connection.query('''
+      SELECT p.id, c.name as company_name, c.phone_number, c.representative, c.email, c.website,
+             ST_X(p.geom::geometry) as longitude, ST_Y(p.geom::geometry) as latitude
+      FROM public.products p
+      LEFT JOIN public.product_companies c ON p.company_id = c.id
+      WHERE p.id = @id
+    ''', substitutionValues: {
+      'id': productId,
+    });
+
+    if (result.isNotEmpty) {
+      return {
+        'company_name': result[0][1],
+        'phone_number': result[0][2],
+        'representative': result[0][3],
+        'email': result[0][4],
+        'website': result[0][5],
+        'longitude': result[0][6],
+        'latitude': result[0][7],
+      };
+    }
+    return {};
+  } catch (e) {
+    print('Lỗi khi truy vấn chi tiết sản phẩm: $e');
+    return {};
+  }
+}
+
 }
