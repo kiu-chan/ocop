@@ -117,7 +117,7 @@ String _buildTruncatedText(String text) {
 }
 
 
-  List<PieChartSectionData> showingSections() {
+List<PieChartSectionData> showingSections() {
     final int total = widget.chartData.data.values.fold(0, (sum, value) => sum + value);
 
     return List.generate(widget.chartData.data.length, (i) {
@@ -133,59 +133,88 @@ String _buildTruncatedText(String text) {
         color: _getSectionColor(i),
         value: entry.value.toDouble(),
         title: '$percentage%',
-        radius: radius,
-        titleStyle: TextStyle(
-          fontSize: fontSize,
-          fontWeight: FontWeight.bold,
-          color: AppColors.mainTextColor1,
-          shadows: shadows,
-        ),
-      );
-    });
-  }
-
-  Color _getSectionColor(int index) {
-    switch (index) {
-      case 0:
-        return AppColors.contentColorOrange;
-      case 1:
-        return AppColors.contentColorGreen;
-      case 2:
-        return AppColors.contentColorPurple;
-      case 3:
-        return AppColors.contentColorYellow;
-      case 4:
-        return AppColors.contentColorBlue;
-      case 5:
-        return AppColors.contentColorBlue2;
-      case 6:
-        return AppColors.contentColorPink;
-      case 7:
-        return AppColors.contentColorRed2;
-      case 8:
-        return AppColors.contentColorPurple2;
-      default:
-        return Colors.grey; // Thêm màu nếu cần
-    }
-  }
-
-  Widget _buildDataTable() {
-    final int total = widget.chartData.data.values.fold(0, (sum, value) => sum + value);
-
-    return DataTable(
-      columns: const [
-        DataColumn(label: Text('Đầu mục')),
-        DataColumn(label: Text('Số lượng')),
-        DataColumn(label: Text('Tỉ lệ %')),
-      ],
-      rows: widget.chartData.data.entries.map((entry) {
-        final percentage = (entry.value / total * 100).toStringAsFixed(1);
-        return DataRow(cells: [
-          DataCell(Text(_buildTruncatedText('${entry.key} ${widget.chartData.title}'))),
-          DataCell(Text(entry.value.toString())),
-          DataCell(Text('$percentage%')),
-        ]);
-      }).toList(),
+      radius: radius,
+      titleStyle: TextStyle(
+        fontSize: fontSize,
+        fontWeight: FontWeight.bold,
+        color: AppColors.mainTextColor1,
+        shadows: shadows,
+      ),
     );
+  });
+}
+
+Color _getSectionColor(int index) {
+  switch (index) {
+    case 0:
+      return AppColors.contentColorOrange;
+    case 1:
+      return AppColors.contentColorGreen;
+    case 2:
+      return AppColors.contentColorPurple;
+    case 3:
+      return AppColors.contentColorYellow;
+    case 4:
+      return AppColors.contentColorBlue;
+    case 5:
+      return AppColors.contentColorBlue2;
+    case 6:
+      return AppColors.contentColorPink;
+    case 7:
+      return AppColors.contentColorRed2;
+    case 8:
+      return AppColors.contentColorPurple2;
+    case 9:
+      return AppColors.pastelPink;
+    case 10:
+      return AppColors.pastelBlue;
+    case 11:
+      return AppColors.pastelGreen;
+    case 12:
+      return AppColors.pastelYellow;
+    case 13:
+      return AppColors.pastelLavender;
+    case 14:
+      return AppColors.pastelOrange;
+    case 15:
+      return AppColors.deepSkyBlue;
+    case 16:
+      return AppColors.goldenrod;
+    case 17:
+      return AppColors.mediumSeaGreen;
+    case 18:
+      return AppColors.crimson;
+    case 19:
+      return AppColors.darkOrchid;
+    default:
+      return AppColors.contentColorGrey; // Sử dụng màu xám từ AppColors thay vì Colors.grey
   }
+}
+
+Widget _buildDataTable() {
+  Map<String, int> dataToUse = widget.chartData.useDetailedDataForTable && widget.chartData.detailedData != null
+      ? widget.chartData.detailedData!
+      : widget.chartData.data;
+
+  final int total = dataToUse.values.fold(0, (sum, value) => sum + value);
+
+  List<MapEntry<String, int>> sortedEntries = dataToUse.entries.toList()
+    ..sort((a, b) => b.value.compareTo(a.value));
+
+  return DataTable(
+    columns: [
+      DataColumn(label: Text(widget.chartData.useDetailedDataForTable ? 'Xã' : widget.chartData.x_title)),
+      DataColumn(label: Text(widget.chartData.y_title)),
+      const DataColumn(label: Text('Tỉ lệ %')),
+    ],
+    rows: sortedEntries.map((entry) {
+      final percentage = (entry.value / total * 100).toStringAsFixed(1);
+      return DataRow(cells: [
+        DataCell(Text(_buildTruncatedText(entry.key))),
+        DataCell(Text(entry.value.toString())),
+        DataCell(Text('$percentage%')),
+      ]);
+    }).toList(),
+  );
+}
 }

@@ -97,6 +97,9 @@ class DefaultDatabaseOptions {
   Future<Map<String, dynamic>> getProductDetails(int productId) async {
     return await productDatabase.getProductDetails(productId);
   }
+Future<Map<String, dynamic>> getProductCommuneCounts() async {
+    return await productDatabase.getProductCommuneCounts();
+  }
 
   Future<List<Map<String, dynamic>>> getRandomNews({int limit = 10}) async {
     return await newsDatabase.getRandomNews(limit: limit);

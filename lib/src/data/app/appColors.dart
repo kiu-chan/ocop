@@ -11,7 +11,6 @@ class AppColors {
   static const Color mainGridLineColor = Colors.white10;
   static const Color borderColor = Colors.white54;
   static const Color gridLinesColor = Color(0x11FFFFFF);
-
   static const Color contentColorBlack = Colors.black;
   static const Color contentColorWhite = Colors.white;
   static const Color contentColorBlue = Color(0xFF2196F3);
@@ -27,4 +26,32 @@ class AppColors {
   static const Color contentColorRed = Color(0xFFE80054);
   static const Color contentColorRed2 = Color(0xFFffafcc);
   static const Color contentColorCyan = Color(0xFF50E4FF);
+
+  static const Color contentColorTeal = Color(0xFF009688);
+  static const Color contentColorAmber = Color(0xFFFFC107);
+  static const Color contentColorBrown = Color(0xFF795548);
+  static const Color contentColorIndigo = Color(0xFF3F51B5);
+  static const Color contentColorLime = Color(0xFFCDDC39);
+  static const Color contentColorGrey = Color(0xFF9E9E9E);
+
+  static const Color pastelPink = Color(0xFFFFC0CB);
+  static const Color pastelBlue = Color(0xFFAEC6CF);
+  static const Color pastelGreen = Color(0xFF77DD77);
+  static const Color pastelYellow = Color(0xFFFFFF99);
+  static const Color pastelLavender = Color(0xFFB39EB5);
+  static const Color pastelOrange = Color(0xFFFFB347);
+  static const Color darkSlateGrey = Color(0xFF2F4F4F);
+  static const Color deepSkyBlue = Color(0xFF00BFFF);
+  static const Color goldenrod = Color(0xFFDAA520);
+  static const Color mediumSeaGreen = Color(0xFF3CB371);
+  static const Color crimson = Color(0xFFDC143C);
+  static const Color darkOrchid = Color(0xFF9932CC);
+  static const Color steelBlue = Color(0xFF4682B4);
+  static const Color saddleBrown = Color(0xFF8B4513);
+  static const Color darkOliveGreen = Color(0xFF556B2F);
+  static const Color mediumPurple = Color(0xFF9370DB);
+  static const Color firebrick = Color(0xFFB22222);
+  static const Color darkTurquoise = Color(0xFF00CED1);
+  static const Color cornflowerBlue = Color(0xFF6495ED);
+  static const Color paleTurquoise = Color(0xFFAFEEEE);
 }

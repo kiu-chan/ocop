@@ -81,6 +81,26 @@ class _ChartPageState extends State<ChartPage> {
     });
   }
 
+Future<void> _loadProductCommune() async {
+  await databaseData.connect();
+  var communeData = await databaseData.getProductCommuneCounts();
+  
+  Future.delayed(const Duration(seconds: 1), () {
+    setState(() {
+      chartData = ChartData(
+        name: "Biểu đồ thống kê số lượng xã theo số lượng sản phẩm",
+        title: "Sản phẩm",
+        x_title: "Số lượng sản phẩm",
+        y_title: "Số lượng xã",
+        data: communeData['grouped'] as Map<String, int>,
+        detailedData: communeData['detailed'] as Map<String, int>,
+        useDetailedDataForTable: true,
+      );
+      setCheckData();
+    });
+  });
+}
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -193,6 +213,8 @@ class _ChartPageState extends State<ChartPage> {
                   onChanged: (value) {
                     setState(() {
                       selectedLoadData = value;
+                      setCheckData();
+                      _loadProductCommune();
                     });
                   },
                 ),

@@ -433,4 +433,39 @@ Future<Map<String, dynamic>> getProductDetails(int productId) async {
   }
 }
 
+Future<Map<String, dynamic>> getProductCommuneCounts() async {
+  try {
+    final result = await connection.query('''
+      SELECT mc.name, COUNT(p.commune_id) as product_count
+      FROM map_communes mc
+      LEFT JOIN products p ON mc.id = p.commune_id
+      GROUP BY mc.name
+      ORDER BY product_count DESC
+    ''');
+
+    Map<String, int> detailedData = {};
+    Map<String, int> groupedData = {};
+
+    for (final row in result) {
+      String communeName = row[0] as String;
+      int count = row[1] as int;
+      detailedData[communeName] = count;
+      if (count > 0) {
+        groupedData[count.toString()] = (groupedData[count.toString()] ?? 0) + 1;
+      }
+    }
+
+    return {
+      'detailed': detailedData,
+      'grouped': groupedData,
+    };
+  } catch (e) {
+    print('Lỗi khi truy vấn dữ liệu xã: $e');
+    return {
+      'detailed': {},
+      'grouped': {},
+    };
+  }
+}
+
 }
