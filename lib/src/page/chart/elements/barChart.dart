@@ -4,11 +4,11 @@ import 'package:ocop/src/data/chart/chartData.dart';
 
 class BarChartSample extends StatefulWidget {
   final ChartData chartData;
-  
-  const BarChartSample({super.key, 
+  const BarChartSample({
+    super.key,
     required this.chartData,
   });
-  
+
   @override
   _BarChartSampleState createState() => _BarChartSampleState();
 }
@@ -23,13 +23,27 @@ class _BarChartSampleState extends State<BarChartSample> {
 
   @override
   Widget build(BuildContext context) {
-    final titles = widget.chartData.data.keys.toList();
-    final values = widget.chartData.data.values.toList();
-    
+    // Sắp xếp dữ liệu dựa trên giá trị của trục x nếu nó là số
+    final sortedData = widget.chartData.data.entries.toList()
+      ..sort((a, b) {
+        final aNum = num.tryParse(a.key);
+        final bNum = num.tryParse(b.key);
+        if (aNum != null && bNum != null) {
+          return aNum.compareTo(bNum);
+        }
+        return a.key.compareTo(b.key);
+      });
+
+    final titles = sortedData.map((e) => e.key).toList();
+    final values = sortedData.map((e) => e.value).toList();
+
+    final maxY = values.reduce((a, b) => a > b ? a : b).toDouble();
+    final minY = values.reduce((a, b) => a < b ? a : b).toDouble();
+    final yInterval = ((maxY - minY) / 20).ceilToDouble();
+
     final barGroups = titles.asMap().entries.map((entry) {
       final index = entry.key;
       final value = values[index];
-      
       return BarChartGroupData(
         x: index,
         barRods: [
@@ -52,12 +66,14 @@ class _BarChartSampleState extends State<BarChartSample> {
         child: BarChart(
           BarChartData(
             alignment: BarChartAlignment.spaceAround,
-            maxY: values.reduce((a, b) => a > b ? a : b).toDouble() * 1.1,
+            maxY: maxY * 1.1,
+            minY: minY,
             titlesData: FlTitlesData(
               leftTitles: AxisTitles(
                 sideTitles: SideTitles(
                   showTitles: true,
                   reservedSize: 40,
+                  interval: yInterval,
                   getTitlesWidget: (value, meta) {
                     return SideTitleWidget(
                       axisSide: meta.axisSide,
@@ -65,7 +81,7 @@ class _BarChartSampleState extends State<BarChartSample> {
                     );
                   },
                 ),
-                axisNameWidget: Text(widget.chartData.y_title), // Y-axis name
+                axisNameWidget: Text(widget.chartData.y_title),
               ),
               bottomTitles: AxisTitles(
                 sideTitles: SideTitles(
@@ -88,7 +104,7 @@ class _BarChartSampleState extends State<BarChartSample> {
                     );
                   },
                 ),
-                axisNameWidget: Text(widget.chartData.x_title), // X-axis name
+                axisNameWidget: Text(widget.chartData.x_title),
               ),
               rightTitles: const AxisTitles(
                 sideTitles: SideTitles(showTitles: false),

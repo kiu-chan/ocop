@@ -91,10 +91,28 @@ Future<void> _loadProductCommune() async {
         name: "Biểu đồ thống kê số lượng xã theo số lượng sản phẩm",
         title: "Sản phẩm",
         x_title: "Số lượng sản phẩm",
-        y_title: "Số lượng xã",
+        y_title: "Số lượng",
         data: communeData['grouped'] as Map<String, int>,
         detailedData: communeData['detailed'] as Map<String, int>,
         useDetailedDataForTable: true,
+      );
+      setCheckData();
+    });
+  });
+}
+
+Future<void> _loadProductYear() async {
+  await databaseData.connect();
+  var groupedYear = await databaseData.getProductYearCounts();
+  
+  Future.delayed(const Duration(seconds: 1), () {
+    setState(() {
+      chartData = ChartData(
+        name: "Biểu đồ thống kê sản phẩm theo năm",
+        title: "",
+        x_title: "Năm",
+        y_title: "Số lượng sản phẩm",
+        data: groupedYear,
       );
       setCheckData();
     });
@@ -225,6 +243,8 @@ Future<void> _loadProductCommune() async {
                   onChanged: (value) {
                     setState(() {
                       selectedLoadData = value;
+                      setCheckData();
+                      _loadProductYear();
                     });
                   },
                 ),

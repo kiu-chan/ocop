@@ -468,4 +468,28 @@ Future<Map<String, dynamic>> getProductCommuneCounts() async {
   }
 }
 
+Future<Map<String, int>> getProductYearCounts() async {
+  try {
+    final result = await connection.query('''
+      SELECT year, COUNT(*) as count
+      FROM products
+      WHERE year IS NOT NULL
+      GROUP BY year
+      ORDER BY year
+    ''');
+
+    Map<String, int> groupedYear = {};
+    for (final row in result) {
+      int year = row[0] as int;
+      int count = row[1] as int;
+      groupedYear[year.toString()] = count;
+    }
+
+    return groupedYear;
+  } catch (e) {
+    print('Lỗi khi truy vấn dữ liệu sản phẩm theo năm: $e');
+    return {};
+  }
+}
+
 }
