@@ -121,6 +121,10 @@ Future<Map<String, dynamic>> getProductCommuneCounts() async {
     return await newsDatabase.getNewsImage(newsId);
   }
 
+  Future<Map<String, dynamic>?> getAboutsContent(int aboutsId) async {
+    return await newsDatabase.getAboutsContent(aboutsId);
+  }
+
   Future<List<Map<String, dynamic>>> getMedia() async {
     return await mediaDatabase.getMedia();
   }

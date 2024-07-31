@@ -16,6 +16,6 @@ class News {
   });
 
   String get formattedDate {
-    return DateFormat('dd/MM/yyyy').format(publishedAt);
+    return DateFormat('dd/MM/yyyy HH:mm').format(publishedAt);
   }
 }

@@ -144,4 +144,29 @@ Future<String?> getNewsImage(int newsId) async {
     return null;
   }
 }
+
+
+
+  Future<Map<String, dynamic>?> getAboutsContent(int aboutsId) async {
+    try {
+      final result = await connection.query('''
+        SELECT content, updated_at
+        FROM abouts
+        WHERE id = @id
+      ''', substitutionValues: {
+        'id': aboutsId,
+      });
+
+      if (result.isNotEmpty) {
+        return {
+          'content': result[0][0] as String,
+          'updated_at': (result[0][1] as DateTime).toIso8601String(),
+        };
+      }
+      return null;
+    } catch (e) {
+      print('Lỗi khi truy vấn nội dung giới thiệu: $e');
+      return null;
+    }
+  }
 }
