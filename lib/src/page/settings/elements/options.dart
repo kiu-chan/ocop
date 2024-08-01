@@ -45,7 +45,7 @@ class Options extends StatelessWidget {
         onTap: () {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => UserInformation()),
+            MaterialPageRoute(builder: (context) => const UserInformation()),
           );
         },
         child: Row(
@@ -104,7 +104,7 @@ class Options extends StatelessWidget {
         onTap: () {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => Introduce()),
+            MaterialPageRoute(builder: (context) => const Introduce()),
           );
         },
         child: Row(

@@ -5,7 +5,7 @@ import 'package:intl/intl.dart';
 import 'package:flutter_html/flutter_html.dart';
 
 class Introduce extends StatefulWidget {
-  const Introduce({Key? key}) : super(key: key);
+  const Introduce({super.key});
 
   @override
   _IntroduceState createState() => _IntroduceState();

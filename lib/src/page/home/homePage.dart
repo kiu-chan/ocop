@@ -9,19 +9,19 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    return const Scaffold(
       body: SingleChildScrollView(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
-            const SizedBox(height: 30),
-            const Logo(),
-            const SizedBox(height: 10),
-            const ProductList(),
-            const NewsList(),
-            const SizedBox(height: 20),
-            const VideoList(),
-            const SizedBox(height: 30),
+            SizedBox(height: 30),
+            Logo(),
+            SizedBox(height: 10),
+            ProductList(),
+            NewsList(),
+            SizedBox(height: 20),
+            VideoList(),
+            SizedBox(height: 30),
           ],
         ),
       ),

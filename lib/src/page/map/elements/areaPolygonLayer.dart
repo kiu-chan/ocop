@@ -8,10 +8,10 @@ class AreaPolygonLayer extends StatelessWidget {
   final List<Color> orderedColors;
 
   const AreaPolygonLayer({
-    Key? key,
+    super.key,
     required this.area,
     required this.orderedColors,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

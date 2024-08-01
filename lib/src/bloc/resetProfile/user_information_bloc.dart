@@ -8,7 +8,7 @@ class UserInformationBloc extends Bloc<UserInformationEvent, UserInformationStat
   final DefaultDatabaseOptions _databaseOptions;
 
   UserInformationBloc(this._databaseOptions)
-      : super(UserInformationState(name: '', commune: '', communes: [])) {
+      : super(const UserInformationState(name: '', commune: '', communes: [])) {
     on<LoadUserInformation>(_onLoadUserInformation);
     on<UpdateUserName>(_onUpdateUserName);
     on<UpdateUserCommune>(_onUpdateUserCommune);

@@ -15,7 +15,7 @@ import 'package:ocop/src/page/map/elements/areaPolygonLayer.dart';
 import 'package:ocop/src/data/map/areaData.dart';
 
 class MapPage extends StatefulWidget {
-  const MapPage({Key? key}) : super(key: key);
+  const MapPage({super.key});
 
   @override
   _MapPageState createState() => _MapPageState();
@@ -113,7 +113,7 @@ class _MapPageState extends State<MapPage> {
       }
       imageDataList = groupedLatLngs.entries.map((entry) {
         return ImageData(
-          'lib/src/assets/img/settings/images.png',
+          'lib/src/assets/img/settings/ic_launcher.png',
           entry.key,
           entry.value,
         );
@@ -298,7 +298,7 @@ class _MapPageState extends State<MapPage> {
             ),
             actions: <Widget>[
               TextButton(
-                child: Text('Đóng'),
+                child: const Text('Đóng'),
                 onPressed: () {
                   Navigator.of(context).pop();
                 },
@@ -400,6 +400,7 @@ class _MapPageState extends State<MapPage> {
                 imageDataList: imageDataList,
                 companies: filteredCompanies,
                 products: products,
+                selectedProductTypes: selectedProductTypes,
               ),
             ],
           ),

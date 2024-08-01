@@ -5,7 +5,7 @@ import 'package:ocop/src/data/home/videosData.dart';
 
 
 class VideoList extends StatefulWidget {
-  const VideoList({Key? key}) : super(key: key);
+  const VideoList({super.key});
 
   @override
   _VideoListState createState() => _VideoListState();
@@ -102,7 +102,7 @@ class _VideoListState extends State<VideoList> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Video Player
-                Container(
+                SizedBox(
                   width: constraints.maxWidth * 0.7, // 70% of the width
                   child: _buildVideoPlayer(),
                 ),

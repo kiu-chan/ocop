@@ -17,7 +17,7 @@ class Menu extends StatefulWidget {
   final Function(List<int>) onFilterCommunes;
 
   const Menu({
-    Key? key,
+    super.key,
     required this.onClickMap,
     required this.onClickImgData,
     required this.imageDataList,
@@ -28,7 +28,7 @@ class Menu extends StatefulWidget {
     required this.selectedProductTypes,
     required this.communes,
     required this.onFilterCommunes,
-  }) : super(key: key);
+  });
 
   @override
   _MenuState createState() => _MenuState();

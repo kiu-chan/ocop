@@ -14,7 +14,7 @@ class _HeaderSettingsState extends State<HeaderSettings> {
       body: Expanded(
         child: ClipOval(
   child: Image.network(
-    'lib/src/assets/img/settings/images.png',
+    'lib/src/assets/img/settings/ic_launcher.png',
     width: 100, // Chiều rộng của hình ảnh
     height: 100, // Chiều cao của hình ảnh
     fit: BoxFit.cover, // Cách điều chỉnh hình ảnh trong khung

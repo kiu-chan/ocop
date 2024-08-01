@@ -11,13 +11,15 @@ class MarkerMap extends StatelessWidget {
   final List<ImageData> imageDataList;
   final List<CompanyData> companies;
   final List<ProductData> products;
-  
+  final Set<String> selectedProductTypes;
+
   const MarkerMap({
-    Key? key, 
-    required this.imageDataList, 
+    super.key,
+    required this.imageDataList,
     required this.companies,
     required this.products,
-  }) : super(key: key);
+    required this.selectedProductTypes,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -29,7 +31,7 @@ class MarkerMap extends StatelessWidget {
   List<Marker> _buildMarkers() {
     List<Marker> markers = [];
     for (var imageData in imageDataList) {
-      if(imageData.getCheck()) {
+      if (imageData.checkRender) {
         for (var location in imageData.locations) {
           markers.add(
             Marker(
@@ -71,7 +73,7 @@ class MarkerMap extends StatelessWidget {
   }
 
   List<Marker> _buildCompanyMarkers() {
-    return companies.map((company) {
+    return companies.where((company) => selectedProductTypes.contains(company.productTypeName)).map((company) {
       return Marker(
         width: 50.0,
         height: 50.0,
@@ -109,7 +111,7 @@ class MarkerMap extends StatelessWidget {
   }
 
   List<Marker> _buildProductMarkers(BuildContext context) {
-    return products.map((product) {
+    return products.where((product) => selectedProductTypes.contains(product.categoryName)).map((product) {
       return Marker(
         width: 50.0,
         height: 50.0,
@@ -131,93 +133,93 @@ class MarkerMap extends StatelessWidget {
     }).toList();
   }
 
-void _showProductInfo(BuildContext context, ProductData product) async {
-  showDialog(
-    context: context,
-    barrierDismissible: false,
-    builder: (BuildContext context) {
-      return const Center(child: CircularProgressIndicator());
-    },
-  );
-
-  final db = DefaultDatabaseOptions();
-  await db.connect();
-
-  try {
-    final content = await db.getProductContent(product.id);
-    final images = await db.getProductImages(product.id);
-    final address = await db.getProductAddress(product.id);
-    final details = await db.getProductDetails(product.id);
-
-    Navigator.of(context).pop(); // Đóng dialog loading
-
-    if (!context.mounted) return;
-
+  void _showProductInfo(BuildContext context, ProductData product) async {
     showDialog(
       context: context,
+      barrierDismissible: false,
       builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text(product.name),
-          content: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                if (images.isNotEmpty) Image.network(images[0]),
-                const SizedBox(height: 10),
-                Text('Địa chỉ: ${address ?? "Không có thông tin"}'),
-                Text('Loại sản phẩm: ${product.categoryName}'),
-                Text('Đánh giá: ${product.rating} sao'),
-                if (details['phone_number'] != null)
-                  Text('Liên hệ: ${details['phone_number']}'),
-              ],
-            ),
-          ),
-          actions: [
-            TextButton(
-              child: const Text('Xem chi tiết'),
-              onPressed: () {
-                Navigator.of(context).pop(); // Đóng dialog
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => ProductInformation(
-                      product: ProductHome(
-                        id: product.id,
-                        name: product.name,
-                        star: product.rating,
-                        category: product.categoryName,
-                        img: images.isNotEmpty ? images[0] : null,
-                        address: address,
-                        describe: content,
-                        companyName: details['company_name'],
-                        phoneNumber: details['phone_number'],
-                        representative: details['representative'],
-                        email: details['email'],
-                        website: details['website'],
-                        latitude: details['latitude'],
-                        longitude: details['longitude'],
-                      ),
-                    ),
-                  ),
-                );
-              },
-            ),
-            TextButton(
-              child: const Text('Đóng'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
+        return const Center(child: CircularProgressIndicator());
       },
     );
-  } catch (e) {
-    print('Lỗi khi tải thông tin sản phẩm: $e');
-    Navigator.of(context).pop(); // Đóng dialog loading
-    // Hiển thị thông báo lỗi nếu cần
-  } finally {
-    await db.close();
+
+    final db = DefaultDatabaseOptions();
+    await db.connect();
+
+    try {
+      final content = await db.getProductContent(product.id);
+      final images = await db.getProductImages(product.id);
+      final address = await db.getProductAddress(product.id);
+      final details = await db.getProductDetails(product.id);
+
+      Navigator.of(context).pop(); // Đóng dialog loading
+
+      if (!context.mounted) return;
+
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text(product.name),
+            content: SingleChildScrollView(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (images.isNotEmpty) Image.network(images[0]),
+                  const SizedBox(height: 10),
+                  Text('Địa chỉ: ${address ?? "Không có thông tin"}'),
+                  Text('Loại sản phẩm: ${product.categoryName}'),
+                  Text('Đánh giá: ${product.rating} sao'),
+                  if (details['phone_number'] != null)
+                    Text('Liên hệ: ${details['phone_number']}'),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                child: const Text('Xem chi tiết'),
+                onPressed: () {
+                  Navigator.of(context).pop(); // Đóng dialog
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => ProductInformation(
+                        product: ProductHome(
+                          id: product.id,
+                          name: product.name,
+                          star: product.rating,
+                          category: product.categoryName,
+                          img: images.isNotEmpty ? images[0] : null,
+                          address: address,
+                          describe: content,
+                          companyName: details['company_name'],
+                          phoneNumber: details['phone_number'],
+                          representative: details['representative'],
+                          email: details['email'],
+                          website: details['website'],
+                          latitude: details['latitude'],
+                          longitude: details['longitude'],
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              ),
+              TextButton(
+                child: const Text('Đóng'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          );
+        },
+      );
+    } catch (e) {
+      print('Lỗi khi tải thông tin sản phẩm: $e');
+      Navigator.of(context).pop(); // Đóng dialog loading
+      // Hiển thị thông báo lỗi nếu cần
+    } finally {
+      await db.close();
+    }
   }
-}
 }
