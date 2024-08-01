@@ -11,6 +11,7 @@ import 'package:ocop/src/page/map/elements/MarkerMap.dart';
 import 'package:ocop/mainData/database/databases.dart';
 import 'package:ocop/src/data/map/productMapData.dart';
 import 'package:ocop/src/data/map/companiesData.dart';
+import 'package:ocop/src/page/map/elements/commune_polygon_layer.dart';
 
 class MapPage extends StatefulWidget {
   const MapPage({Key? key}) : super(key: key);
@@ -27,6 +28,8 @@ class _MapPageState extends State<MapPage> {
   List<CompanyData> companies = [];
   List<CompanyData> filteredCompanies = [];
   Set<String> selectedProductTypes = <String>{};
+  List<Map<String, dynamic>> communes = [];
+  List<int> visibleCommuneIds = [];
 
   double currentZoom = 9.0;
 
@@ -52,14 +55,9 @@ class _MapPageState extends State<MapPage> {
     'lib/src/assets/geodata/vungLoi.geojson',
   ];
   final List<Color> orderedColors = [
-    Colors.red,
-    Colors.blue,
-    Colors.green,
-    Colors.yellow,
-    Colors.orange,
-    Colors.purple,
-    Colors.teal,
-    Colors.pink,
+    Colors.red, Colors.blue, Colors.green, Colors.yellow, Colors.orange,
+    Colors.purple, Colors.teal, Colors.pink, Colors.cyan, Colors.brown,
+    Colors.indigo, Colors.lime, Colors.deepOrange, Colors.lightBlue, Colors.pinkAccent,
   ];
 
   bool isOfflineMode = false;
@@ -77,6 +75,7 @@ class _MapPageState extends State<MapPage> {
       _showConnectionFailedDialog();
     } else {
       await _loadOnlineData();
+      await _loadAllCommunesData();
     }
   }
 
@@ -85,7 +84,6 @@ class _MapPageState extends State<MapPage> {
     var companiesData = await databaseData.getCompanies();
     _updateProductList(productsData);
     _updateCompanyList(companiesData);
-    await databaseData.close();
   }
 
   Future<void> _loadOfflineData() async {
@@ -93,8 +91,15 @@ class _MapPageState extends State<MapPage> {
     List<dynamic> jsonList = json.decode(jsonString);
     var productsData = jsonList.map((json) => ProductData.fromJson(json)).toList();
     _updateProductList(productsData);
-    // Load offline company data if available
-    // _updateCompanyList(offlineCompaniesData);
+  }
+
+  Future<void> _loadAllCommunesData() async {
+    var communesData = await databaseData.getAllCommunes();
+    setState(() {
+      communes = communesData;
+      visibleCommuneIds = communes.map((c) => c['id'] as int).toList();
+    });
+    print("Loaded ${communes.length} communes");
   }
 
   void _updateProductList(List<ProductData> productsData) {
@@ -120,7 +125,7 @@ class _MapPageState extends State<MapPage> {
   void _updateCompanyList(List<CompanyData> companiesData) {
     setState(() {
       companies = companiesData;
-      filteredCompanies = []; // Initially, no companies are shown
+      filteredCompanies = [];
     });
   }
 
@@ -259,6 +264,80 @@ class _MapPageState extends State<MapPage> {
     });
   }
 
+  void _filterCommunes(List<int> selectedIds) {
+    setState(() {
+      visibleCommuneIds = selectedIds;
+    });
+  }
+
+  void _showCommuneInfo(Map<String, dynamic> commune) async {
+    print("Showing info for commune with ID: ${commune['id']}");
+    var communeDetails = await databaseData.getCommune(commune['id']);
+    
+    print("Commune details: $communeDetails");
+    
+    if (communeDetails != null) {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text(communeDetails['name'] ?? 'Không có tên'),
+            content: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text('ID: ${communeDetails['id'] ?? 'N/A'}'),
+                Text('Diện tích: ${communeDetails['area'] != null ? communeDetails['area'].toStringAsFixed(2) : 'N/A'} km²'),
+                Text('Dân số: ${communeDetails['population'] ?? 'N/A'}'),
+              ],
+            ),
+            actions: <Widget>[
+              TextButton(
+                child: Text('Đóng'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          );
+        },
+      );
+    } else {
+      print('Không tìm thấy thông tin chi tiết cho commune.');
+    }
+  }
+
+  void _handleMapTap(LatLng tappedPoint) {
+    print("Tapped point: $tappedPoint");
+    for (var commune in communes) {
+      if (visibleCommuneIds.contains(commune['id'])) {
+        for (var polygon in commune['polygons'] as List<List<LatLng>>) {
+          if (_isPointInPolygon(tappedPoint, polygon)) {
+            print("Found commune: ${commune['id']}");
+            _showCommuneInfo({'id': commune['id']});
+            return;
+          }
+        }
+      }
+    }
+    print("No commune found at tapped point");
+  }
+
+  bool _isPointInPolygon(LatLng point, List<LatLng> polygon) {
+    var isInside = false;
+    var j = polygon.length - 1;
+    for (var i = 0; i < polygon.length; i++) {
+      if (((polygon[i].latitude > point.latitude) != (polygon[j].latitude > point.latitude)) &&
+          (point.longitude < (polygon[j].longitude - polygon[i].longitude) * (point.latitude - polygon[i].latitude) /
+                  (polygon[j].latitude - polygon[i].latitude) +
+              polygon[i].longitude)) {
+        isInside = !isInside;
+      }
+      j = i;
+    }
+    return isInside;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -287,6 +366,8 @@ class _MapPageState extends State<MapPage> {
         onClickMapData: _setPolygonData,
         onFilterCompanies: _filterCompanies,
         selectedProductTypes: selectedProductTypes,
+        communes: communes,
+        onFilterCommunes: _filterCommunes,
       ),
       body: Stack(
         children: [
@@ -296,35 +377,19 @@ class _MapPageState extends State<MapPage> {
               center: mapLat,
               zoom: currentZoom,
               interactiveFlags: InteractiveFlag.all & ~InteractiveFlag.rotate,
+              onTap: (_, latlng) {
+                print("Map tapped at $latlng");
+                _handleMapTap(latlng);
+              },
             ),
-            nonRotatedChildren: [
+            children: [
               TileLayer(
                 urlTemplate: mapUrl,
                 userAgentPackageName: namePackage,
               ),
-              PolygonLayer(
-                polygons: List.generate(polygonData.length, (index) {
-                  if (polygonData[index].getCheck()) {
-                    final polygonPoints = polygonData[index].getMapData();
-                    final color = index < orderedColors.length 
-                        ? orderedColors[index] 
-                        : Colors.grey;
-                    return Polygon(
-                      points: polygonPoints,
-                      color: color.withOpacity(0.3),
-                      borderColor: Colors.black,
-                      borderStrokeWidth: 2,
-                      isFilled: true,
-                    );
-                  }
-                  return Polygon(
-                    points: [],
-                    color: Colors.transparent,
-                    borderColor: Colors.transparent,
-                    borderStrokeWidth: 0,
-                    isFilled: false,
-                  );
-                }),
+              CommunePolygonLayer(
+                communes: communes.where((c) => visibleCommuneIds.contains(c['id'])).toList(),
+                orderedColors: orderedColors,
               ),
               MarkerMap(
                 imageDataList: imageDataList,

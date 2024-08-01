@@ -12,9 +12,11 @@ class Menu extends StatefulWidget {
   final List<MapData> polygonData;
   final Function(List<String>) onFilterCompanies;
   final Set<String> selectedProductTypes;
+  final List<Map<String, dynamic>> communes;
+  final Function(List<int>) onFilterCommunes;
 
   const Menu({
-    super.key,
+    Key? key,
     required this.onClickMap,
     required this.onClickImgData,
     required this.imageDataList,
@@ -23,7 +25,9 @@ class Menu extends StatefulWidget {
     required this.onClickMapData,
     required this.onFilterCompanies,
     required this.selectedProductTypes,
-  });
+    required this.communes,
+    required this.onFilterCommunes,
+  }) : super(key: key);
 
   @override
   _MenuState createState() => _MenuState();
@@ -32,11 +36,13 @@ class Menu extends StatefulWidget {
 class _MenuState extends State<Menu> {
   int? selectedMap = 1;
   late Set<String> localSelectedProductTypes;
+  late Set<int> selectedCommuneIds;
 
   @override
   void initState() {
     super.initState();
     localSelectedProductTypes = Set<String>.from(widget.selectedProductTypes);
+    selectedCommuneIds = Set<int>.from(widget.communes.map((c) => c['id'] as int));
   }
 
   @override
@@ -102,31 +108,6 @@ class _MenuState extends State<Menu> {
               ),
             ],
           ),
-          // ExpansionTile(
-          //   leading: const Icon(Icons.show_chart),
-          //   title: const Text('Lớp hành chính'),
-          //   subtitle: const Text('Mô tả'),
-          //   children: <Widget>[
-          //     CheckboxListTile(
-          //       title: const Text('Ranh giới'),
-          //       value: true,
-          //       controlAffinity: ListTileControlAffinity.leading,
-          //       activeColor: Colors.blue,
-          //       onChanged: (bool? value) {
-          //         Navigator.pop(context);
-          //       },
-          //     ),
-          //     CheckboxListTile(
-          //       title: const Text('Ranh giới huyện'),
-          //       value: true,
-          //       controlAffinity: ListTileControlAffinity.leading,
-          //       activeColor: Colors.blue,
-          //       onChanged: (bool? value) {
-          //         Navigator.pop(context);
-          //       },
-          //     ),
-          //   ],
-          // ),
           ExpansionTile(
             leading: const Icon(Icons.workspaces_outline),
             title: const Text('Lớp sản phẩm'),
@@ -184,52 +165,72 @@ class _MenuState extends State<Menu> {
               );
             }).toList(),
           ),
-        ExpansionTile(
-          leading: const Icon(Icons.home),
-          title: const Text('Lớp chủ thể OCOP'),
-          subtitle: const Text('Lọc theo chủ thể'),
-          children: [
-            ...productTypes.map((type) {
-              int count = widget.companyDataList.where((company) => company.productTypeName == type).length;
-              return CheckboxListTile(
-                title: Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        type,
-                        style: const TextStyle(
-                          fontSize: 16,
+          ExpansionTile(
+            leading: const Icon(Icons.home),
+            title: const Text('Lớp chủ thể OCOP'),
+            subtitle: const Text('Lọc theo chủ thể'),
+            children: [
+              ...productTypes.map((type) {
+                int count = widget.companyDataList.where((company) => company.productTypeName == type).length;
+                return CheckboxListTile(
+                  title: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          type,
+                          style: const TextStyle(
+                            fontSize: 16,
+                          ),
+                          overflow: TextOverflow.ellipsis,
+                          maxLines: 1,
                         ),
-                        overflow: TextOverflow.ellipsis,
-                        maxLines: 1,
                       ),
-                    ),
-                    Text(
-                      " ($count)",
-                      style: const TextStyle(
-                        color: Colors.blue,
-                        fontSize: 15,
-                        fontWeight: FontWeight.bold,
+                      Text(
+                        " ($count)",
+                        style: const TextStyle(
+                          color: Colors.blue,
+                          fontSize: 15,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
-                    ),
-                  ],
-                ),
-                value: localSelectedProductTypes.contains(type),
-                controlAffinity: ListTileControlAffinity.leading,
+                    ],
+                  ),
+                  value: localSelectedProductTypes.contains(type),
+                  controlAffinity: ListTileControlAffinity.leading,
+                  onChanged: (bool? value) {
+                    setState(() {
+                      if (value == true) {
+                        localSelectedProductTypes.add(type);
+                      } else {
+                        localSelectedProductTypes.remove(type);
+                      }
+                      widget.onFilterCompanies(localSelectedProductTypes.toList());
+                    });
+                  },
+                );
+              }),
+            ],
+          ),
+          ExpansionTile(
+            leading: const Icon(Icons.location_city),
+            title: const Text('Lọc xã'),
+            children: widget.communes.map((commune) {
+              return CheckboxListTile(
+                title: Text(commune['name'] as String),
+                value: selectedCommuneIds.contains(commune['id']),
                 onChanged: (bool? value) {
                   setState(() {
                     if (value == true) {
-                      localSelectedProductTypes.add(type);
+                      selectedCommuneIds.add(commune['id'] as int);
                     } else {
-                      localSelectedProductTypes.remove(type);
+                      selectedCommuneIds.remove(commune['id'] as int);
                     }
-                    widget.onFilterCompanies(localSelectedProductTypes.toList());
+                    widget.onFilterCommunes(selectedCommuneIds.toList());
                   });
                 },
               );
-            }),
-          ],
-        ),
+            }).toList(),
+          ),
         ],
       ),
     );
