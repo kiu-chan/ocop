@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:ocop/src/data/map/ImageData.dart';
 import 'package:ocop/src/data/map/MapData.dart';
 import 'package:ocop/src/data/map/companiesData.dart';
-import 'package:ocop/src/data/map/commune_data.dart';
+import 'package:ocop/src/data/map/areaData.dart';
 
 class Menu extends StatefulWidget {
   final ValueChanged<int> onClickMap;
@@ -13,7 +13,7 @@ class Menu extends StatefulWidget {
   final List<MapData> polygonData;
   final Function(List<String>) onFilterCompanies;
   final Set<String> selectedProductTypes;
-  final List<CommuneData> communes;
+  final List<AreaData> communes;
   final Function(List<int>) onFilterCommunes;
 
   const Menu({

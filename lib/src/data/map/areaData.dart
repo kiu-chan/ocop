@@ -1,20 +1,20 @@
 import 'package:latlong2/latlong.dart';
 
-class CommuneData {
+class AreaData {
   final int id;
   final String name;
   final List<List<LatLng>> polygons;
   bool isVisible;
 
-  CommuneData({
+  AreaData({
     required this.id,
     required this.name,
     required this.polygons,
     this.isVisible = true,
   });
 
-factory CommuneData.fromJson(Map<String, dynamic> json) {
-  return CommuneData(
+factory AreaData.fromJson(Map<String, dynamic> json) {
+  return AreaData(
     id: json['id'],
     name: json['name'],
     polygons: (json['polygons'] as List<dynamic>)

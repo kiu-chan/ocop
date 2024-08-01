@@ -11,8 +11,8 @@ import 'package:ocop/src/page/map/elements/MarkerMap.dart';
 import 'package:ocop/mainData/database/databases.dart';
 import 'package:ocop/src/data/map/productMapData.dart';
 import 'package:ocop/src/data/map/companiesData.dart';
-import 'package:ocop/src/page/map/elements/commune_polygon_layer.dart';
-import 'package:ocop/src/data/map/commune_data.dart';
+import 'package:ocop/src/page/map/elements/areaPolygonLayer.dart';
+import 'package:ocop/src/data/map/areaData.dart';
 
 class MapPage extends StatefulWidget {
   const MapPage({Key? key}) : super(key: key);
@@ -29,7 +29,7 @@ class _MapPageState extends State<MapPage> {
   List<CompanyData> companies = [];
   List<CompanyData> filteredCompanies = [];
   Set<String> selectedProductTypes = <String>{};
-  List<CommuneData> communes = [];
+  List<AreaData> communes = [];
 
   double currentZoom = 9.0;
 
@@ -96,7 +96,7 @@ class _MapPageState extends State<MapPage> {
   Future<void> _loadAllCommunesData() async {
     var communesData = await databaseData.getAllCommunes();
     setState(() {
-      communes = communesData.map((json) => CommuneData.fromJson(json)).toList();
+      communes = communesData.map((json) => AreaData.fromJson(json)).toList();
     });
     print("Loaded ${communes.length} communes");
   }
@@ -275,7 +275,7 @@ class _MapPageState extends State<MapPage> {
     });
   }
 
-  void _showCommuneInfo(CommuneData commune) async {
+  void _showCommuneInfo(AreaData commune) async {
     print("Showing info for commune with ID: ${commune.id}");
     var communeDetails = await databaseData.getCommune(commune.id);
     
@@ -392,8 +392,8 @@ class _MapPageState extends State<MapPage> {
                 urlTemplate: mapUrl,
                 userAgentPackageName: namePackage,
               ),
-              CommunePolygonLayer(
-                communes: communes,
+              AreaPolygonLayer(
+                area: communes,
                 orderedColors: orderedColors,
               ),
               MarkerMap(
