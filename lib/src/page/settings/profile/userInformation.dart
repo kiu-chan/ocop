@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:ocop/mainData/user/authService.dart';
 import 'package:ocop/mainData/database/databases.dart';
+import 'package:ocop/src/page/home/home.dart';
 
 class UserInformation extends StatefulWidget {
   const UserInformation({Key? key}) : super(key: key);
@@ -18,6 +19,7 @@ class _UserInformationState extends State<UserInformation> {
   String? _selectedCommune;
   Map<String, dynamic>? _userInfo;
   List<Map<String, dynamic>> _communes = [];
+  bool _isLoading = false;
 
   final DefaultDatabaseOptions _databaseOptions = DefaultDatabaseOptions();
 
@@ -51,6 +53,10 @@ class _UserInformationState extends State<UserInformation> {
 
   Future<void> _updateUserInfo() async {
     if (_formKey.currentState!.validate()) {
+      setState(() {
+        _isLoading = true;
+      });
+
       final selectedCommuneData = _communes.firstWhere(
         (c) => c['name'] == _selectedCommune,
         orElse: () => {'id': null},
@@ -67,6 +73,9 @@ class _UserInformationState extends State<UserInformation> {
           _currentPasswordController.text,
         );
         if (!isPasswordCorrect) {
+          setState(() {
+            _isLoading = false;
+          });
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Mật khẩu hiện tại không đúng')),
           );
@@ -77,17 +86,30 @@ class _UserInformationState extends State<UserInformation> {
 
       final success = await _databaseOptions.accountDatabase.updateUserInfo(_userInfo!['id'], newInfo);
       if (success) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Thông tin người dùng đã được cập nhật thành công')),
-        );
         final updatedUserInfo = Map<String, dynamic>.from(_userInfo!);
         updatedUserInfo.addAll(newInfo);
         updatedUserInfo['commune'] = _selectedCommune;
         await AuthService.updateUserInfo(updatedUserInfo);
+        
+        // Đảm bảo vòng xoay hiển thị ít nhất 1 giây
+        await Future.delayed(const Duration(seconds: 1));
+
         setState(() {
           _userInfo = updatedUserInfo;
+          _isLoading = false;
         });
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Thông tin người dùng đã được cập nhật thành công')),
+        );
+
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => const Home()),
+        );
       } else {
+        setState(() {
+          _isLoading = false;
+        });
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Không thể cập nhật thông tin người dùng')),
         );
@@ -101,77 +123,90 @@ class _UserInformationState extends State<UserInformation> {
       appBar: AppBar(
         title: const Text("Thông tin người dùng"),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              TextFormField(
-                controller: _nameController,
-                decoration: const InputDecoration(labelText: 'Tên'),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Vui lòng nhập tên của bạn';
-                  }
-                  return null;
-                },
+      body: Stack(
+        children: [
+          SingleChildScrollView(
+            padding: const EdgeInsets.all(16.0),
+            child: Form(
+              key: _formKey,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  TextFormField(
+                    controller: _nameController,
+                    decoration: const InputDecoration(labelText: 'Tên người dùng'),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Vui lòng nhập tên của bạn';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  DropdownButtonFormField<String>(
+                    value: _selectedCommune,
+                    decoration: const InputDecoration(labelText: 'Xã'),
+                    items: _communes.map((commune) {
+                      return DropdownMenuItem<String>(
+                        value: commune['name'] as String,
+                        child: Text(commune['name'] as String),
+                      );
+                    }).toList(),
+                    onChanged: (String? newValue) {
+                      setState(() {
+                        _selectedCommune = newValue;
+                      });
+                    },
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Vui lòng chọn xã';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _currentPasswordController,
+                    decoration: const InputDecoration(labelText: 'Mật khẩu hiện tại'),
+                    obscureText: true,
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _newPasswordController,
+                    decoration: const InputDecoration(labelText: 'Mật khẩu mới'),
+                    obscureText: true,
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                    controller: _confirmNewPasswordController,
+                    decoration: const InputDecoration(labelText: 'Xác nhận mật khẩu mới'),
+                    obscureText: true,
+                    validator: (value) {
+                      if (_newPasswordController.text.isNotEmpty && value != _newPasswordController.text) {
+                        return 'Mật khẩu không khớp';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 24),
+                  Center(
+                    child: ElevatedButton(
+                      onPressed: _isLoading ? null : _updateUserInfo,
+                      child: const Text('Cập nhật thông tin'),
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 16),
-              DropdownButtonFormField<String>(
-                value: _selectedCommune,
-                decoration: const InputDecoration(labelText: 'Xã'),
-                items: _communes.map((commune) {
-                  return DropdownMenuItem<String>(
-                    value: commune['name'] as String,
-                    child: Text(commune['name'] as String),
-                  );
-                }).toList(),
-                onChanged: (String? newValue) {
-                  setState(() {
-                    _selectedCommune = newValue;
-                  });
-                },
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return 'Vui lòng chọn xã';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _currentPasswordController,
-                decoration: const InputDecoration(labelText: 'Mật khẩu hiện tại'),
-                obscureText: true,
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _newPasswordController,
-                decoration: const InputDecoration(labelText: 'Mật khẩu mới'),
-                obscureText: true,
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _confirmNewPasswordController,
-                decoration: const InputDecoration(labelText: 'Xác nhận mật khẩu mới'),
-                obscureText: true,
-                validator: (value) {
-                  if (_newPasswordController.text.isNotEmpty && value != _newPasswordController.text) {
-                    return 'Mật khẩu không khớp';
-                  }
-                  return null;
-                },
-              ),
-              const SizedBox(height: 24),
-              ElevatedButton(
-                onPressed: _updateUserInfo,
-                child: const Text('Cập nhật thông tin'),
-              ),
-            ],
+            ),
           ),
-        ),
+          if (_isLoading)
+            Container(
+              color: Colors.black.withOpacity(0.5),
+              child: const Center(
+                child: CircularProgressIndicator(),
+              ),
+            ),
+        ],
       ),
     );
   }

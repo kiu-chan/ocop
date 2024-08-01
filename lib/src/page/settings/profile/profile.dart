@@ -52,8 +52,8 @@ class _ProfileState extends State<Profile> {
                     ),
                     child: Center(
                       child: ClipOval(
-                        child: Image.network(
-                          'https://i.pinimg.com/736x/11/e4/4d/11e44d85743b28fa62121b5ae71a914b.jpg',
+                        child: Image.asset(
+                          'lib/src/assets/img/settings/ic_launcher.png',
                           width: 88.0,
                           height: 88.0,
                           fit: BoxFit.cover,

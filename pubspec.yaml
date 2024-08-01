@@ -83,6 +83,7 @@ flutter:
   assets:
     - lib/src/assets/img/home/logo.png
     - lib/src/assets/img/home/image.png
+    - lib/src/assets/img/settings/ic_launcher.png
     - lib/src/assets/img/map/image.png
     - lib/src/assets/img/settings/images.png
     - lib/src/assets/img/map/img.png
