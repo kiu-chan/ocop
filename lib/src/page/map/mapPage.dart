@@ -12,6 +12,7 @@ import 'package:ocop/mainData/database/databases.dart';
 import 'package:ocop/src/data/map/productMapData.dart';
 import 'package:ocop/src/data/map/companiesData.dart';
 import 'package:ocop/src/page/map/elements/commune_polygon_layer.dart';
+import 'package:ocop/src/data/map/commune_data.dart';
 
 class MapPage extends StatefulWidget {
   const MapPage({Key? key}) : super(key: key);
@@ -28,8 +29,7 @@ class _MapPageState extends State<MapPage> {
   List<CompanyData> companies = [];
   List<CompanyData> filteredCompanies = [];
   Set<String> selectedProductTypes = <String>{};
-  List<Map<String, dynamic>> communes = [];
-  List<int> visibleCommuneIds = [];
+  List<CommuneData> communes = [];
 
   double currentZoom = 9.0;
 
@@ -96,8 +96,7 @@ class _MapPageState extends State<MapPage> {
   Future<void> _loadAllCommunesData() async {
     var communesData = await databaseData.getAllCommunes();
     setState(() {
-      communes = communesData;
-      visibleCommuneIds = communes.map((c) => c['id'] as int).toList();
+      communes = communesData.map((json) => CommuneData.fromJson(json)).toList();
     });
     print("Loaded ${communes.length} communes");
   }
@@ -266,13 +265,19 @@ class _MapPageState extends State<MapPage> {
 
   void _filterCommunes(List<int> selectedIds) {
     setState(() {
-      visibleCommuneIds = selectedIds;
+      for (var commune in communes) {
+        if (selectedIds.contains(commune.id)) {
+          commune.isVisible = true;
+        } else {
+          commune.isVisible = false;
+        }
+      }
     });
   }
 
-  void _showCommuneInfo(Map<String, dynamic> commune) async {
-    print("Showing info for commune with ID: ${commune['id']}");
-    var communeDetails = await databaseData.getCommune(commune['id']);
+  void _showCommuneInfo(CommuneData commune) async {
+    print("Showing info for commune with ID: ${commune.id}");
+    var communeDetails = await databaseData.getCommune(commune.id);
     
     print("Commune details: $communeDetails");
     
@@ -310,11 +315,11 @@ class _MapPageState extends State<MapPage> {
   void _handleMapTap(LatLng tappedPoint) {
     print("Tapped point: $tappedPoint");
     for (var commune in communes) {
-      if (visibleCommuneIds.contains(commune['id'])) {
-        for (var polygon in commune['polygons'] as List<List<LatLng>>) {
+      if (commune.isVisible) {
+        for (var polygon in commune.polygons) {
           if (_isPointInPolygon(tappedPoint, polygon)) {
-            print("Found commune: ${commune['id']}");
-            _showCommuneInfo({'id': commune['id']});
+            print("Found commune: ${commune.id}");
+            _showCommuneInfo(commune);
             return;
           }
         }
@@ -388,7 +393,7 @@ class _MapPageState extends State<MapPage> {
                 userAgentPackageName: namePackage,
               ),
               CommunePolygonLayer(
-                communes: communes.where((c) => visibleCommuneIds.contains(c['id'])).toList(),
+                communes: communes,
                 orderedColors: orderedColors,
               ),
               MarkerMap(

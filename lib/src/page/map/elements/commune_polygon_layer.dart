@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:ocop/src/data/map/commune_data.dart';
 
 class CommunePolygonLayer extends StatelessWidget {
-  final List<Map<String, dynamic>> communes;
+  final List<CommuneData> communes;
   final List<Color> orderedColors;
 
   const CommunePolygonLayer({
@@ -14,20 +15,29 @@ class CommunePolygonLayer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    List<Polygon> polygons = [];
+
+    for (int i = 0; i < communes.length; i++) {
+      CommuneData commune = communes[i];
+      if (commune.isVisible) {
+        Color color = orderedColors[i % orderedColors.length];
+        for (List<LatLng> points in commune.polygons) {
+          polygons.add(
+            Polygon(
+              points: points,
+              color: color.withOpacity(0.3),
+              borderColor: Colors.black,
+              borderStrokeWidth: 1,
+              isFilled: true,
+            ),
+          );
+        }
+      }
+    }
+
     return PolygonLayer(
       polygonCulling: false,
-      polygons: communes.asMap().entries.expand((entry) {
-        int index = entry.key;
-        var commune = entry.value;
-        Color color = orderedColors[index % orderedColors.length];
-        return (commune['polygons'] as List<List<LatLng>>).map((points) => Polygon(
-          points: points,
-          color: color.withOpacity(0.3),
-          borderColor: Colors.black,
-          borderStrokeWidth: 1,
-          isFilled: true,
-        )).toList();
-      }).toList(),
+      polygons: polygons,
     );
   }
 }

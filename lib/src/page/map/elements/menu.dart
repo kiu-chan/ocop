@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:ocop/src/data/map/ImageData.dart';
 import 'package:ocop/src/data/map/MapData.dart';
 import 'package:ocop/src/data/map/companiesData.dart';
+import 'package:ocop/src/data/map/commune_data.dart';
 
 class Menu extends StatefulWidget {
   final ValueChanged<int> onClickMap;
@@ -12,7 +13,7 @@ class Menu extends StatefulWidget {
   final List<MapData> polygonData;
   final Function(List<String>) onFilterCompanies;
   final Set<String> selectedProductTypes;
-  final List<Map<String, dynamic>> communes;
+  final List<CommuneData> communes;
   final Function(List<int>) onFilterCommunes;
 
   const Menu({
@@ -42,7 +43,7 @@ class _MenuState extends State<Menu> {
   void initState() {
     super.initState();
     localSelectedProductTypes = Set<String>.from(widget.selectedProductTypes);
-    selectedCommuneIds = Set<int>.from(widget.communes.map((c) => c['id'] as int));
+    selectedCommuneIds = Set<int>.from(widget.communes.where((c) => c.isVisible).map((c) => c.id));
   }
 
   @override
@@ -216,14 +217,14 @@ class _MenuState extends State<Menu> {
             title: const Text('Lọc xã'),
             children: widget.communes.map((commune) {
               return CheckboxListTile(
-                title: Text(commune['name'] as String),
-                value: selectedCommuneIds.contains(commune['id']),
+                title: Text(commune.name),
+                value: selectedCommuneIds.contains(commune.id),
                 onChanged: (bool? value) {
                   setState(() {
                     if (value == true) {
-                      selectedCommuneIds.add(commune['id'] as int);
+                      selectedCommuneIds.add(commune.id);
                     } else {
-                      selectedCommuneIds.remove(commune['id'] as int);
+                      selectedCommuneIds.remove(commune.id);
                     }
                     widget.onFilterCommunes(selectedCommuneIds.toList());
                   });
