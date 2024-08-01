@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:ocop/src/page/account/login/loginPage.dart';
 import 'package:ocop/src/page/settings/elements/introduce.dart';
+import 'package:ocop/src/page/settings/profile/userInformation.dart';
 import 'package:ocop/src/bloc/login/login_bloc.dart';
 import 'package:ocop/src/bloc/login/login_event.dart';
 import 'package:ocop/src/bloc/login/login_state.dart';
@@ -42,6 +43,10 @@ class Options extends StatelessWidget {
       ),
       child: InkWell(
         onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => UserInformation()),
+          );
         },
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,

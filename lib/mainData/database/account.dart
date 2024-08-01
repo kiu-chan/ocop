@@ -88,4 +88,88 @@ Future<bool> checkUserExists(String email) async {
       return false;
     }
   }
+
+    Future<bool> updateUserInfo(int userId, Map<String, dynamic> newInfo) async {
+    try {
+      var setClause = <String>[];
+      var substitutionValues = <String, dynamic>{};
+
+      if (newInfo.containsKey('name')) {
+        setClause.add('name = @name');
+        substitutionValues['name'] = newInfo['name'];
+      }
+
+      if (newInfo.containsKey('commune_id')) {
+        setClause.add('commune_id = @communeId');
+        substitutionValues['communeId'] = int.parse(newInfo['commune_id']);
+      }
+
+      if (newInfo.containsKey('password')) {
+        String hashedPassword = BCrypt.hashpw(newInfo['password'], BCrypt.gensalt());
+        setClause.add('password = @password');
+        substitutionValues['password'] = hashedPassword;
+      }
+
+      if (setClause.isEmpty) {
+        return false;
+      }
+
+      substitutionValues['userId'] = userId;
+
+      final result = await connection.execute('''
+        UPDATE company_users
+        SET ${setClause.join(', ')}, updated_at = CURRENT_TIMESTAMP
+        WHERE id = @userId
+      ''', substitutionValues: substitutionValues);
+
+      return result == 1;
+    } catch (e) {
+      print('Error updating user info: $e');
+      return false;
+    }
+  }
+
+  Future<bool> verifyUserPassword(int userId, String password) async {
+    try {
+      final result = await connection.query('''
+        SELECT password
+        FROM company_users
+        WHERE id = @userId
+      ''', substitutionValues: {
+        'userId': userId,
+      });
+
+      if (result.isNotEmpty) {
+        String storedHash = result[0][0];
+        return BCrypt.checkpw(password, storedHash);
+      }
+      return false;
+    } catch (e) {
+      print('Error verifying user password: $e');
+      return false;
+    }
+  }
+
+  Future<Map<String, dynamic>?> getCommuneInfo(int communeId) async {
+  try {
+    final result = await connection.query('''
+      SELECT id, name
+      FROM commune_users
+      WHERE id = @id
+    ''', substitutionValues: {
+      'id': communeId,
+    });
+
+    if (result.isNotEmpty) {
+      return {
+        'id': result[0][0],
+        'name': result[0][1],
+      };
+    }
+    return null;
+  } catch (e) {
+    print('Error fetching commune info: $e');
+    return null;
+  }
+}
 }

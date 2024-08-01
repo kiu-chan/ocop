@@ -145,6 +145,18 @@ class DefaultDatabaseOptions {
     return await accountDatabase.createUser(name, email, password, communeId);
   }
 
+  Future<bool> updateUserInfo(int userId, Map<String, dynamic> newInfo) async {
+    return await accountDatabase.updateUserInfo(userId, newInfo);
+  }
+
+  Future<bool> verifyUserPassword(int userId, String password) async {
+    return await accountDatabase.verifyUserPassword(userId, password);
+  }
+
+    Future<Map<String, dynamic>?> getCommuneInfo(int communeId) async {
+      return await accountDatabase.getCommuneInfo(communeId);
+    }
+
   Future<List<Map<String, dynamic>>> getApprovedCommunes() async {
     return await areaDatabase.getApprovedCommunes();
   }

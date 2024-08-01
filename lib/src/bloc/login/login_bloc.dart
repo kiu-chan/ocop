@@ -33,26 +33,30 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     emit(state.copyWith(rememberMe: event.rememberMe));
   }
 
-  Future<void> _onLoginSubmitted(LoginSubmitted event, Emitter<LoginState> emit) async {
-    emit(state.copyWith(status: LoginStatus.loading));
-    await Future.delayed(const Duration(seconds: 1));
-    try {
-      final userInfo = await _databaseOptions.checkUserCredentials(state.email, state.password);
-      if (userInfo != null) {
-        await AuthService.setLoggedIn(true, state.email);
-        await AuthService.setUserInfo(userInfo);
-        emit(state.copyWith(
-          status: LoginStatus.success,
-          userInfo: userInfo,
-          // isLoggedIn: true
-        ));
-      } else {
-        emit(state.copyWith(status: LoginStatus.failure, error: 'Invalid email or password'));
+Future<void> _onLoginSubmitted(LoginSubmitted event, Emitter<LoginState> emit) async {
+  emit(state.copyWith(status: LoginStatus.loading));
+  await Future.delayed(const Duration(seconds: 1));
+  try {
+    final userInfo = await _databaseOptions.checkUserCredentials(state.email, state.password);
+    if (userInfo != null) {
+      // Lấy thông tin xã
+      final commune = await _databaseOptions.getCommuneInfo(userInfo['commune_id']);
+      if (commune != null) {
+        userInfo['commune'] = commune['name'];
       }
-    } catch (error) {
-      emit(state.copyWith(status: LoginStatus.failure, error: 'Login failed: ${error.toString()}'));
+      await AuthService.setLoggedIn(true, state.email);
+      await AuthService.setUserInfo(userInfo);
+      emit(state.copyWith(
+        status: LoginStatus.success,
+        userInfo: userInfo,
+      ));
+    } else {
+      emit(state.copyWith(status: LoginStatus.failure, error: 'Invalid email or password'));
     }
+  } catch (error) {
+    emit(state.copyWith(status: LoginStatus.failure, error: 'Login failed: ${error.toString()}'));
   }
+}
 
   Future<void> _onCheckLoginStatus(CheckLoginStatus event, Emitter<LoginState> emit) async {
     final isLoggedIn = await AuthService.isLoggedIn();
