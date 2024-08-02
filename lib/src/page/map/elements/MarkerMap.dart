@@ -14,25 +14,26 @@ class MarkerMap extends StatelessWidget {
   final Set<String> selectedProductTypes;
 
   const MarkerMap({
-    super.key,
+    Key? key,
     required this.imageDataList,
     required this.companies,
     required this.products,
     required this.selectedProductTypes,
-  });
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return MarkerLayer(
-      markers: _buildMarkers() + _buildCompanyMarkers() + _buildProductMarkers(context),
+      markers: _buildMarkers(context) + _buildCompanyMarkers() + _buildProductMarkers(context),
     );
   }
 
-  List<Marker> _buildMarkers() {
+  List<Marker> _buildMarkers(BuildContext context) {
     List<Marker> markers = [];
     for (var imageData in imageDataList) {
       if (imageData.checkRender) {
         for (var location in imageData.locations) {
+          ProductData? product = _findProductByCategory(imageData.title);
           markers.add(
             Marker(
               width: 50.0,
@@ -40,15 +41,19 @@ class MarkerMap extends StatelessWidget {
               point: location,
               builder: (ctx) => GestureDetector(
                 onTap: () {
-                  showDialog(
-                    context: ctx,
-                    builder: (BuildContext context) {
-                      return AlertDialog(
-                        title: Text(imageData.title),
-                        content: Image.asset(imageData.imagePath),
-                      );
-                    },
-                  );
+                  if (product != null) {
+                    _showProductInfo(ctx, product);
+                  } else {
+                    showDialog(
+                      context: ctx,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          title: Text(imageData.title),
+                          content: Image.asset(imageData.imagePath),
+                        );
+                      },
+                    );
+                  }
                 },
                 child: Container(
                   decoration: BoxDecoration(
@@ -71,6 +76,16 @@ class MarkerMap extends StatelessWidget {
     }
     return markers;
   }
+
+ProductData? _findProductByCategory(String category) {
+  try {
+    return products.firstWhere(
+      (product) => product.categoryName == category,
+    );
+  } catch (e) {
+    return null;
+  }
+}
 
   List<Marker> _buildCompanyMarkers() {
     return companies.where((company) => selectedProductTypes.contains(company.productTypeName)).map((company) {

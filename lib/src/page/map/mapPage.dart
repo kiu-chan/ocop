@@ -33,7 +33,7 @@ class _MapPageState extends State<MapPage> {
   List<AreaData> districts = [];
   List<AreaData> borders = [];
 
-  double currentZoom = 11.0;
+  double currentZoom = 10.38;
 
   int? selectedMap = 1;
   
@@ -205,7 +205,7 @@ class _MapPageState extends State<MapPage> {
 
   void _location() {
     setState(() {
-      currentZoom = 9.0;
+      currentZoom = currentZoom;
       mapController.move(mapLat, currentZoom);
     });
   }
