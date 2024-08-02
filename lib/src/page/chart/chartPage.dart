@@ -197,6 +197,37 @@ Future<void> _loadProductYear() async {
             ),
             ExpansionTile(
               leading: const Icon(Icons.wysiwyg),
+              title: const Text("Đối tượng thống kê"),
+              subtitle: const Text("Lựa chọn đối tượng thống kê"),
+              children: <Widget>[
+                RadioListTile<int>(
+                  title: const Text('Theo sản phẩm'),
+                  value: 1,
+                  groupValue: selectedLoadData,
+                  onChanged: (value) {
+                    setState(() {
+                      selectedLoadData = value;
+                        setCheckData();
+                      _loadProductRating();
+                    });
+                  },
+                ),
+                RadioListTile<int>(
+                  title: const Text('Theo loại chủ thể'),
+                  value: 2,
+                  groupValue: selectedLoadData,
+                  onChanged: (value) {
+                    setState(() {
+                      selectedLoadData = value;
+                      setCheckData();
+                      _loadProductCategory();
+                    });
+                  },
+                ),
+              ],
+            ),
+            ExpansionTile(
+              leading: const Icon(Icons.shopping_cart_outlined),
               title: const Text("Thống kê sản phẩm"),
               subtitle: const Text("Lựa chọn đối tượng thống kê"),
               children: <Widget>[
@@ -249,7 +280,7 @@ Future<void> _loadProductYear() async {
                   },
                 ),
               ],
-            )
+            ),
           ],
         ),
       ),

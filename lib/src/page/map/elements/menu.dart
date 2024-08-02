@@ -185,6 +185,8 @@ class _MenuState extends State<Menu> {
                 onChanged: (bool? value) {
                   widget.onToggleBorders(value ?? false);
                 },
+                controlAffinity: ListTileControlAffinity.leading,
+                activeColor: Colors.blue,
               ),
               CheckboxListTile(
                 title: const Text('Hiển thị huyện'),
@@ -195,6 +197,8 @@ class _MenuState extends State<Menu> {
                     widget.onToggleDistricts(localShowDistricts);
                   });
                 },
+                controlAffinity: ListTileControlAffinity.leading,
+                activeColor: Colors.blue,
               ),
               CheckboxListTile(
                 title: const Text('Hiển thị xã'),
@@ -205,8 +209,9 @@ class _MenuState extends State<Menu> {
                     widget.onToggleCommunes(localShowCommunes);
                   });
                 },
+                controlAffinity: ListTileControlAffinity.leading,
+                activeColor: Colors.blue,
               ),
-              // ... other items ...
             ],
           ),
           ExpansionTile(
@@ -241,6 +246,7 @@ class _MenuState extends State<Menu> {
                   ),
                   value: localSelectedProductTypes.contains(type),
                   controlAffinity: ListTileControlAffinity.leading,
+                  activeColor: Colors.blue,
                   onChanged: (bool? value) {
                     setState(() {
                       if (value == true) {
@@ -263,6 +269,8 @@ class _MenuState extends State<Menu> {
                 return CheckboxListTile(
                   title: Text(district.name),
                   value: localSelectedDistrictIds.contains(district.id),
+                  controlAffinity: ListTileControlAffinity.leading,
+                  activeColor: Colors.blue,
                   onChanged: (bool? value) {
                     setState(() {
                       if (value == true) {
@@ -284,6 +292,8 @@ class _MenuState extends State<Menu> {
                 return CheckboxListTile(
                   title: Text(commune.name),
                   value: localSelectedCommuneIds.contains(commune.id),
+                  controlAffinity: ListTileControlAffinity.leading,
+                  activeColor: Colors.blue,
                   onChanged: (bool? value) {
                     setState(() {
                       if (value == true) {
