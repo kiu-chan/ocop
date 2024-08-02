@@ -1,6 +1,4 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart' show rootBundle;
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
 import 'package:ocop/src/page/map/elements/menu.dart';
@@ -12,6 +10,8 @@ import 'package:ocop/src/data/map/productMapData.dart';
 import 'package:ocop/src/data/map/companiesData.dart';
 import 'package:ocop/src/page/map/elements/areaPolygonLayer.dart';
 import 'package:ocop/src/data/map/areaData.dart';
+import 'mapControllers.dart';
+import 'mapDataLoaders.dart';
 
 class MapPage extends StatefulWidget {
   const MapPage({Key? key}) : super(key: key);
@@ -22,6 +22,8 @@ class MapPage extends StatefulWidget {
 
 class _MapPageState extends State<MapPage> {
   final MapController mapController = MapController();
+  final MapDataLoader dataLoader = MapDataLoader();
+  final MapControllers mapControllers = MapControllers();
 
   late DefaultDatabaseOptions databaseData;
   List<ProductData> products = [];
@@ -68,6 +70,10 @@ class _MapPageState extends State<MapPage> {
   Set<int> selectedCommuneIds = {};
   Set<int> selectedDistrictIds = {};
 
+  TextEditingController _searchController = TextEditingController();
+  List<ProductData> _searchResults = [];
+  bool _showSearchResults = false;
+
   @override
   void initState() {
     super.initState();
@@ -76,178 +82,22 @@ class _MapPageState extends State<MapPage> {
   }
 
   Future<void> _loadData() async {
-    await databaseData.connect();
-    if (databaseData.connectionFailed) {
-      _showConnectionFailedDialog();
-    } else {
-      await _loadOnlineData();
-      await _loadAllAreasData();
-    }
-  }
-
-  Future<void> _loadOnlineData() async {
-    var productsData = await databaseData.getProducts();
-    var companiesData = await databaseData.getCompanies();
-    _updateProductList(productsData);
-    _updateCompanyList(companiesData);
-  }
-
-  Future<void> _loadOfflineData() async {
-    String jsonString = await rootBundle.loadString('lib/src/assets/offline_products.json');
-    List<dynamic> jsonList = json.decode(jsonString);
-    var productsData = jsonList.map((json) => ProductData.fromJson(json)).toList();
-    _updateProductList(productsData);
-  }
-
-  Future<void> _loadAllAreasData() async {
-    var communesData = await databaseData.getAllCommunes();
-    var districtsData = await databaseData.getAllDistricts();
-    var bordersData = await databaseData.getBorders();
+    await dataLoader.loadData();
     setState(() {
-      communes = communesData.map((json) {
-        try {
-          return AreaData.fromJson(json);
-        } catch (e) {
-          print('Error creating AreaData for commune: $e');
-          return null;
-        }
-      }).where((area) => area != null).cast<AreaData>().toList();
-
-      districts = districtsData.map((json) {
-        try {
-          return AreaData.fromJson(json);
-        } catch (e) {
-          print('Error creating AreaData for district: $e');
-          return null;
-        }
-      }).where((area) => area != null).cast<AreaData>().toList();
-
-      borders = bordersData.map((json) {
-        try {
-          return AreaData.fromJson(json);
-        } catch (e) {
-          print('Error creating AreaData for border: $e');
-          return null;
-        }
-      }).where((area) => area != null).cast<AreaData>().toList();
-
+      products = dataLoader.products;
+      companies = dataLoader.companies;
+      communes = dataLoader.communes;
+      districts = dataLoader.districts;
+      borders = dataLoader.borders;
       selectedCommuneIds = Set<int>.from(communes.map((c) => c.id));
       selectedDistrictIds = Set<int>.from(districts.map((d) => d.id));
+      imageDataList = dataLoader.imageDataList;
     });
-    print("Loaded ${communes.length} communes, ${districts.length} districts, and ${borders.length} borders");
-  }
-
-void _updateProductList(List<ProductData> productsData) {
-  setState(() {
-    products = productsData;
-    Map<String, List<LatLng>> groupedLatLngs = {};
-    for (var product in products) {
-      if (!groupedLatLngs.containsKey(product.categoryName)) {
-        groupedLatLngs[product.categoryName] = [];
-      }
-      groupedLatLngs[product.categoryName]!.add(product.location);
-    }
-    imageDataList = groupedLatLngs.entries.map((entry) {
-      String imagePath;
-      switch (entry.key) {
-        case "Thực phẩm":
-          imagePath = 'lib/src/assets/img/map/food.png';
-          break;
-        case "Đồ uống":
-          imagePath = 'lib/src/assets/img/map/drink.png';
-          break;
-        case "Dược liệu và sản phẩm từ dược liệu":
-          imagePath = 'lib/src/assets/img/map/herbal.png';
-          break;
-        case "Thủ công mỹ nghệ":
-          imagePath = 'lib/src/assets/img/map/craft.png';
-          break;
-        case "Sinh vật cảnh":
-          imagePath = 'lib/src/assets/img/map/pet.png';
-          break;
-        case "Dịch vụ du lịch cộng đồng, du lịch sinh thái và điểm du lịch":
-          imagePath = 'lib/src/assets/img/map/tourism.png';
-          break;
-        default:
-          imagePath = 'lib/src/assets/img/settings/ic_launcher.png';
-      }
-      return ImageData(
-        imagePath,
-        entry.key,
-        entry.value,
-      );
-    }).toList();
-  });
-}
-
-  void _updateCompanyList(List<CompanyData> companiesData) {
-    setState(() {
-      companies = companiesData;
-      filteredCompanies = [];
-    });
-  }
-
-  Future<void> _showConnectionFailedDialog() async {
-    return showDialog<void>(
-      context: context,
-      barrierDismissible: false,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Kết nối thất bại'),
-          content: const SingleChildScrollView(
-            child: ListBody(
-              children: <Widget>[
-                Text('Không thể kết nối đến cơ sở dữ liệu.'),
-                Text('Bạn có muốn sử dụng dữ liệu offline không?'),
-              ],
-            ),
-          ),
-          actions: <Widget>[
-            TextButton(
-              child: const Text('Có'),
-              onPressed: () {
-                Navigator.of(context).pop();
-                setState(() {
-                  isOfflineMode = true;
-                });
-                _loadOfflineData();
-              },
-            ),
-            TextButton(
-              child: const Text('Không'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      },
-    );
-  }
-
-  void _location() {
-    setState(() {
-      currentZoom = currentZoom;
-      mapController.move(mapLat, currentZoom);
-    });
-  }
-
-  void _zoomIn() {
-    double zoomFactor = 1.1;
-    currentZoom = (mapController.zoom * zoomFactor).clamp(1.0, 18.0);
-    mapController.move(mapController.center, currentZoom);
-  }
-
-  void _zoomOut() {
-    double zoomFactor = 0.9;
-    currentZoom = (mapController.zoom * zoomFactor).clamp(1.0, 18.0);
-    mapController.move(mapController.center, currentZoom);
   }
 
   void _changeMapSource(int mapValue) {
     setState(() {
       mapUrl = listMapUrl[mapValue];
-      print(mapUrl);
     });
   }
 
@@ -319,7 +169,7 @@ void _updateProductList(List<ProductData> productsData) {
 
   void _showCommuneInfo(AreaData commune) async {
     print("Showing info for commune with ID: ${commune.id}");
-    var communeDetails = await databaseData.getCommune(commune.id);
+    var communeDetails = await dataLoader.getCommuneDetails(commune.id);
     
     if (communeDetails != null) {
       showDialog(
@@ -352,35 +202,27 @@ void _updateProductList(List<ProductData> productsData) {
     }
   }
 
-  void _handleMapTap(LatLng tappedPoint) {
-    print("Tapped point: $tappedPoint");
-    for (var commune in communes) {
-      if (commune.isVisible) {
-        for (var polygon in commune.polygons) {
-          if (_isPointInPolygon(tappedPoint, polygon)) {
-            print("Found commune: ${commune.id}");
-            _showCommuneInfo(commune);
-            return;
-          }
-        }
+  void _searchProducts(String query) {
+    setState(() {
+      if (query.isEmpty) {
+        _searchResults = [];
+        _showSearchResults = false;
+      } else {
+        _searchResults = products
+            .where((product) =>
+                product.name.toLowerCase().contains(query.toLowerCase()))
+            .toList();
+        _showSearchResults = true;
       }
-    }
-    print("No commune found at tapped point");
+    });
   }
 
-  bool _isPointInPolygon(LatLng point, List<LatLng> polygon) {
-    var isInside = false;
-    var j = polygon.length - 1;
-    for (var i = 0; i < polygon.length; i++) {
-      if (((polygon[i].latitude > point.latitude) != (polygon[j].latitude > point.latitude)) &&
-          (point.longitude < (polygon[j].longitude - polygon[i].longitude) * (point.latitude - polygon[i].latitude) /
-                  (polygon[j].latitude - polygon[i].latitude) +
-              polygon[i].longitude)) {
-        isInside = !isInside;
-      }
-      j = i;
-    }
-    return isInside;
+  void _moveToProduct(ProductData product) {
+    mapController.move(product.location, 15); // Zoom level 15
+    setState(() {
+      _showSearchResults = false;
+      _searchController.clear();
+    });
   }
 
   @override
@@ -434,7 +276,7 @@ void _updateProductList(List<ProductData> productsData) {
               interactiveFlags: InteractiveFlag.all & ~InteractiveFlag.rotate,
               onTap: (_, latlng) {
                 print("Map tapped at $latlng");
-                _handleMapTap(latlng);
+                mapControllers.handleMapTap(latlng, communes, _showCommuneInfo);
               },
             ),
             children: [
@@ -460,24 +302,61 @@ void _updateProductList(List<ProductData> productsData) {
             ],
           ),
           Positioned(
+            top: 10,
+            left: 10,
+            right: 10,
+            child: Column(
+              children: [
+                Container(
+                  color: Colors.white,
+                  child: TextField(
+                    controller: _searchController,
+                    decoration: InputDecoration(
+                      hintText: 'Tìm kiếm sản phẩm...',
+                      prefixIcon: Icon(Icons.search),
+                      border: OutlineInputBorder(),
+                    ),
+                    onChanged: _searchProducts,
+                  ),
+                ),
+                if (_showSearchResults)
+                  Container(
+                    color: Colors.white,
+                    height: 200, // Adjust as needed
+                    child: ListView.builder(
+                      itemCount: _searchResults.length,
+                      itemBuilder: (context, index) {
+                        final product = _searchResults[index];
+                        return ListTile(
+                          title: Text(product.name),
+                          subtitle: Text(product.categoryName),
+                          onTap: () => _moveToProduct(product),
+                        );
+                      },
+                    ),
+                  ),
+              ],
+            ),
+          ),
+          Positioned(
             right: 20,
             bottom: 20,
             child: Column(
               children: [
                 FloatingActionButton(
-                  onPressed: _location,
+                  onPressed: () => mapControllers.location(mapController, mapLat),
                   heroTag: "location",
                   child: const Icon(Icons.location_on),
                 ),
                 const SizedBox(height: 10),
                 FloatingActionButton(
-                  onPressed: _zoomIn,
+                  onPressed: () => mapControllers.zoomIn(mapController),
                   heroTag: "zoomIn",
                   child: const Icon(Icons.add),
                 ),
                 const SizedBox(height: 10),
                 FloatingActionButton(
-                  onPressed: _zoomOut,
+                  onPressed: () => mapControllers.zoomOut(mapController),
                   heroTag: "zoomOut",
                   child: const Icon(Icons.remove),
                 ),
