@@ -31,6 +31,7 @@ class _MapPageState extends State<MapPage> {
   Set<String> selectedProductTypes = <String>{};
   List<AreaData> communes = [];
   List<AreaData> districts = [];
+  List<AreaData> borders = [];
 
   double currentZoom = 9.0;
 
@@ -64,6 +65,7 @@ class _MapPageState extends State<MapPage> {
   bool isOfflineMode = false;
   bool showCommunes = true;
   bool showDistricts = true;
+  bool showBorders = false;
   Set<int> selectedCommuneIds = {};
   Set<int> selectedDistrictIds = {};
 
@@ -101,13 +103,39 @@ class _MapPageState extends State<MapPage> {
   Future<void> _loadAllAreasData() async {
     var communesData = await databaseData.getAllCommunes();
     var districtsData = await databaseData.getAllDistricts();
+    var bordersData = await databaseData.getBorders();
     setState(() {
-      communes = communesData.map((json) => AreaData.fromJson(json)).toList();
-      districts = districtsData.map((json) => AreaData.fromJson(json)).toList();
+      communes = communesData.map((json) {
+        try {
+          return AreaData.fromJson(json);
+        } catch (e) {
+          print('Error creating AreaData for commune: $e');
+          return null;
+        }
+      }).where((area) => area != null).cast<AreaData>().toList();
+
+      districts = districtsData.map((json) {
+        try {
+          return AreaData.fromJson(json);
+        } catch (e) {
+          print('Error creating AreaData for district: $e');
+          return null;
+        }
+      }).where((area) => area != null).cast<AreaData>().toList();
+
+      borders = bordersData.map((json) {
+        try {
+          return AreaData.fromJson(json);
+        } catch (e) {
+          print('Error creating AreaData for border: $e');
+          return null;
+        }
+      }).where((area) => area != null).cast<AreaData>().toList();
+
       selectedCommuneIds = Set<int>.from(communes.map((c) => c.id));
       selectedDistrictIds = Set<int>.from(districts.map((d) => d.id));
     });
-    print("Loaded ${communes.length} communes and ${districts.length} districts");
+    print("Loaded ${communes.length} communes, ${districts.length} districts, and ${borders.length} borders");
   }
 
   void _updateProductList(List<ProductData> productsData) {
@@ -261,6 +289,12 @@ class _MapPageState extends State<MapPage> {
     });
   }
 
+  void _toggleBorders(bool value) {
+    setState(() {
+      showBorders = value;
+    });
+  }
+
   void _showCommuneInfo(AreaData commune) async {
     print("Showing info for commune with ID: ${commune.id}");
     var communeDetails = await databaseData.getCommune(commune.id);
@@ -361,10 +395,12 @@ class _MapPageState extends State<MapPage> {
         onFilterDistricts: _filterDistricts,
         onToggleCommunes: _toggleCommunes,
         onToggleDistricts: _toggleDistricts,
-        showCommunes: showCommunes,  // Thêm dòng này
-        showDistricts: showDistricts,  // Thêm dòng này
-        selectedCommuneIds: selectedCommuneIds,  // Thêm dòng này
-        selectedDistrictIds: selectedDistrictIds,  // Thêm dòng này
+        onToggleBorders: _toggleBorders,
+        showCommunes: showCommunes,
+        showDistricts: showDistricts,
+        showBorders: showBorders,
+        selectedCommuneIds: selectedCommuneIds,
+        selectedDistrictIds: selectedDistrictIds,
       ),
       body: Stack(
         children: [
@@ -387,7 +423,11 @@ class _MapPageState extends State<MapPage> {
               AreaPolygonLayer(
                 communes: communes,
                 districts: districts,
+                borders: borders,
                 orderedColors: orderedColors,
+                showBorders: showBorders,
+                showDistricts: showDistricts,
+                showCommunes: showCommunes,
               ),
               MarkerMap(
                 imageDataList: imageDataList,

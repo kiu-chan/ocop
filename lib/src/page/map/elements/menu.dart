@@ -19,8 +19,10 @@ class Menu extends StatefulWidget {
   final Function(List<int>) onFilterDistricts;
   final Function(bool) onToggleCommunes;
   final Function(bool) onToggleDistricts;
+  final Function(bool) onToggleBorders;
   final bool showCommunes;
   final bool showDistricts;
+  final bool showBorders;
   final Set<int> selectedCommuneIds;
   final Set<int> selectedDistrictIds;
 
@@ -44,6 +46,8 @@ class Menu extends StatefulWidget {
     required this.showDistricts,
     required this.selectedCommuneIds,
     required this.selectedDistrictIds,
+    required this.showBorders,
+    required this.onToggleBorders,
   }) : super(key: key);
 
   @override
@@ -176,6 +180,13 @@ class _MenuState extends State<Menu> {
             subtitle: const Text('Mô tả'),
             children: [
               CheckboxListTile(
+                title: const Text('Hiển thị biên giới'),
+                value: widget.showBorders,
+                onChanged: (bool? value) {
+                  widget.onToggleBorders(value ?? false);
+                },
+              ),
+              CheckboxListTile(
                 title: const Text('Hiển thị huyện'),
                 value: localShowDistricts,
                 onChanged: (bool? value) {
@@ -195,19 +206,7 @@ class _MenuState extends State<Menu> {
                   });
                 },
               ),
-              ...widget.polygonData.map((mapData) {
-                return CheckboxListTile(
-                  title: Text(mapData.mapPath),
-                  value: mapData.checkRender,
-                  controlAffinity: ListTileControlAffinity.leading,
-                  activeColor: Colors.blue,
-                  onChanged: (bool? value) {
-                    setState(() {
-                      widget.onClickMapData(mapData);
-                    });
-                  },
-                );
-              }).toList(),
+              // ... other items ...
             ],
           ),
           ExpansionTile(

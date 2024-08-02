@@ -185,6 +185,10 @@ class DefaultDatabaseOptions {
     return await areaDatabase.getDistrict(id);
   }
 
+  Future<List<Map<String, dynamic>>> getBorders() async {
+    return await areaDatabase.getBorders();
+  }
+
   Future<void> close() async {
     await connection!.close();
     print('Connection closed.');
