@@ -177,6 +177,14 @@ class DefaultDatabaseOptions {
     return await areaDatabase.getCommune(id);
   }
 
+  Future<List<Map<String, dynamic>>> getAllDistricts() async {
+    return await areaDatabase.getAllDistricts();
+  }
+
+  Future<Map<String, dynamic>?> getDistrict(int id) async {
+    return await areaDatabase.getDistrict(id);
+  }
+
   Future<void> close() async {
     await connection!.close();
     print('Connection closed.');

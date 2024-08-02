@@ -14,10 +14,18 @@ class Menu extends StatefulWidget {
   final Function(List<String>) onFilterCompanies;
   final Set<String> selectedProductTypes;
   final List<AreaData> communes;
+  final List<AreaData> districts;
   final Function(List<int>) onFilterCommunes;
+  final Function(List<int>) onFilterDistricts;
+  final Function(bool) onToggleCommunes;
+  final Function(bool) onToggleDistricts;
+  final bool showCommunes;
+  final bool showDistricts;
+  final Set<int> selectedCommuneIds;
+  final Set<int> selectedDistrictIds;
 
   const Menu({
-    super.key,
+    Key? key,
     required this.onClickMap,
     required this.onClickImgData,
     required this.imageDataList,
@@ -27,8 +35,16 @@ class Menu extends StatefulWidget {
     required this.onFilterCompanies,
     required this.selectedProductTypes,
     required this.communes,
+    required this.districts,
     required this.onFilterCommunes,
-  });
+    required this.onFilterDistricts,
+    required this.onToggleCommunes,
+    required this.onToggleDistricts,
+    required this.showCommunes,
+    required this.showDistricts,
+    required this.selectedCommuneIds,
+    required this.selectedDistrictIds,
+  }) : super(key: key);
 
   @override
   _MenuState createState() => _MenuState();
@@ -37,13 +53,19 @@ class Menu extends StatefulWidget {
 class _MenuState extends State<Menu> {
   int? selectedMap = 1;
   late Set<String> localSelectedProductTypes;
-  late Set<int> selectedCommuneIds;
+  late Set<int> localSelectedCommuneIds;
+  late Set<int> localSelectedDistrictIds;
+  late bool localShowCommunes;
+  late bool localShowDistricts;
 
   @override
   void initState() {
     super.initState();
     localSelectedProductTypes = Set<String>.from(widget.selectedProductTypes);
-    selectedCommuneIds = Set<int>.from(widget.communes.where((c) => c.isVisible).map((c) => c.id));
+    localSelectedCommuneIds = Set<int>.from(widget.selectedCommuneIds);
+    localSelectedDistrictIds = Set<int>.from(widget.selectedDistrictIds);
+    localShowCommunes = widget.showCommunes;
+    localShowDistricts = widget.showDistricts;
   }
 
   @override
@@ -152,19 +174,41 @@ class _MenuState extends State<Menu> {
             leading: const Icon(Icons.auto_awesome_motion),
             title: const Text('Khu vực'),
             subtitle: const Text('Mô tả'),
-            children: widget.polygonData.map((mapData) {
-              return CheckboxListTile(
-                title: Text(mapData.mapPath),
-                value: mapData.checkRender,
-                controlAffinity: ListTileControlAffinity.leading,
-                activeColor: Colors.blue,
+            children: [
+              CheckboxListTile(
+                title: const Text('Hiển thị huyện'),
+                value: localShowDistricts,
                 onChanged: (bool? value) {
                   setState(() {
-                    widget.onClickMapData(mapData);
+                    localShowDistricts = value ?? false;
+                    widget.onToggleDistricts(localShowDistricts);
                   });
                 },
-              );
-            }).toList(),
+              ),
+              CheckboxListTile(
+                title: const Text('Hiển thị xã'),
+                value: localShowCommunes,
+                onChanged: (bool? value) {
+                  setState(() {
+                    localShowCommunes = value ?? false;
+                    widget.onToggleCommunes(localShowCommunes);
+                  });
+                },
+              ),
+              ...widget.polygonData.map((mapData) {
+                return CheckboxListTile(
+                  title: Text(mapData.mapPath),
+                  value: mapData.checkRender,
+                  controlAffinity: ListTileControlAffinity.leading,
+                  activeColor: Colors.blue,
+                  onChanged: (bool? value) {
+                    setState(() {
+                      widget.onClickMapData(mapData);
+                    });
+                  },
+                );
+              }).toList(),
+            ],
           ),
           ExpansionTile(
             leading: const Icon(Icons.home),
@@ -212,26 +256,48 @@ class _MenuState extends State<Menu> {
               }),
             ],
           ),
-          ExpansionTile(
-            leading: const Icon(Icons.location_city),
-            title: const Text('Lọc xã'),
-            children: widget.communes.map((commune) {
-              return CheckboxListTile(
-                title: Text(commune.name),
-                value: selectedCommuneIds.contains(commune.id),
-                onChanged: (bool? value) {
-                  setState(() {
-                    if (value == true) {
-                      selectedCommuneIds.add(commune.id);
-                    } else {
-                      selectedCommuneIds.remove(commune.id);
-                    }
-                    widget.onFilterCommunes(selectedCommuneIds.toList());
-                  });
-                },
-              );
-            }).toList(),
-          ),
+          if (localShowDistricts)
+            ExpansionTile(
+              leading: const Icon(Icons.location_city),
+              title: const Text('Lọc huyện'),
+              children: widget.districts.map((district) {
+                return CheckboxListTile(
+                  title: Text(district.name),
+                  value: localSelectedDistrictIds.contains(district.id),
+                  onChanged: (bool? value) {
+                    setState(() {
+                      if (value == true) {
+                        localSelectedDistrictIds.add(district.id);
+                      } else {
+                        localSelectedDistrictIds.remove(district.id);
+                      }
+                      widget.onFilterDistricts(localSelectedDistrictIds.toList());
+                    });
+                  },
+                );
+              }).toList(),
+            ),
+          if (localShowCommunes)
+            ExpansionTile(
+              leading: const Icon(Icons.location_on),
+              title: const Text('Lọc xã'),
+              children: widget.communes.map((commune) {
+                return CheckboxListTile(
+                  title: Text(commune.name),
+                  value: localSelectedCommuneIds.contains(commune.id),
+                  onChanged: (bool? value) {
+                    setState(() {
+                      if (value == true) {
+                        localSelectedCommuneIds.add(commune.id);
+                      } else {
+                        localSelectedCommuneIds.remove(commune.id);
+                      }
+                      widget.onFilterCommunes(localSelectedCommuneIds.toList());
+                    });
+                  },
+                );
+              }).toList(),
+            ),
         ],
       ),
     );

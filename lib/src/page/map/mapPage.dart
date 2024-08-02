@@ -15,7 +15,7 @@ import 'package:ocop/src/page/map/elements/areaPolygonLayer.dart';
 import 'package:ocop/src/data/map/areaData.dart';
 
 class MapPage extends StatefulWidget {
-  const MapPage({super.key});
+  const MapPage({Key? key}) : super(key: key);
 
   @override
   _MapPageState createState() => _MapPageState();
@@ -30,6 +30,7 @@ class _MapPageState extends State<MapPage> {
   List<CompanyData> filteredCompanies = [];
   Set<String> selectedProductTypes = <String>{};
   List<AreaData> communes = [];
+  List<AreaData> districts = [];
 
   double currentZoom = 9.0;
 
@@ -61,6 +62,10 @@ class _MapPageState extends State<MapPage> {
   ];
 
   bool isOfflineMode = false;
+  bool showCommunes = true;
+  bool showDistricts = true;
+  Set<int> selectedCommuneIds = {};
+  Set<int> selectedDistrictIds = {};
 
   @override
   void initState() {
@@ -75,7 +80,7 @@ class _MapPageState extends State<MapPage> {
       _showConnectionFailedDialog();
     } else {
       await _loadOnlineData();
-      await _loadAllCommunesData();
+      await _loadAllAreasData();
     }
   }
 
@@ -93,12 +98,16 @@ class _MapPageState extends State<MapPage> {
     _updateProductList(productsData);
   }
 
-  Future<void> _loadAllCommunesData() async {
+  Future<void> _loadAllAreasData() async {
     var communesData = await databaseData.getAllCommunes();
+    var districtsData = await databaseData.getAllDistricts();
     setState(() {
       communes = communesData.map((json) => AreaData.fromJson(json)).toList();
+      districts = districtsData.map((json) => AreaData.fromJson(json)).toList();
+      selectedCommuneIds = Set<int>.from(communes.map((c) => c.id));
+      selectedDistrictIds = Set<int>.from(districts.map((d) => d.id));
     });
-    print("Loaded ${communes.length} communes");
+    print("Loaded ${communes.length} communes and ${districts.length} districts");
   }
 
   void _updateProductList(List<ProductData> productsData) {
@@ -166,53 +175,6 @@ class _MapPageState extends State<MapPage> {
     );
   }
 
-  Future<void> _loadGeoJsonData(String path) async {
-    try {
-      final contents = await rootBundle.loadString(path);
-      final geoJson = GeoJson();
-      await geoJson.parse(contents, verbose: true);
-      List<List<LatLng>> tempPolygonData = [];
-
-      for (final feature in geoJson.features) {
-        if (feature.geometry is GeoJsonPolygon) {
-          final polygon = feature.geometry as GeoJsonPolygon;
-          List<LatLng> polygonPoints = [];
-          for (final geoSeries in polygon.geoSeries) {
-            for (final point in geoSeries.geoPoints) {
-              polygonPoints.add(LatLng(point.latitude, point.longitude));
-            }
-          }
-          tempPolygonData.add(polygonPoints);
-        } else if (feature.geometry is GeoJsonMultiPolygon) {
-          final multiPolygon = feature.geometry as GeoJsonMultiPolygon;
-          for (final polygon in multiPolygon.polygons) {
-            List<LatLng> polygonPoints = [];
-            for (final geoSeries in polygon.geoSeries) {
-              for (final point in geoSeries.geoPoints) {
-                polygonPoints.add(LatLng(point.latitude, point.longitude));
-              }
-            }
-            tempPolygonData.add(polygonPoints);
-          }
-        }
-      }
-
-      setState(() {
-        List<LatLng> data = [];
-        for(final listData in tempPolygonData) {
-          for(final point in listData) {
-            data.add(point);
-          }
-        }
-        polygonData.add(MapData(path, data));
-      });
-
-      geoJson.dispose();
-    } catch (e) {
-      print('Error loading GeoJSON data: $e');
-    }
-  }
-
   void _location() {
     setState(() {
       currentZoom = 9.0;
@@ -265,12 +227,36 @@ class _MapPageState extends State<MapPage> {
 
   void _filterCommunes(List<int> selectedIds) {
     setState(() {
+      selectedCommuneIds = Set<int>.from(selectedIds);
       for (var commune in communes) {
-        if (selectedIds.contains(commune.id)) {
-          commune.isVisible = true;
-        } else {
-          commune.isVisible = false;
-        }
+        commune.isVisible = showCommunes && selectedCommuneIds.contains(commune.id);
+      }
+    });
+  }
+
+  void _filterDistricts(List<int> selectedIds) {
+    setState(() {
+      selectedDistrictIds = Set<int>.from(selectedIds);
+      for (var district in districts) {
+        district.isVisible = showDistricts && selectedDistrictIds.contains(district.id);
+      }
+    });
+  }
+
+  void _toggleCommunes(bool value) {
+    setState(() {
+      showCommunes = value;
+      for (var commune in communes) {
+        commune.isVisible = value && selectedCommuneIds.contains(commune.id);
+      }
+    });
+  }
+
+  void _toggleDistricts(bool value) {
+    setState(() {
+      showDistricts = value;
+      for (var district in districts) {
+        district.isVisible = value && selectedDistrictIds.contains(district.id);
       }
     });
   }
@@ -278,8 +264,6 @@ class _MapPageState extends State<MapPage> {
   void _showCommuneInfo(AreaData commune) async {
     print("Showing info for commune with ID: ${commune.id}");
     var communeDetails = await databaseData.getCommune(commune.id);
-    
-    print("Commune details: $communeDetails");
     
     if (communeDetails != null) {
       showDialog(
@@ -372,7 +356,15 @@ class _MapPageState extends State<MapPage> {
         onFilterCompanies: _filterCompanies,
         selectedProductTypes: selectedProductTypes,
         communes: communes,
+        districts: districts,
         onFilterCommunes: _filterCommunes,
+        onFilterDistricts: _filterDistricts,
+        onToggleCommunes: _toggleCommunes,
+        onToggleDistricts: _toggleDistricts,
+        showCommunes: showCommunes,  // Thêm dòng này
+        showDistricts: showDistricts,  // Thêm dòng này
+        selectedCommuneIds: selectedCommuneIds,  // Thêm dòng này
+        selectedDistrictIds: selectedDistrictIds,  // Thêm dòng này
       ),
       body: Stack(
         children: [
@@ -393,7 +385,8 @@ class _MapPageState extends State<MapPage> {
                 userAgentPackageName: namePackage,
               ),
               AreaPolygonLayer(
-                area: communes,
+                communes: communes,
+                districts: districts,
                 orderedColors: orderedColors,
               ),
               MarkerMap(
