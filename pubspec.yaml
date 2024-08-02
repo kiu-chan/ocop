@@ -84,8 +84,12 @@ flutter:
     - lib/src/assets/img/home/logo.png
     - lib/src/assets/img/home/image.png
     - lib/src/assets/img/settings/ic_launcher.png
-    - lib/src/assets/img/map/image.png
-    - lib/src/assets/img/map/img.png
+    - lib/src/assets/img/map/craft.png
+    - lib/src/assets/img/map/food.png
+    - lib/src/assets/img/map/drink.png
+    - lib/src/assets/img/map/herbal.png
+    - lib/src/assets/img/map/pet.png
+    - lib/src/assets/img/map/tourism.png
     - lib/src/assets/geodata/vungDem.geojson
     - lib/src/assets/geodata/vungLoi.geojson
 

@@ -6,8 +6,9 @@ import 'package:ocop/src/data/map/productMapData.dart';
 import 'package:ocop/src/data/home/productHomeData.dart';
 import 'package:ocop/src/page/home/content/products/elements/productInformation.dart';
 import 'package:ocop/mainData/database/databases.dart';
+import 'package:latlong2/latlong.dart';
 
-class MarkerMap extends StatelessWidget {
+class MarkerMap extends StatefulWidget {
   final List<ImageData> imageDataList;
   final List<CompanyData> companies;
   final List<ProductData> products;
@@ -22,6 +23,13 @@ class MarkerMap extends StatelessWidget {
   }) : super(key: key);
 
   @override
+  _MarkerMapState createState() => _MarkerMapState();
+}
+
+class _MarkerMapState extends State<MarkerMap> {
+  bool _isLoading = false;
+
+  @override
   Widget build(BuildContext context) {
     return MarkerLayer(
       markers: _buildMarkers(context) + _buildCompanyMarkers() + _buildProductMarkers(context),
@@ -30,10 +38,9 @@ class MarkerMap extends StatelessWidget {
 
   List<Marker> _buildMarkers(BuildContext context) {
     List<Marker> markers = [];
-    for (var imageData in imageDataList) {
+    for (var imageData in widget.imageDataList) {
       if (imageData.checkRender) {
         for (var location in imageData.locations) {
-          ProductData? product = _findProductByCategory(imageData.title);
           markers.add(
             Marker(
               width: 50.0,
@@ -41,6 +48,7 @@ class MarkerMap extends StatelessWidget {
               point: location,
               builder: (ctx) => GestureDetector(
                 onTap: () {
+                  ProductData? product = _findProductByLocationAndCategory(location, imageData.title);
                   if (product != null) {
                     _showProductInfo(ctx, product);
                   } else {
@@ -77,18 +85,18 @@ class MarkerMap extends StatelessWidget {
     return markers;
   }
 
-ProductData? _findProductByCategory(String category) {
-  try {
-    return products.firstWhere(
-      (product) => product.categoryName == category,
-    );
-  } catch (e) {
-    return null;
+  ProductData? _findProductByLocationAndCategory(LatLng location, String category) {
+    try {
+      return widget.products.firstWhere(
+        (product) => product.location == location && product.categoryName == category,
+      );
+    } catch (e) {
+      return null;
+    }
   }
-}
 
   List<Marker> _buildCompanyMarkers() {
-    return companies.where((company) => selectedProductTypes.contains(company.productTypeName)).map((company) {
+    return widget.companies.where((company) => widget.selectedProductTypes.contains(company.productTypeName)).map((company) {
       return Marker(
         width: 50.0,
         height: 50.0,
@@ -126,7 +134,7 @@ ProductData? _findProductByCategory(String category) {
   }
 
   List<Marker> _buildProductMarkers(BuildContext context) {
-    return products.where((product) => selectedProductTypes.contains(product.categoryName)).map((product) {
+    return widget.products.where((product) => widget.selectedProductTypes.contains(product.categoryName)).map((product) {
       return Marker(
         width: 50.0,
         height: 50.0,
@@ -149,11 +157,37 @@ ProductData? _findProductByCategory(String category) {
   }
 
   void _showProductInfo(BuildContext context, ProductData product) async {
+    setState(() {
+      _isLoading = true;
+    });
+
     showDialog(
       context: context,
       barrierDismissible: false,
       builder: (BuildContext context) {
-        return const Center(child: CircularProgressIndicator());
+        return StatefulBuilder(
+          builder: (context, setState) {
+            return AlertDialog(
+              content: Row(
+                children: [
+                  const CircularProgressIndicator(),
+                  const SizedBox(width: 20),
+                  const Text("Đang tải thông tin sản phẩm..."),
+                  const Spacer(),
+                  IconButton(
+                    icon: const Icon(Icons.close),
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                      setState(() {
+                        _isLoading = false;
+                      });
+                    },
+                  ),
+                ],
+              ),
+            );
+          },
+        );
       },
     );
 
@@ -161,10 +195,14 @@ ProductData? _findProductByCategory(String category) {
     await db.connect();
 
     try {
+      if (!_isLoading) return; // Kiểm tra xem quá trình tải có bị hủy không
+
       final content = await db.getProductContent(product.id);
       final images = await db.getProductImages(product.id);
       final address = await db.getProductAddress(product.id);
       final details = await db.getProductDetails(product.id);
+
+      if (!_isLoading) return; // Kiểm tra lại sau khi tải xong
 
       Navigator.of(context).pop(); // Đóng dialog loading
 
@@ -235,6 +273,9 @@ ProductData? _findProductByCategory(String category) {
       // Hiển thị thông báo lỗi nếu cần
     } finally {
       await db.close();
+      setState(() {
+        _isLoading = false;
+      });
     }
   }
 }

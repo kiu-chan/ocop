@@ -138,25 +138,48 @@ class _MapPageState extends State<MapPage> {
     print("Loaded ${communes.length} communes, ${districts.length} districts, and ${borders.length} borders");
   }
 
-  void _updateProductList(List<ProductData> productsData) {
-    setState(() {
-      products = productsData;
-      Map<String, List<LatLng>> groupedLatLngs = {};
-      for (var product in products) {
-        if (!groupedLatLngs.containsKey(product.categoryName)) {
-          groupedLatLngs[product.categoryName] = [];
-        }
-        groupedLatLngs[product.categoryName]!.add(product.location);
+void _updateProductList(List<ProductData> productsData) {
+  setState(() {
+    products = productsData;
+    Map<String, List<LatLng>> groupedLatLngs = {};
+    for (var product in products) {
+      if (!groupedLatLngs.containsKey(product.categoryName)) {
+        groupedLatLngs[product.categoryName] = [];
       }
-      imageDataList = groupedLatLngs.entries.map((entry) {
-        return ImageData(
-          'lib/src/assets/img/settings/ic_launcher.png',
-          entry.key,
-          entry.value,
-        );
-      }).toList();
-    });
-  }
+      groupedLatLngs[product.categoryName]!.add(product.location);
+    }
+    imageDataList = groupedLatLngs.entries.map((entry) {
+      String imagePath;
+      switch (entry.key) {
+        case "Thực phẩm":
+          imagePath = 'lib/src/assets/img/map/food.png';
+          break;
+        case "Đồ uống":
+          imagePath = 'lib/src/assets/img/map/drink.png';
+          break;
+        case "Dược liệu và sản phẩm từ dược liệu":
+          imagePath = 'lib/src/assets/img/map/herbal.png';
+          break;
+        case "Thủ công mỹ nghệ":
+          imagePath = 'lib/src/assets/img/map/craft.png';
+          break;
+        case "Sinh vật cảnh":
+          imagePath = 'lib/src/assets/img/map/pet.png';
+          break;
+        case "Dịch vụ du lịch cộng đồng, du lịch sinh thái và điểm du lịch":
+          imagePath = 'lib/src/assets/img/map/tourism.png';
+          break;
+        default:
+          imagePath = 'lib/src/assets/img/settings/ic_launcher.png';
+      }
+      return ImageData(
+        imagePath,
+        entry.key,
+        entry.value,
+      );
+    }).toList();
+  });
+}
 
   void _updateCompanyList(List<CompanyData> companiesData) {
     setState(() {
