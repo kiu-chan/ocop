@@ -33,7 +33,7 @@ class _MapPageState extends State<MapPage> {
   List<AreaData> districts = [];
   List<AreaData> borders = [];
 
-  double currentZoom = 9.0;
+  double currentZoom = 11.0;
 
   int? selectedMap = 1;
   

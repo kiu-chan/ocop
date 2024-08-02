@@ -3,9 +3,8 @@ import 'package:ocop/mainData/database/databases.dart';
 import 'package:ocop/src/data/home/productHomeData.dart';
 import 'package:ocop/src/page/home/content/products/elements/productCard.dart';
 
-
 class ProductsList extends StatefulWidget {
-  const ProductsList({super.key});
+  const ProductsList({Key? key}) : super(key: key);
 
   @override
   _ProductsListState createState() => _ProductsListState();
@@ -19,7 +18,9 @@ class _ProductsListState extends State<ProductsList> {
   TextEditingController searchController = TextEditingController();
   int selectedStars = 0; // 0 means no star filter
   Set<String> selectedCategories = {};
+  Set<String> selectedDistricts = {}; // New: for district filter
   List<String> allCategories = [];
+  List<String> allDistricts = []; // New: for district filter
 
   @override
   void initState() {
@@ -27,26 +28,28 @@ class _ProductsListState extends State<ProductsList> {
     _loadAllProducts();
   }
 
-Future<void> _loadAllProducts() async {
-  setState(() {
-    isLoading = true;
-  });
-  await db.connect();
-  final products = await db.getAllProducts();
-  setState(() {
-    allProducts = products.map((product) => ProductHome(
-      id: product['id'],
-      name: product['name'],
-      star: product['rating'],
-      category: product['category'] ?? 'Unknown',
-      img: product['img'],
-    )).toList();
-    displayedProducts = List.from(allProducts);
-    allCategories = allProducts.map((p) => p.category).toSet().toList();
-    isLoading = false;
-  });
-  await db.close();
-}
+  Future<void> _loadAllProducts() async {
+    setState(() {
+      isLoading = true;
+    });
+    await db.connect();
+    final products = await db.getAllProducts();
+    setState(() {
+      allProducts = products.map((product) => ProductHome(
+        id: product['id'],
+        name: product['name'],
+        star: product['rating'],
+        category: product['category'] ?? 'Unknown',
+        img: product['img'],
+        district: product['district'] ?? 'Unknown', // New: added district
+      )).toList();
+      displayedProducts = List.from(allProducts);
+      allCategories = allProducts.map((p) => p.category).toSet().toList();
+      allDistricts = allProducts.map((p) => p.district!).toSet().toList(); // New: get all districts
+      isLoading = false;
+    });
+    await db.close();
+  }
 
   void filterProducts() {
     setState(() {
@@ -54,7 +57,8 @@ Future<void> _loadAllProducts() async {
         bool nameMatch = product.name.toLowerCase().contains(searchController.text.toLowerCase());
         bool starMatch = selectedStars == 0 || product.star == selectedStars;
         bool categoryMatch = selectedCategories.isEmpty || selectedCategories.contains(product.category);
-        return nameMatch && starMatch && categoryMatch;
+        bool districtMatch = selectedDistricts.isEmpty || selectedDistricts.contains(product.district); // New: district filter
+        return nameMatch && starMatch && categoryMatch && districtMatch;
       }).toList();
     });
   }
@@ -91,6 +95,28 @@ Future<void> _loadAllProducts() async {
                 selectedCategories.add(category);
               } else {
                 selectedCategories.remove(category);
+              }
+              filterProducts();
+            });
+          },
+        );
+      }).toList(),
+    );
+  }
+
+  // New: District filter
+  Widget buildDistrictFilter() {
+    return Column(
+      children: allDistricts.map((district) {
+        return CheckboxListTile(
+          title: Text(district),
+          value: selectedDistricts.contains(district),
+          onChanged: (bool? value) {
+            setState(() {
+              if (value == true) {
+                selectedDistricts.add(district);
+              } else {
+                selectedDistricts.remove(district);
               }
               filterProducts();
             });
@@ -146,11 +172,17 @@ Future<void> _loadAllProducts() async {
                 child: Text('Lọc theo danh mục:', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
               ),
               buildCategoryFilter(),
+              const Padding(
+                padding: EdgeInsets.symmetric(vertical: 8.0),
+                child: Text('Lọc theo huyện:', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              ),
+              buildDistrictFilter(), // New: Added district filter
               ElevatedButton(
                 onPressed: () {
                   setState(() {
                     selectedStars = 0;
                     selectedCategories.clear();
+                    selectedDistricts.clear(); // New: Clear district filter
                     searchController.clear();
                     filterProducts();
                   });

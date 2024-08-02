@@ -14,6 +14,7 @@ class ProductHome {
   String? website;
   double? latitude;
   double? longitude;
+  String? district; // Thêm trường này
 
   ProductHome({
     required this.id,
@@ -30,5 +31,6 @@ class ProductHome {
     this.website,
     this.latitude,
     this.longitude,
+    this.district, // Thêm trường này
   });
 }

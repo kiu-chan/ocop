@@ -262,10 +262,12 @@ Future<List<Map<String, dynamic>>> getAllProducts() async {
   try {
     final result = await connection.query('''
       SELECT p.id, p.name, p.rating, pc.name as category_name,
-             m.id as media_id, m.file_name
+             m.id as media_id, m.file_name, md.name as district_name
       FROM public.products p
       LEFT JOIN public.product_categories pc ON p.category_id = pc.id
       LEFT JOIN public.media m ON m.model_id = p.id AND m.model_type = 'App\\Models\\Product\\Product' AND m.collection_name = 'product_featured_image'
+      LEFT JOIN public.map_communes mc ON p.commune_id = mc.id
+      LEFT JOIN public.map_districts md ON mc.district_id = md.id
       ORDER BY p.name
     ''');
 
@@ -273,13 +275,10 @@ Future<List<Map<String, dynamic>>> getAllProducts() async {
       String? imageUrl;
       if (row[4] != null && row[5] != null) {
         String fileName = row[5] as String;
-        // Xử lý tên file
         List<String> parts = fileName.split('.');
         if (parts.length > 1) {
-          // Nếu có nhiều hơn một phần, giữ lại tất cả trừ phần cuối cùng
           fileName = parts.sublist(0, parts.length - 1).join('.');
         } else {
-          // Nếu chỉ có một phần, giữ nguyên
           fileName = parts[0];
         }
         imageUrl = 'https://ocop.bentre.gov.vn/storage/images/product/${row[4]}/conversions/$fileName-md.jpg';
@@ -290,6 +289,7 @@ Future<List<Map<String, dynamic>>> getAllProducts() async {
         'rating': row[2] as int,
         'category': row[3] as String,
         'img': imageUrl,
+        'district': row[6] as String?,
       };
     }).toList();
   } catch (e) {
