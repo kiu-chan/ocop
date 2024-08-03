@@ -33,7 +33,7 @@ dependencies:
   flutter_map: ^4.0.0
   latlong2: ^0.8.1
   geojson: ^1.0.0
-  google_maps_flutter: ^2.3.0
+  google_maps_flutter: ^2.7.1
   geocoding: ^2.1.0
   # cupertino_icons: ^1.0.6
 
@@ -57,6 +57,7 @@ dependencies:
   chewie: ^1.8.1
   video_player: ^2.9.1
   mailer: ^6.1.2
+  carousel_slider: ^4.2.1
 
 dev_dependencies:
   flutter_test:

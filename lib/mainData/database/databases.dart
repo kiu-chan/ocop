@@ -9,6 +9,7 @@ import 'package:ocop/mainData/database/news.dart';
 import 'package:ocop/mainData/database/company.dart';
 import 'package:ocop/mainData/database/videos.dart';
 import 'package:ocop/src/data/home/videosData.dart';
+import 'package:ocop/src/data/home/companyData.dart';
 
 class DefaultDatabaseOptions {
   bool _connectionFailed = false;
@@ -207,6 +208,18 @@ Future<void> connect() async {
     return await areaDatabase.getBorders();
   }
 
+  Future<List<Company>> getRandomCompanies({int limit = 10}) async {
+    return await companyDatabase.getRandomCompanies(limit: limit);
+  }
+
+  Future<Company?> getCompanyDetails(int id) async {
+    return await companyDatabase.getCompanyDetails(id);
+  }
+
+  Future<List<Company>> getAllCompanies() async {
+    return await companyDatabase.getAllCompanies();
+  }
+  
   Future<void> close() async {
     await connection!.close();
     print('Connection closed.');
