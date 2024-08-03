@@ -146,4 +146,71 @@ Future<List<Company>> getAllCompanies() async {
   }
 }
 
+Future<Map<String, int>> getCompanyTypeCounts() async {
+  try {
+    final result = await connection.query('''
+      SELECT 
+        COALESCE(pt.name, 'Không xác định') AS type_name,
+        COUNT(pc.id) AS company_count
+      FROM 
+        product_companies pc
+      LEFT JOIN 
+        product_types pt ON pc.type_id = pt.id
+      GROUP BY 
+        pt.name
+      ORDER BY 
+        company_count DESC
+    ''');
+
+    Map<String, int> groupedCompanyTypes = {};
+
+    for (final row in result) {
+      String typeName = row[0] as String;
+      int count = row[1] as int;
+      groupedCompanyTypes[typeName] = count;
+    }
+
+    return groupedCompanyTypes;
+  } catch (e) {
+    print('Lỗi khi truy vấn dữ liệu loại hình công ty: $e');
+    return {};
+  }
+}
+
+Future<Map<String, dynamic>> getCompanyDistrictCounts() async {
+  try {
+    final result = await connection.query('''
+      SELECT md.name, COUNT(pc.id) as company_count
+      FROM map_districts md
+      LEFT JOIN map_communes mc ON md.id = mc.district_id
+      LEFT JOIN product_companies pc ON mc.id = pc.commune_id
+      GROUP BY md.name
+      ORDER BY company_count DESC
+    ''');
+
+    Map<String, int> detailedData = {};
+    Map<String, int> groupedData = {};
+
+    for (final row in result) {
+      String districtName = row[0] as String;
+      int count = row[1] as int;
+      detailedData[districtName] = count;
+      if (count > 0) {
+        groupedData[count.toString()] = (groupedData[count.toString()] ?? 0) + 1;
+      }
+    }
+
+    return {
+      'detailed': detailedData,
+      'grouped': groupedData,
+    };
+  } catch (e) {
+    print('Lỗi khi truy vấn dữ liệu công ty theo huyện: $e');
+    return {
+      'detailed': {},
+      'grouped': {},
+    };
+  }
+}
+
 }

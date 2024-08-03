@@ -219,7 +219,15 @@ Future<void> connect() async {
   Future<List<Company>> getAllCompanies() async {
     return await companyDatabase.getAllCompanies();
   }
-  
+
+  Future<Map<String, int>> getCompanyTypeCounts() async {
+    return await companyDatabase.getCompanyTypeCounts();
+  }
+
+  Future<Map<String, dynamic>> getCompanyDistrictCounts() async {
+    return await companyDatabase.getCompanyDistrictCounts();
+  }
+
   Future<void> close() async {
     await connection!.close();
     print('Connection closed.');

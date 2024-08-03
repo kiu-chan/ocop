@@ -23,7 +23,6 @@ class _BarChartSampleState extends State<BarChartSample> {
 
   @override
   Widget build(BuildContext context) {
-    // Sắp xếp dữ liệu dựa trên giá trị của trục x nếu nó là số
     final sortedData = widget.chartData.data.entries.toList()
       ..sort((a, b) {
         final aNum = num.tryParse(a.key);
@@ -38,8 +37,7 @@ class _BarChartSampleState extends State<BarChartSample> {
     final values = sortedData.map((e) => e.value).toList();
 
     final maxY = values.reduce((a, b) => a > b ? a : b).toDouble();
-    final minY = values.reduce((a, b) => a < b ? a : b).toDouble();
-    final yInterval = ((maxY - minY) / 20).ceilToDouble();
+    final yInterval = (maxY / 5).ceilToDouble();
 
     final barGroups = titles.asMap().entries.map((entry) {
       final index = entry.key;
@@ -66,8 +64,19 @@ class _BarChartSampleState extends State<BarChartSample> {
         child: BarChart(
           BarChartData(
             alignment: BarChartAlignment.spaceAround,
-            maxY: maxY * 1.1,
-            minY: minY,
+            maxY: maxY,
+            minY: 0,
+            barTouchData: BarTouchData(
+              touchTooltipData: BarTouchTooltipData(
+                // tooltipBgColor: Colors.blueGrey,
+                getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                  return BarTooltipItem(
+                    '${titles[groupIndex]}: ${rod.toY.round()}',
+                    const TextStyle(color: Colors.white),
+                  );
+                },
+              ),
+            ),
             titlesData: FlTitlesData(
               leftTitles: AxisTitles(
                 sideTitles: SideTitles(
@@ -77,7 +86,7 @@ class _BarChartSampleState extends State<BarChartSample> {
                   getTitlesWidget: (value, meta) {
                     return SideTitleWidget(
                       axisSide: meta.axisSide,
-                      child: Text('${value.toInt()}'),
+                      child: Text(value.toInt().toString()),
                     );
                   },
                 ),
@@ -98,10 +107,7 @@ class _BarChartSampleState extends State<BarChartSample> {
                         ),
                       );
                     }
-                    return SideTitleWidget(
-                      axisSide: meta.axisSide,
-                      child: const Text(''),
-                    );
+                    return const SizedBox.shrink();
                   },
                 ),
                 axisNameWidget: Text(widget.chartData.x_title),
@@ -113,11 +119,22 @@ class _BarChartSampleState extends State<BarChartSample> {
                 sideTitles: SideTitles(showTitles: false),
               ),
             ),
+            gridData: FlGridData(
+              show: true,
+              drawVerticalLine: false,
+              horizontalInterval: yInterval,
+              getDrawingHorizontalLine: (value) {
+                return FlLine(
+                  color: Colors.grey[300],
+                  strokeWidth: 1,
+                );
+              },
+            ),
             borderData: FlBorderData(
               show: true,
-              border: Border.all(
-                color: const Color(0xff37434d),
-                width: 1,
+              border: const Border(
+                left: BorderSide(color: Colors.grey),
+                bottom: BorderSide(color: Colors.grey),
               ),
             ),
             barGroups: barGroups,
