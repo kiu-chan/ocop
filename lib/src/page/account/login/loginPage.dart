@@ -7,6 +7,7 @@ import 'package:ocop/src/page/home/home.dart';
 import 'package:ocop/src/bloc/login/login_bloc.dart';
 import 'package:ocop/src/bloc/login/login_event.dart';
 import 'package:ocop/src/bloc/login/login_state.dart';
+import 'package:ocop/src/page/account/forgotPasswordPage.dart';
 
 class LoginPage extends StatelessWidget {
   const LoginPage({super.key});
@@ -132,20 +133,27 @@ class LoginPageContent extends StatelessWidget {
     );
   }
 
-  Widget _buildRememberMeAndForgotPassword(BuildContext context) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Expanded(
-          child: CheckboxListTile(
-            title: const Text('Ghi nhớ đăng nhập'),
-            value: context.watch<LoginBloc>().state.rememberMe,
-            controlAffinity: ListTileControlAffinity.leading,
-            activeColor: Colors.blue,
-            onChanged: (value) => context.read<LoginBloc>().add(RememberMeChanged(value ?? false)),
-          ),
+Widget _buildRememberMeAndForgotPassword(BuildContext context) {
+  return Row(
+    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    children: [
+      Expanded(
+        child: CheckboxListTile(
+          title: const Text('Ghi nhớ đăng nhập'),
+          value: context.watch<LoginBloc>().state.rememberMe,
+          controlAffinity: ListTileControlAffinity.leading,
+          activeColor: Colors.blue,
+          onChanged: (value) => context.read<LoginBloc>().add(RememberMeChanged(value ?? false)),
         ),
-        const SizedBox(
+      ),
+      GestureDetector(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (context) => const ForgotPasswordPage()),
+          );
+        },
+        child: const SizedBox(
           width: 150,
           child: Text(
             'Quên mật khẩu?',
@@ -154,10 +162,11 @@ class LoginPageContent extends StatelessWidget {
               color: Colors.blue,
             ),
           ),
-        )
-      ],
-    );
-  }
+        ),
+      )
+    ],
+  );
+}
 
   Widget _buildLoginButton(BuildContext context, LoginState state) {
     return ElevatedButton(

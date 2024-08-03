@@ -21,33 +21,32 @@ class DefaultDatabaseOptions {
   late CompanyDatabase companyDatabase;
   late VideosDatabase videosDatabase;
 
-  Future<void> connect() async {
-    try {
-      connection = PostgreSQLConnection(
-        '163.44.193.74',
-        5432,
-        'bentre_ocop',
-        username: 'postgres',
-        password: 'yfti*m0xZYtRy3QfF)tV',
-      );
-      
-      await connection!.open();
-      print('Connected to PostgreSQL database.');
-      _connectionFailed = false;
+Future<void> connect() async {
+  try {
+    connection = PostgreSQLConnection(
+      '163.44.193.74',
+      5432,
+      'bentre_ocop',
+      username: 'postgres',
+      password: 'yfti*m0xZYtRy3QfF)tV',
+    );
+    
+    await connection!.open();
+    print('Connected to PostgreSQL database.');
+    _connectionFailed = false;
 
-      productDatabase = ProductDatabase(connection!);
-      newsDatabase = NewsDatabase(connection!);
-      mediaDatabase = MediaDatabase(connection!);
-      accountDatabase = AccountDatabase(connection!);
-      areaDatabase = AreaDatabase(connection!);
-      areaDatabase = AreaDatabase(connection!);
-      companyDatabase = CompanyDatabase(connection!);
-      videosDatabase = VideosDatabase(connection!);
-    } catch (e) {
-      print('Failed to connect to database: $e');
-      _connectionFailed = true;
-    }
+    productDatabase = ProductDatabase(connection!);
+    newsDatabase = NewsDatabase(connection!);
+    mediaDatabase = MediaDatabase(connection!);
+    accountDatabase = AccountDatabase(connection!);  // Đảm bảo dòng này có mặt
+    areaDatabase = AreaDatabase(connection!);
+    companyDatabase = CompanyDatabase(connection!);
+    videosDatabase = VideosDatabase(connection!);
+  } catch (e) {
+    print('Failed to connect to database: $e');
+    _connectionFailed = true;
   }
+}
   bool get connectionFailed => _connectionFailed;
 
   // Tách tọa độ từ chuỗi
@@ -153,9 +152,28 @@ class DefaultDatabaseOptions {
     return await accountDatabase.verifyUserPassword(userId, password);
   }
 
-    Future<Map<String, dynamic>?> getCommuneInfo(int communeId) async {
-      return await accountDatabase.getCommuneInfo(communeId);
-    }
+  Future<Map<String, dynamic>?> getCommuneInfo(int communeId) async {
+    return await accountDatabase.getCommuneInfo(communeId);
+  }
+
+  Future<String> createPasswordResetToken(String email) async {
+    return await accountDatabase.createPasswordResetToken(email);
+  }
+  Future<bool> verifyPasswordResetToken(String email, String code) async {
+    return await accountDatabase.verifyPasswordResetToken(email, code);
+  }
+
+  Future<bool> resetPassword(String email, String newPassword) async {
+    return await accountDatabase.resetPassword(email, newPassword);
+  }
+
+  Future<int> getRemainingTimeForResetCode(String email) async {
+    return await accountDatabase.getRemainingTimeForResetCode(email);
+  }
+
+  Future<bool> checkEmailExists(String email) async {
+    return await accountDatabase.checkEmailExists(email);
+  }
 
   Future<List<Map<String, dynamic>>> getApprovedCommunes() async {
     return await areaDatabase.getApprovedCommunes();

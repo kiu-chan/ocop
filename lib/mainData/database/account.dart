@@ -1,5 +1,6 @@
 import 'package:postgres/postgres.dart';
 import 'package:bcrypt/bcrypt.dart';
+import 'dart:math';
 
 class AccountDatabase {
   final PostgreSQLConnection connection;
@@ -34,7 +35,7 @@ class AccountDatabase {
     }
   }
 
-Future<bool> checkUserExists(String email) async {
+  Future<bool> checkUserExists(String email) async {
     try {
       final result = await connection.query(
         'SELECT COUNT(*) FROM company_users WHERE email = @email',
@@ -47,9 +48,8 @@ Future<bool> checkUserExists(String email) async {
     }
   }
 
-    Future<bool> createUser(String name, String email, String password, int communeId) async {
+  Future<bool> createUser(String name, String email, String password, int communeId) async {
     try {
-      // Mã hóa mật khẩu sử dụng bcrypt
       String hashedPassword = BCrypt.hashpw(password, BCrypt.gensalt());
 
       await connection.query('''
@@ -89,7 +89,7 @@ Future<bool> checkUserExists(String email) async {
     }
   }
 
-    Future<bool> updateUserInfo(int userId, Map<String, dynamic> newInfo) async {
+  Future<bool> updateUserInfo(int userId, Map<String, dynamic> newInfo) async {
     try {
       var setClause = <String>[];
       var substitutionValues = <String, dynamic>{};
@@ -151,25 +151,139 @@ Future<bool> checkUserExists(String email) async {
   }
 
   Future<Map<String, dynamic>?> getCommuneInfo(int communeId) async {
+    try {
+      final result = await connection.query('''
+        SELECT id, name
+        FROM commune_users
+        WHERE id = @id
+      ''', substitutionValues: {
+        'id': communeId,
+      });
+
+      if (result.isNotEmpty) {
+        return {
+          'id': result[0][0],
+          'name': result[0][1],
+        };
+      }
+      return null;
+    } catch (e) {
+      print('Error fetching commune info: $e');
+      return null;
+    }
+  }
+
+Future<String> createPasswordResetToken(String email) async {
+  try {
+    // Tạo mã code 6 số ngẫu nhiên
+    String code = (Random().nextInt(900000) + 100000).toString();
+    
+    // Mã hóa code
+    String hashedCode = BCrypt.hashpw(code, BCrypt.gensalt());
+
+    // Cập nhật hoặc chèn vào database
+    await connection.execute('''
+      INSERT INTO password_resets (email, token, created_at)
+      VALUES (@email, @token, CURRENT_TIMESTAMP)
+      ON CONFLICT (email) 
+      DO UPDATE SET 
+        token = @token, 
+        created_at = CURRENT_TIMESTAMP
+    ''', substitutionValues: {
+      'email': email,
+      'token': hashedCode,
+    });
+
+    return code; // Trả về code chưa mã hóa để gửi email
+  } catch (e) {
+    print('Error creating password reset token: $e');
+    return '';
+  }
+}
+
+  Future<bool> verifyPasswordResetToken(String email, String code) async {
+    try {
+      final result = await connection.query('''
+        SELECT token
+        FROM password_resets
+        WHERE email = @email
+        AND token IS NOT NULL
+        AND created_at > NOW() - INTERVAL '15 minutes'
+        ORDER BY created_at DESC
+        LIMIT 1
+      ''', substitutionValues: {
+        'email': email,
+      });
+
+      if (result.isNotEmpty) {
+        String storedHash = result[0][0];
+        return BCrypt.checkpw(code, storedHash);
+      }
+      return false;
+    } catch (e) {
+      print('Error verifying password reset token: $e');
+      return false;
+    }
+  }
+
+Future<bool> resetPassword(String email, String newPassword) async {
+  try {
+    String hashedPassword = BCrypt.hashpw(newPassword, BCrypt.gensalt());
+
+    final result = await connection.execute('''
+      UPDATE company_users
+      SET password = @password
+      WHERE email = @email
+    ''', substitutionValues: {
+      'email': email,
+      'password': hashedPassword,
+    });
+
+    return result == 1; // Trả về true nếu có một hàng được cập nhật
+  } catch (e) {
+    print('Error resetting password: $e');
+    return false;
+  }
+}
+
+  Future<int> getRemainingTimeForResetCode(String email) async {
   try {
     final result = await connection.query('''
-      SELECT id, name
-      FROM commune_users
-      WHERE id = @id
+      SELECT EXTRACT(EPOCH FROM (NOW() - created_at)) as seconds_passed
+      FROM password_resets
+      WHERE email = @email
+      ORDER BY created_at DESC
+      LIMIT 1
     ''', substitutionValues: {
-      'id': communeId,
+      'email': email,
     });
 
     if (result.isNotEmpty) {
-      return {
-        'id': result[0][0],
-        'name': result[0][1],
-      };
+      int secondsPassed = result[0][0].round();
+      int remainingTime = 120 - secondsPassed; // 120 seconds = 2 minutes
+      return remainingTime > 0 ? remainingTime : 0;
     }
-    return null;
+    return 0;
   } catch (e) {
-    print('Error fetching commune info: $e');
-    return null;
+    print('Error getting remaining time for reset code: $e');
+    return 0;
+  }
+}
+
+Future<bool> checkEmailExists(String email) async {
+  try {
+    final result = await connection.query('''
+      SELECT COUNT(*) 
+      FROM company_users 
+      WHERE email = @email
+    ''', substitutionValues: {
+      'email': email,
+    });
+
+    return (result[0][0] as int) > 0;
+  } catch (e) {
+    print('Error checking email existence: $e');
+    return false;
   }
 }
 }

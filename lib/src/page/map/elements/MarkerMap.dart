@@ -172,7 +172,7 @@ class _MarkerMapState extends State<MarkerMap> {
                 children: [
                   const CircularProgressIndicator(),
                   const SizedBox(width: 20),
-                  const Text("Đang tải thông tin sản phẩm..."),
+                  const Text("Đang load..."),
                   const Spacer(),
                   IconButton(
                     icon: const Icon(Icons.close),
