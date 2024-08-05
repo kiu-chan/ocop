@@ -468,6 +468,42 @@ Future<Map<String, dynamic>> getProductCommuneCounts() async {
   }
 }
 
+Future<Map<String, dynamic>> getProductDistrictCounts() async {
+  try {
+    final result = await connection.query('''
+      SELECT md.name, COUNT(p.id) as product_count
+      FROM map_districts md
+      LEFT JOIN map_communes mc ON md.id = mc.district_id
+      LEFT JOIN products p ON mc.id = p.commune_id
+      GROUP BY md.name
+      ORDER BY product_count DESC
+    ''');
+
+    Map<String, int> detailedData = {};
+    Map<String, int> groupedData = {};
+
+    for (final row in result) {
+      String districtName = row[0] as String;
+      int count = row[1] as int;
+      detailedData[districtName] = count;
+      if (count > 0) {
+        groupedData[count.toString()] = (groupedData[count.toString()] ?? 0) + 1;
+      }
+    }
+
+    return {
+      'detailed': detailedData,
+      'grouped': groupedData,
+    };
+  } catch (e) {
+    print('Lỗi khi truy vấn dữ liệu sản phẩm theo huyện: $e');
+    return {
+      'detailed': {},
+      'grouped': {},
+    };
+  }
+}
+
 Future<Map<String, int>> getProductYearCounts() async {
   try {
     final result = await connection.query('''

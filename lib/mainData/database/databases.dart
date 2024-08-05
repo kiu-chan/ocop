@@ -101,9 +101,13 @@ Future<void> connect() async {
     return await productDatabase.getProductCommuneCounts();
   }
 
+  Future<Map<String, dynamic>> getProductDistrictCounts() async {
+    return await productDatabase.getProductDistrictCounts();
+  }
+
   Future<Map<String, int>> getProductYearCounts() async {
-  return await productDatabase.getProductYearCounts();
-}
+    return await productDatabase.getProductYearCounts();
+  }
 
   Future<List<Map<String, dynamic>>> getRandomNews({int limit = 10}) async {
     return await newsDatabase.getRandomNews(limit: limit);
@@ -226,6 +230,10 @@ Future<void> connect() async {
 
   Future<Map<String, dynamic>> getCompanyDistrictCounts() async {
     return await companyDatabase.getCompanyDistrictCounts();
+  }
+
+  Future<Map<String, int>> getCompanyStatusCounts() async {
+    return await companyDatabase.getCompanyStatusCounts();
   }
 
   Future<void> close() async {

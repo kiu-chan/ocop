@@ -213,4 +213,40 @@ Future<Map<String, dynamic>> getCompanyDistrictCounts() async {
   }
 }
 
+Future<Map<String, int>> getCompanyStatusCounts() async {
+  try {
+    final result = await connection.query('''
+      SELECT 
+        CASE 
+          WHEN approved = true THEN 'Đang hoạt động'
+          ELSE 'Không hoạt động'
+        END AS status,
+        COUNT(*) as count
+      FROM 
+        company_users
+      GROUP BY 
+        approved
+    ''');
+
+    Map<String, int> statusCounts = {
+      'Đang hoạt động': 0,
+      'Không hoạt động': 0
+    };
+
+    for (final row in result) {
+      String status = row[0] as String;
+      int count = row[1] as int;
+      statusCounts[status] = count;
+    }
+
+    return statusCounts;
+  } catch (e) {
+    print('Lỗi khi truy vấn dữ liệu trạng thái công ty: $e');
+    return {
+      'Đang hoạt động': 0,
+      'Không hoạt động': 0
+    };
+  }
+}
+
 }

@@ -151,6 +151,43 @@ class _ChartPageState extends State<ChartPage> {
   });
 }
 
+  Future<void> _loadProductDistrict() async {
+    await databaseData.connect();
+    var districtData = await databaseData.getProductDistrictCounts();
+    
+    Future.delayed(const Duration(seconds: 1), () {
+      setState(() {
+        chartData = ChartData(
+          name: "Biểu đồ thống kê số lượng sản phẩm theo huyện",
+          title: "Sản phẩm",
+          x_title: "Huyện",
+          y_title: "Số lượng",
+          data: districtData['detailed'] as Map<String, int>,
+        );
+        setCheckData();
+      });
+    });
+  }
+
+
+  Future<void> _loadCompanyStatus() async {
+    await databaseData.connect();
+    var statusCounts = await databaseData.getCompanyStatusCounts();
+    
+    Future.delayed(const Duration(seconds: 1), () {
+      setState(() {
+        chartData = ChartData(
+          name: "Biểu đồ thống kê số lượng chủ thể OCOP theo trạng thái hoạt động",
+          title: "",
+          x_title: "Trạng thái",
+          y_title: "Số lượng",
+          data: statusCounts,
+        );
+        setCheckData();
+      });
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -289,7 +326,7 @@ class _ChartPageState extends State<ChartPage> {
                     },
                   ),
                   RadioListTile<int>(
-                    title: const Text('Theo đơn vị hành chính'),
+                    title: const Text('Theo xã'),
                     value: 3,
                     groupValue: selectedLoadData,
                     onChanged: (value) {
@@ -301,8 +338,20 @@ class _ChartPageState extends State<ChartPage> {
                     },
                   ),
                   RadioListTile<int>(
-                    title: const Text('Theo năm'),
+                    title: const Text('Theo huyện'),
                     value: 4,
+                    groupValue: selectedLoadData,
+                    onChanged: (value) {
+                      setState(() {
+                        selectedLoadData = value;
+                        setCheckData();
+                        _loadProductDistrict();
+                      });
+                    },
+                  ),
+                  RadioListTile<int>(
+                    title: const Text('Theo năm'),
+                    value: 5,
                     groupValue: selectedLoadData,
                     onChanged: (value) {
                       setState(() {
@@ -341,6 +390,18 @@ class _ChartPageState extends State<ChartPage> {
                         selectedCompanyData = value;
                         setCheckData();
                         _loadCompanyDistricts();
+                      });
+                    },
+                  ),
+                  RadioListTile<int>(
+                    title: const Text('Theo trạng thái hoạt động'),
+                    value: 3,
+                    groupValue: selectedCompanyData,
+                    onChanged: (value) {
+                      setState(() {
+                        selectedCompanyData = value;
+                        setCheckData();
+                        _loadCompanyStatus();
                       });
                     },
                   ),

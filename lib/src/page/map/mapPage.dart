@@ -65,7 +65,7 @@ class _MapPageState extends State<MapPage> {
 
   bool isOfflineMode = false;
   bool showCommunes = true;
-  bool showDistricts = true;
+  bool showDistricts = false;
   bool showBorders = false;
   Set<int> selectedCommuneIds = {};
   Set<int> selectedDistrictIds = {};
