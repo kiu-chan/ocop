@@ -1,5 +1,6 @@
 import 'package:latlong2/latlong.dart';
 import 'package:ocop/src/data/home/companyData.dart';
+import 'package:ocop/src/data/home/productHomeData.dart';
 import 'package:postgres/postgres.dart';
 import 'package:ocop/src/data/map/companiesData.dart';
 
@@ -72,7 +73,7 @@ Future<List<Company>> getRandomCompanies({int limit = 10}) async {
 
 Future<Company?> getCompanyDetails(int id) async {
   try {
-    final result = await connection!.query('''
+    final companyResult = await connection!.query('''
       SELECT pc.id, pc.name, pc.introduction, pc.address, pc.phone_number, pc.representative, pc.website, pc.email,
              m.id as media_id, m.file_name
       FROM product_companies pc
@@ -82,12 +83,45 @@ Future<Company?> getCompanyDetails(int id) async {
       'id': id,
     });
 
-    if (result.isNotEmpty) {
-      final row = result[0];
+    if (companyResult.isNotEmpty) {
+      final row = companyResult[0];
       String? logoUrl;
       if (row[8] != null && row[9] != null) {
         logoUrl = 'https://ocop.bentre.gov.vn/storage/images/company/${row[8]}/${row[9]}';
       }
+      
+      // Lấy danh sách sản phẩm của công ty
+      final productsResult = await connection!.query('''
+        SELECT p.id, p.name, p.rating, pc.name as category_name, m.id as media_id, m.file_name
+        FROM products p
+        LEFT JOIN product_categories pc ON p.category_id = pc.id
+        LEFT JOIN media m ON m.model_id = p.id AND m.model_type = 'App\\Models\\Product\\Product' AND m.collection_name = 'product_featured_image'
+        WHERE p.company_id = @companyId
+      ''', substitutionValues: {
+        'companyId': id,
+      });
+
+      List<ProductHome> products = productsResult.map((productRow) {
+        String? imageUrl;
+        if (productRow[4] != null && productRow[5] != null) {
+          String fileName = productRow[5] as String;
+          List<String> parts = fileName.split('.');
+          if (parts.length > 1) {
+            fileName = parts.sublist(0, parts.length - 1).join('.');
+          } else {
+            fileName = parts[0];
+          }
+          imageUrl = 'https://ocop.bentre.gov.vn/storage/images/product/${productRow[4]}/conversions/$fileName-md.jpg';
+        }
+        return ProductHome(
+          id: productRow[0] as int,
+          name: productRow[1] as String,
+          star: productRow[2] as int,
+          category: productRow[3] as String,
+          img: imageUrl,
+        );
+      }).toList();
+
       return Company(
         id: row[0] as int,
         name: row[1] as String,
@@ -98,6 +132,7 @@ Future<Company?> getCompanyDetails(int id) async {
         website: row[6] as String?,
         email: row[7] as String?,
         logoUrl: logoUrl,
+        products: products,
       );
     }
     return null;

@@ -1,3 +1,5 @@
+import 'package:ocop/src/data/home/productHomeData.dart';
+
 class Company {
   final int id;
   final String name;
@@ -11,6 +13,7 @@ class Company {
   final String? typeName;
   final String? communeName;
   final String? districtName;
+  final List<ProductHome> products; // Thêm trường này
 
   Company({
     required this.id,
@@ -25,5 +28,6 @@ class Company {
     this.typeName,
     this.communeName,
     this.districtName,
+    this.products = const [], // Thêm trường này với giá trị mặc định là một danh sách rỗng
   });
 }
