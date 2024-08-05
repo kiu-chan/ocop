@@ -13,7 +13,9 @@ class Company {
   final String? typeName;
   final String? communeName;
   final String? districtName;
-  final List<ProductHome> products; // Thêm trường này
+  final double? latitude;
+  final double? longitude;
+  final List<ProductHome> products;
 
   Company({
     required this.id,
@@ -28,6 +30,8 @@ class Company {
     this.typeName,
     this.communeName,
     this.districtName,
-    this.products = const [], // Thêm trường này với giá trị mặc định là một danh sách rỗng
+    this.latitude,
+    this.longitude,
+    this.products = const [],
   });
 }

@@ -33,45 +33,52 @@ class _CompanyListState extends State<CompanyList> {
     await db.close();
   }
 
+  String truncateName(String name, int wordLimit) {
+    List<String> words = name.split(' ');
+    if (words.length <= wordLimit) {
+      return name;
+    }
+    return '${words.take(wordLimit).join(' ')}...';
+  }
+
   Widget _buildCompanyCard(Company company) {
-    return GestureDetector(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => CompanyDetails(companyId: company.id),
-          ),
-        );
-      },
-      child: Card(
-        elevation: 4,
-        margin: const EdgeInsets.all(8),
+    return Card(
+      elevation: 4,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(15),
+      ),
+      child: InkWell(
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => CompanyDetails(companyId: company.id),
+            ),
+          );
+        },
         child: Padding(
-          padding: const EdgeInsets.all(16),
+          padding: const EdgeInsets.all(12),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              company.logoUrl != null
-                  ? Image.network(
-                      company.logoUrl!,
-                      height: 80,
-                      width: 80,
-                      fit: BoxFit.contain,
-                      errorBuilder: (context, error, stackTrace) {
-                        return const Icon(Icons.business, size: 80, color: Colors.blue);
-                      },
-                    )
-                  : const Icon(Icons.business, size: 80, color: Colors.blue),
-              const SizedBox(height: 10),
               Expanded(
-                child: FittedBox(
-                  fit: BoxFit.scaleDown,
-                  child: Text(
-                    company.name,
-                    textAlign: TextAlign.center,
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
-                  ),
-                ),
+                child: company.logoUrl != null
+                    ? Image.network(
+                        company.logoUrl!,
+                        fit: BoxFit.contain,
+                        errorBuilder: (context, error, stackTrace) {
+                          return const Icon(Icons.business, size: 60, color: Colors.blue);
+                        },
+                      )
+                    : const Icon(Icons.business, size: 60, color: Colors.blue),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                truncateName(company.name, 5), // Giới hạn 3 từ
+                textAlign: TextAlign.center,
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
               ),
             ],
           ),
@@ -85,16 +92,16 @@ class _CompanyListState extends State<CompanyList> {
     return Column(
       children: [
         Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               const Text(
                 "Công ty",
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 24),
+                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
               ),
-              InkWell(
-                onTap: () {
+              TextButton(
+                onPressed: () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(builder: (context) => const AllCompanies()),
@@ -113,28 +120,21 @@ class _CompanyListState extends State<CompanyList> {
         ),
         isLoading
             ? const Center(child: CircularProgressIndicator())
-            : CarouselSlider(
+            : CarouselSlider.builder(
+                itemCount: companies.length,
+                itemBuilder: (BuildContext context, int index, int realIndex) {
+                  return _buildCompanyCard(companies[index]);
+                },
                 options: CarouselOptions(
-                  height: 220,
-                  aspectRatio: 16/9,
-                  viewportFraction: 0.8,
-                  initialPage: 0,
-                  enableInfiniteScroll: true,
-                  reverse: false,
-                  autoPlay: true,
+                  height: 180,
+                  viewportFraction: 0.5,
+                  enableInfiniteScroll: companies.length > 1,
+                  enlargeCenterPage: true,
+                  autoPlay: companies.length > 1,
                   autoPlayInterval: const Duration(seconds: 3),
                   autoPlayAnimationDuration: const Duration(milliseconds: 800),
                   autoPlayCurve: Curves.fastOutSlowIn,
-                  enlargeCenterPage: true,
-                  scrollDirection: Axis.horizontal,
                 ),
-                items: companies.map((company) {
-                  return Builder(
-                    builder: (BuildContext context) {
-                      return _buildCompanyCard(company);
-                    },
-                  );
-                }).toList(),
               ),
       ],
     );

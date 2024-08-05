@@ -64,14 +64,15 @@ class _MapPageState extends State<MapPage> {
   ];
 
   bool isOfflineMode = false;
-  bool showCommunes = true;
-  bool showDistricts = false;
+  bool showCommunes = false;
+  bool showDistricts = true;
   bool showBorders = false;
   Set<int> selectedCommuneIds = {};
   Set<int> selectedDistrictIds = {};
 
   TextEditingController _searchController = TextEditingController();
-  List<ProductData> _searchResults = [];
+  List<ProductData> _searchProductResults = [];
+  List<CompanyData> _searchCompanyResults = [];
   bool _showSearchResults = false;
 
   @override
@@ -202,15 +203,20 @@ class _MapPageState extends State<MapPage> {
     }
   }
 
-  void _searchProducts(String query) {
+  void _search(String query) {
     setState(() {
       if (query.isEmpty) {
-        _searchResults = [];
+        _searchProductResults = [];
+        _searchCompanyResults = [];
         _showSearchResults = false;
       } else {
-        _searchResults = products
+        _searchProductResults = products
             .where((product) =>
                 product.name.toLowerCase().contains(query.toLowerCase()))
+            .toList();
+        _searchCompanyResults = companies
+            .where((company) =>
+                company.name.toLowerCase().contains(query.toLowerCase()))
             .toList();
         _showSearchResults = true;
       }
@@ -219,6 +225,14 @@ class _MapPageState extends State<MapPage> {
 
   void _moveToProduct(ProductData product) {
     mapController.move(product.location, 15); // Zoom level 15
+    setState(() {
+      _showSearchResults = false;
+      _searchController.clear();
+    });
+  }
+
+  void _moveToCompany(CompanyData company) {
+    mapController.move(company.location, 15); // Zoom level 15
     setState(() {
       _showSearchResults = false;
       _searchController.clear();
@@ -312,27 +326,30 @@ class _MapPageState extends State<MapPage> {
                   child: TextField(
                     controller: _searchController,
                     decoration: InputDecoration(
-                      hintText: 'Tìm kiếm sản phẩm...',
+                      hintText: 'Tìm kiếm sản phẩm hoặc công ty...',
                       prefixIcon: Icon(Icons.search),
                       border: OutlineInputBorder(),
                     ),
-                    onChanged: _searchProducts,
+                    onChanged: _search,
                   ),
                 ),
                 if (_showSearchResults)
                   Container(
                     color: Colors.white,
-                    height: 200, // Adjust as needed
-                    child: ListView.builder(
-                      itemCount: _searchResults.length,
-                      itemBuilder: (context, index) {
-                        final product = _searchResults[index];
-                        return ListTile(
-                          title: Text(product.name),
-                          subtitle: Text(product.categoryName),
-                          onTap: () => _moveToProduct(product),
-                        );
-                      },
+                    height: 200, // Điều chỉnh theo nhu cầu
+                    child: ListView(
+                      children: [
+                        ..._searchProductResults.map((product) => ListTile(
+                              title: Text(product.name),
+                              subtitle: Text('Sản phẩm - ${product.categoryName}'),
+                              onTap: () => _moveToProduct(product),
+                            )),
+                        ..._searchCompanyResults.map((company) => ListTile(
+                              title: Text(company.name),
+                              subtitle: Text('Công ty - ${company.productTypeName}'),
+                              onTap: () => _moveToCompany(company),
+                            )),
+                      ],
                     ),
                   ),
               ],

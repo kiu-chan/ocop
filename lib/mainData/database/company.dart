@@ -9,23 +9,34 @@ class CompanyDatabase {
 
   CompanyDatabase(this.connection);
   
-  Future<List<CompanyData>> getCompanies() async {
+Future<List<CompanyData>> getCompanies() async {
   try {
     final result = await connection.query('''
       SELECT 
         ST_AsText(pc.geom) as geom,
         pc.type_id,
         pc.name AS company_name,
-        pt.name AS product_type_name
+        pt.name AS product_type_name,
+        pc.id,
+        m.id as media_id,
+        m.file_name,
+        pc.address,
+        pc.phone_number
       FROM 
         product_companies pc
       JOIN 
         product_types pt ON pc.type_id = pt.id
+      LEFT JOIN
+        media m ON pc.id = m.model_id AND m.collection_name = 'logo'
     ''');
 
     return result.map((row) {
       final geomText = row[0] as String;
       final coordinates = geomText.split('(')[1].split(')')[0].split(' ');
+      String? logoUrl;
+      if (row[5] != null && row[6] != null) {
+        logoUrl = 'https://ocop.bentre.gov.vn/storage/images/company/${row[5]}/${row[6]}';
+      }
       return CompanyData(
         location: LatLng(
           double.parse(coordinates[1]),
@@ -34,6 +45,10 @@ class CompanyDatabase {
         typeId: row[1] as int,
         name: row[2] as String,
         productTypeName: row[3] as String,
+        id: row[4] as int,
+        logoUrl: logoUrl,
+        address: row[7] as String?,
+        phoneNumber: row[8] as String?,
       );
     }).toList();
   } catch (e) {
@@ -75,9 +90,12 @@ Future<Company?> getCompanyDetails(int id) async {
   try {
     final companyResult = await connection!.query('''
       SELECT pc.id, pc.name, pc.introduction, pc.address, pc.phone_number, pc.representative, pc.website, pc.email,
-             m.id as media_id, m.file_name
+             m.id as media_id, m.file_name, mc.name as commune_name, md.name as district_name,
+             ST_X(pc.geom::geometry) as longitude, ST_Y(pc.geom::geometry) as latitude
       FROM product_companies pc
       LEFT JOIN media m ON pc.id = m.model_id AND m.collection_name = 'logo'
+      LEFT JOIN map_communes mc ON pc.commune_id = mc.id
+      LEFT JOIN map_districts md ON mc.district_id = md.id
       WHERE pc.id = @id
     ''', substitutionValues: {
       'id': id,
@@ -132,6 +150,10 @@ Future<Company?> getCompanyDetails(int id) async {
         website: row[6] as String?,
         email: row[7] as String?,
         logoUrl: logoUrl,
+        communeName: row[10] as String?,
+        districtName: row[11] as String?,
+        latitude: row[13] as double?,
+        longitude: row[12] as double?,
         products: products,
       );
     }

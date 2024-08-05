@@ -5,8 +5,10 @@ import 'package:ocop/src/data/map/companiesData.dart';
 import 'package:ocop/src/data/map/productMapData.dart';
 import 'package:ocop/src/data/home/productHomeData.dart';
 import 'package:ocop/src/page/home/content/products/elements/productInformation.dart';
+import 'package:ocop/src/page/home/content/companies/companyDetails.dart';
 import 'package:ocop/mainData/database/databases.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class MarkerMap extends StatefulWidget {
   final List<ImageData> imageDataList;
@@ -85,16 +87,6 @@ class _MarkerMapState extends State<MarkerMap> {
     return markers;
   }
 
-  ProductData? _findProductByLocationAndCategory(LatLng location, String category) {
-    try {
-      return widget.products.firstWhere(
-        (product) => product.location == location && product.categoryName == category,
-      );
-    } catch (e) {
-      return null;
-    }
-  }
-
   List<Marker> _buildCompanyMarkers() {
     return widget.companies.where((company) => widget.selectedProductTypes.contains(company.productTypeName)).map((company) {
       return Marker(
@@ -108,14 +100,61 @@ class _MarkerMapState extends State<MarkerMap> {
               builder: (BuildContext context) {
                 return AlertDialog(
                   title: Text(company.name),
-                  content: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text('Loại sản phẩm: ${company.productTypeName}'),
-                      Text('Vị trí: ${company.location.latitude}, ${company.location.longitude}'),
-                    ],
+                  content: SingleChildScrollView(
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        if (company.logoUrl != null)
+                          Center(
+                            child: Image.network(
+                              company.logoUrl!,
+                              height: 150,
+                              width: 150,
+                              fit: BoxFit.contain,
+                              errorBuilder: (context, error, stackTrace) =>
+                                  Icon(Icons.business, size: 150),
+                            ),
+                          ),
+                        SizedBox(height: 10),
+                        Text('Loại sản phẩm: ${company.productTypeName}'),
+                        if (company.address != null)
+                          Text('Địa chỉ: ${company.address}'),
+                        if (company.phoneNumber != null)
+                          InkWell(
+                            child: Text('Số điện thoại: ${company.phoneNumber}', style: TextStyle(color: Colors.blue)),
+                            onTap: () => _makePhoneCall(company.phoneNumber!),
+                          ),
+                        if (company.email != null)
+                          Text('Email: ${company.email}'),
+                        if (company.website != null)
+                          InkWell(
+                            child: Text('Website: ${company.website}', style: TextStyle(color: Colors.blue)),
+                            onTap: () => _launchURL(company.website!),
+                          ),
+                      ],
+                    ),
                   ),
+                  actions: [
+                    TextButton(
+                      child: Text('Xem chi tiết'),
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => CompanyDetails(companyId: company.id),
+                          ),
+                        );
+                      },
+                    ),
+                    TextButton(
+                      child: Text('Đóng'),
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                    ),
+                  ],
                 );
               },
             );
@@ -154,6 +193,16 @@ class _MarkerMapState extends State<MarkerMap> {
         ),
       );
     }).toList();
+  }
+
+  ProductData? _findProductByLocationAndCategory(LatLng location, String category) {
+    try {
+      return widget.products.firstWhere(
+        (product) => product.location == location && product.categoryName == category,
+      );
+    } catch (e) {
+      return null;
+    }
   }
 
   void _showProductInfo(BuildContext context, ProductData product) async {
@@ -195,16 +244,16 @@ class _MarkerMapState extends State<MarkerMap> {
     await db.connect();
 
     try {
-      if (!_isLoading) return; // Kiểm tra xem quá trình tải có bị hủy không
+      if (!_isLoading) return;
 
       final content = await db.getProductContent(product.id);
       final images = await db.getProductImages(product.id);
       final address = await db.getProductAddress(product.id);
       final details = await db.getProductDetails(product.id);
 
-      if (!_isLoading) return; // Kiểm tra lại sau khi tải xong
+      if (!_isLoading) return;
 
-      Navigator.of(context).pop(); // Đóng dialog loading
+      Navigator.of(context).pop();
 
       if (!context.mounted) return;
 
@@ -218,7 +267,15 @@ class _MarkerMapState extends State<MarkerMap> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  if (images.isNotEmpty) Image.network(images[0]),
+                  if (images.isNotEmpty)
+                    Center(
+                      child: Image.network(
+                        images[0],
+                        height: 200,
+                        width: 200,
+                        fit: BoxFit.contain,
+                      ),
+                    ),
                   const SizedBox(height: 10),
                   Text('Địa chỉ: ${address ?? "Không có thông tin"}'),
                   Text('Loại sản phẩm: ${product.categoryName}'),
@@ -232,7 +289,7 @@ class _MarkerMapState extends State<MarkerMap> {
               TextButton(
                 child: const Text('Xem chi tiết'),
                 onPressed: () {
-                  Navigator.of(context).pop(); // Đóng dialog
+                  Navigator.of(context).pop();
                   Navigator.of(context).push(
                     MaterialPageRoute(
                       builder: (context) => ProductInformation(
@@ -269,13 +326,32 @@ class _MarkerMapState extends State<MarkerMap> {
       );
     } catch (e) {
       print('Lỗi khi tải thông tin sản phẩm: $e');
-      Navigator.of(context).pop(); // Đóng dialog loading
-      // Hiển thị thông báo lỗi nếu cần
+      Navigator.of(context).pop();
     } finally {
       await db.close();
       setState(() {
         _isLoading = false;
       });
+    }
+  }
+
+  void _makePhoneCall(String phoneNumber) async {
+    final Uri launchUri = Uri(
+      scheme: 'tel',
+      path: phoneNumber,
+    );
+    if (await canLaunchUrl(launchUri)) {
+      await launchUrl(launchUri);
+    } else {
+      print('Không thể gọi điện thoại đến số: $phoneNumber');
+    }
+  }
+
+  void _launchURL(String url) async {
+    if (await canLaunchUrl(Uri.parse(url))) {
+      await launchUrl(Uri.parse(url));
+    } else {
+      print('Không thể mở URL: $url');
     }
   }
 }

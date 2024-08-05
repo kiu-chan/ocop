@@ -34,8 +34,8 @@ android {
 
     defaultConfig {
         applicationId = "com.example.ocop"
-        minSdk = flutter.minSdkVersion
-        targetSdk = flutter.targetSdkVersion
+        minSdk = 21 // Cập nhật minSdk ở đây
+        targetSdk = flutter.targetSdkVersion // Cập nhật targetSdk ở đây
         versionCode = flutterVersionCode.toInteger()
         versionName = flutterVersionName
 
