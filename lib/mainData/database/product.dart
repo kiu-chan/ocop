@@ -528,4 +528,42 @@ Future<Map<String, int>> getProductYearCounts() async {
   }
 }
 
+Future<int> getTotalProductCount() async {
+  try {
+    final result = await connection.query('SELECT COUNT(*) FROM _ocop_products');
+    return result[0][0] as int;
+  } catch (e) {
+    print('Lỗi khi truy vấn tổng số lượng sản phẩm: $e');
+    return 0;
+  }
+}
+
+Future<Map<String, int>> getProductStatusCounts() async {
+  try {
+    final result = await connection.query('''
+      SELECT 
+        status,
+        COUNT(*) as count
+      FROM 
+        _ocop_products
+      GROUP BY 
+        status
+      ORDER BY 
+        count DESC
+    ''');
+
+    Map<String, int> statusCounts = {};
+    for (final row in result) {
+      String status = row[0] as String? ?? 'Không xác định';
+      int count = row[1] as int;
+      statusCounts[status] = count;
+    }
+
+    return statusCounts;
+  } catch (e) {
+    print('Lỗi khi truy vấn dữ liệu trạng thái hồ sơ OCOP: $e');
+    return {};
+  }
+}
+
 }

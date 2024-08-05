@@ -7,33 +7,56 @@ class AccountDatabase {
 
   AccountDatabase(this.connection);
   
-  Future<Map<String, dynamic>?> checkUserCredentials(String email, String password) async {
-    try {
-      final result = await connection.query('''
-        SELECT id, name, email, password, commune_id
-        FROM company_users
-        WHERE email = @email AND approved = true
-      ''', substitutionValues: {
-        'email': email,
-      });
+Future<Map<String, dynamic>?> checkUserCredentials(String email, String password) async {
+  try {
+    // Kiểm tra trong bảng admins trước
+    final adminResult = await connection.query('''
+      SELECT id, name, email, password
+      FROM admins
+      WHERE email = @email
+    ''', substitutionValues: {
+      'email': email,
+    });
 
-      if (result.isNotEmpty) {
-        String storedHash = result[0][3]; // Assuming password is the 4th column
-        if (BCrypt.checkpw(password, storedHash)) {
-          return {
-            'id': result[0][0],
-            'name': result[0][1],
-            'email': result[0][2],
-            'commune_id': result[0][4],
-          };
-        }
+    if (adminResult.isNotEmpty) {
+      String storedHash = adminResult[0][3];
+      if (BCrypt.checkpw(password, storedHash)) {
+        return {
+          'id': adminResult[0][0],
+          'name': adminResult[0][1],
+          'email': adminResult[0][2],
+          'role': 'admin',
+        };
       }
-      return null;
-    } catch (e) {
-      print('Error checking user credentials: $e');
-      return null;
     }
+
+    // Nếu không phải admin, kiểm tra trong bảng company_users
+    final userResult = await connection.query('''
+      SELECT id, name, email, password, commune_id
+      FROM company_users
+      WHERE email = @email AND approved = true
+    ''', substitutionValues: {
+      'email': email,
+    });
+
+    if (userResult.isNotEmpty) {
+      String storedHash = userResult[0][3];
+      if (BCrypt.checkpw(password, storedHash)) {
+        return {
+          'id': userResult[0][0],
+          'name': userResult[0][1],
+          'email': userResult[0][2],
+          'commune_id': userResult[0][4],
+          'role': 'user',
+        };
+      }
+    }
+    return null;
+  } catch (e) {
+    print('Error checking user credentials: $e');
+    return null;
   }
+}
 
   Future<bool> checkUserExists(String email) async {
     try {

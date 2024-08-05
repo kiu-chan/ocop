@@ -33,40 +33,44 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     emit(state.copyWith(rememberMe: event.rememberMe));
   }
 
-Future<void> _onLoginSubmitted(LoginSubmitted event, Emitter<LoginState> emit) async {
-  emit(state.copyWith(status: LoginStatus.loading));
-  await Future.delayed(const Duration(seconds: 1));
-  try {
-    final userInfo = await _databaseOptions.checkUserCredentials(state.email, state.password);
-    if (userInfo != null) {
-      // Lấy thông tin xã
-      final commune = await _databaseOptions.getCommuneInfo(userInfo['commune_id']);
-      if (commune != null) {
-        userInfo['commune'] = commune['name'];
+  Future<void> _onLoginSubmitted(LoginSubmitted event, Emitter<LoginState> emit) async {
+    emit(state.copyWith(status: LoginStatus.loading));
+    await Future.delayed(const Duration(seconds: 1));
+    try {
+      final userInfo = await _databaseOptions.checkUserCredentials(state.email, state.password);
+      if (userInfo != null) {
+        if (userInfo['role'] == 'user') {
+          // Lấy thông tin xã cho user
+          final commune = await _databaseOptions.getCommuneInfo(userInfo['commune_id']);
+          if (commune != null) {
+            userInfo['commune'] = commune['name'];
+          }
+        }
+        await AuthService.setLoggedIn(true, state.email);
+        await AuthService.setUserInfo(userInfo); // Sẽ lưu cả role
+        emit(state.copyWith(
+          status: LoginStatus.success,
+          userInfo: userInfo,
+          role: userInfo['role'],
+        ));
+      } else {
+        emit(state.copyWith(status: LoginStatus.failure, error: 'Invalid email or password'));
       }
-      await AuthService.setLoggedIn(true, state.email);
-      await AuthService.setUserInfo(userInfo);
-      emit(state.copyWith(
-        status: LoginStatus.success,
-        userInfo: userInfo,
-      ));
-    } else {
-      emit(state.copyWith(status: LoginStatus.failure, error: 'Invalid email or password'));
+    } catch (error) {
+      emit(state.copyWith(status: LoginStatus.failure, error: 'Login failed: ${error.toString()}'));
     }
-  } catch (error) {
-    emit(state.copyWith(status: LoginStatus.failure, error: 'Login failed: ${error.toString()}'));
   }
-}
 
   Future<void> _onCheckLoginStatus(CheckLoginStatus event, Emitter<LoginState> emit) async {
     final isLoggedIn = await AuthService.isLoggedIn();
     if (isLoggedIn) {
       final userInfo = await AuthService.getUserInfo();
+      final role = await AuthService.getUserRole();
       if (userInfo != null) {
         emit(state.copyWith(
           status: LoginStatus.success,
           userInfo: userInfo,
-          // isLoggedIn: true
+          role: role,
         ));
       } else {
         // User is logged in but we don't have their info, treat as logged out

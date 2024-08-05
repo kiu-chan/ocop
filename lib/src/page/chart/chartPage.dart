@@ -1,11 +1,14 @@
+// chartPage.dart
 import 'package:flutter/material.dart';
+import 'package:ocop/mainData/user/authService.dart';
 import 'package:ocop/src/page/chart/elements/pieChart.dart';
-import 'package:ocop/mainData/database/databases.dart';
 import 'package:ocop/src/data/chart/chartData.dart';
 import 'package:ocop/src/page/chart/elements/barChart.dart';
+import 'chartMenu.dart';
+import 'chartDataLoader.dart';
 
 class ChartPage extends StatefulWidget {
-  const ChartPage({super.key});
+  const ChartPage({Key? key}) : super(key: key);
 
   @override
   _ChartPageState createState() => _ChartPageState();
@@ -15,8 +18,10 @@ class _ChartPageState extends State<ChartPage> {
   int? selectedChart = 1;
   int? selectedLoadData = 1;
   int? selectedCompanyData = 1;
+  int? selectedOcopData = 1;
   int? checkSelected = 1;
   bool checkData = false;
+  bool isAdmin = false;
 
   ChartData chartData = ChartData(
     data: {'data': 0},
@@ -26,13 +31,21 @@ class _ChartPageState extends State<ChartPage> {
     name: "Chưa có dữ liệu"
   );
 
-  late DefaultDatabaseOptions databaseData;
+  late ChartDataLoader dataLoader;
 
   @override
   void initState() {
     super.initState();
-    databaseData = DefaultDatabaseOptions();
+    dataLoader = ChartDataLoader();
     _loadProductRating();
+    _checkUserRole();
+  }
+
+  Future<void> _checkUserRole() async {
+    String? userRole = await AuthService.getUserRole();
+    setState(() {
+      isAdmin = userRole == 'admin';
+    });
   }
 
   void setCheckData() {
@@ -41,152 +54,25 @@ class _ChartPageState extends State<ChartPage> {
     });
   }
 
-  Future<void> _loadProductRating() async {
-    await databaseData.connect();
-    var groupedRating = await databaseData.getProductRatingCounts();
-    
-    Future.delayed(const Duration(seconds: 1), () {
-      setState(() {
-        chartData = ChartData(
-          name: "Biểu đồ thống kê sản phẩm theo số sao",
-          title: "sao",
-          x_title: "Số sao",
-          y_title: "Số lượng sản phẩm",
-          data: groupedRating,
-        );
-        setCheckData();
-      });
-    });
-  }
-
-  Future<void> _loadProductCategory() async {
-    await databaseData.connect();
-    var groupedRating = await databaseData.getProductCategoryCounts();
-    
-    Future.delayed(const Duration(seconds: 1), () {
-      setState(() {
-        chartData = ChartData(
-          name: "Biểu đồ thống kê sản phẩm theo phân loại",
-          title: "",
-          x_title: "Phân loại",
-          y_title: "Số lượng sản phẩm",
-          data: groupedRating,
-        );
-        setCheckData();
-      });
-    });
-  }
-
-  Future<void> _loadProductCommune() async {
-    await databaseData.connect();
-    var communeData = await databaseData.getProductCommuneCounts();
-    
-    Future.delayed(const Duration(seconds: 1), () {
-      setState(() {
-        chartData = ChartData(
-          name: "Biểu đồ thống kê số lượng xã theo số lượng sản phẩm",
-          title: "Sản phẩm",
-          x_title: "Số lượng sản phẩm",
-          y_title: "Số xã",
-          data: communeData['grouped'] as Map<String, int>,
-          detailedData: communeData['detailed'] as Map<String, int>,
-          useDetailedDataForTable: true,
-        );
-        setCheckData();
-      });
-    });
-  }
-
-  Future<void> _loadProductYear() async {
-    await databaseData.connect();
-    var groupedYear = await databaseData.getProductYearCounts();
-    
-    Future.delayed(const Duration(seconds: 1), () {
-      setState(() {
-        chartData = ChartData(
-          name: "Biểu đồ thống kê sản phẩm theo năm",
-          title: "",
-          x_title: "Năm",
-          y_title: "Số lượng",
-          data: groupedYear,
-        );
-        setCheckData();
-      });
-    });
-  }
-
-  Future<void> _loadCompanyTypes() async {
-    await databaseData.connect();
-    var companyTypeCounts = await databaseData.getCompanyTypeCounts();
-    
-    Future.delayed(const Duration(seconds: 1), () {
-      setState(() {
-        chartData = ChartData(
-          name: "Biểu đồ thống kê số lượng chủ thể OCOP theo loại hình kinh doanh",
-          title: "",
-          x_title: "Loại hình",
-          y_title: "Số lượng",
-          data: companyTypeCounts,
-        );
-        setCheckData();
-      });
-    });
-  }
-
-  Future<void> _loadCompanyDistricts() async {
-  await databaseData.connect();
-  var districtData = await databaseData.getCompanyDistrictCounts();
-  
-  Future.delayed(const Duration(seconds: 1), () {
+  Future<void> _loadData(Future<ChartData> Function() loadFunction) async {
+    await dataLoader.connect();
+    var newChartData = await loadFunction();
     setState(() {
-      chartData = ChartData(
-        name: "Biểu đồ thống kê số lượng chủ thể OCOP theo huyện",
-        title: "Công ty",
-        x_title: "Huyện",
-        y_title: "Số lượng",
-        data: districtData['detailed'] as Map<String, int>,
-      );
+      chartData = newChartData;
       setCheckData();
     });
-  });
-}
-
-  Future<void> _loadProductDistrict() async {
-    await databaseData.connect();
-    var districtData = await databaseData.getProductDistrictCounts();
-    
-    Future.delayed(const Duration(seconds: 1), () {
-      setState(() {
-        chartData = ChartData(
-          name: "Biểu đồ thống kê số lượng sản phẩm theo huyện",
-          title: "Sản phẩm",
-          x_title: "Huyện",
-          y_title: "Số lượng",
-          data: districtData['detailed'] as Map<String, int>,
-        );
-        setCheckData();
-      });
-    });
   }
 
-
-  Future<void> _loadCompanyStatus() async {
-    await databaseData.connect();
-    var statusCounts = await databaseData.getCompanyStatusCounts();
-    
-    Future.delayed(const Duration(seconds: 1), () {
-      setState(() {
-        chartData = ChartData(
-          name: "Biểu đồ thống kê số lượng chủ thể OCOP theo trạng thái hoạt động",
-          title: "",
-          x_title: "Trạng thái",
-          y_title: "Số lượng",
-          data: statusCounts,
-        );
-        setCheckData();
-      });
-    });
-  }
+  Future<void> _loadProductRating() => _loadData(dataLoader.loadProductRating);
+  Future<void> _loadProductCategory() => _loadData(dataLoader.loadProductCategory);
+  Future<void> _loadProductCommune() => _loadData(dataLoader.loadProductCommune);
+  Future<void> _loadProductYear() => _loadData(dataLoader.loadProductYear);
+  Future<void> _loadCompanyTypes() => _loadData(dataLoader.loadCompanyTypes);
+  Future<void> _loadCompanyDistricts() => _loadData(dataLoader.loadCompanyDistricts);
+  Future<void> _loadProductDistrict() => _loadData(dataLoader.loadProductDistrict);
+  Future<void> _loadCompanyStatus() => _loadData(dataLoader.loadCompanyStatus);
+  Future<void> _loadTotalProductCount() => _loadData(dataLoader.loadTotalProductCount);
+  Future<void> _loadProductStatusCounts() => _loadData(dataLoader.loadProductStatusCounts);
 
   @override
   Widget build(BuildContext context) {
@@ -207,208 +93,85 @@ class _ChartPageState extends State<ChartPage> {
           ),
         ],
       ),
-      endDrawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            SizedBox(
-              height: 80,
-              child: DrawerHeader(
-                decoration: const BoxDecoration(
-                  color: Colors.blue,
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.close, color: Colors.white),
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
-                    ),
-                    const Text(
-                      'Tùy chỉnh',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 24,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            ExpansionTile(
-              leading: const Icon(Icons.auto_graph),
-              title: const Text("Biểu đồ"),
-              subtitle: const Text("Lựa chọn dạng biểu đồ"),
-              children: <Widget>[
-                RadioListTile<int>(
-                  title: const Text('Biểu đồ hình tròn'),
-                  value: 1,
-                  groupValue: selectedChart,
-                  onChanged: (value) {
-                    setState(() {
-                      selectedChart = value;
-                    });
-                  },
-                ),
-                RadioListTile<int>(
-                  title: const Text('Biểu đồ cột'),
-                  value: 2,
-                  groupValue: selectedChart,
-                  onChanged: (value) {
-                    setState(() {
-                      selectedChart = value;
-                    });
-                  },
-                ),
-              ],
-            ),
-            ExpansionTile(
-              leading: const Icon(Icons.wysiwyg),
-              title: const Text("Đối tượng thống kê"),
-              subtitle: const Text("Lựa chọn đối tượng thống kê"),
-              children: <Widget>[
-                RadioListTile<int>(
-                  title: const Text('Sản phẩm'),
-                  value: 1,
-                  groupValue: checkSelected,
-                  onChanged: (value) {
-                    setState(() {
-                      checkSelected = value;
-                      setCheckData();
-                      _loadProductRating();
-                    });
-                  },
-                ),
-                RadioListTile<int>(
-                  title: const Text('Công ty'),
-                  value: 2,
-                  groupValue: checkSelected,
-                  onChanged: (value) {
-                    setState(() {
-                      checkSelected = value;
-                      setCheckData();
-                      _loadCompanyTypes();
-                    });
-                  },
-                ),
-              ],
-            ),
-            if (checkSelected == 1)
-              ExpansionTile(
-                leading: const Icon(Icons.shopping_cart_outlined),
-                title: const Text("Thống kê sản phẩm"),
-                subtitle: const Text("Lựa chọn đối tượng thống kê"),
-                children: <Widget>[
-                  RadioListTile<int>(
-                    title: const Text('Theo số sao'),
-                    value: 1,
-                    groupValue: selectedLoadData,
-                    onChanged: (value) {
-                      setState(() {
-                        selectedLoadData = value;
-                        setCheckData();
-                        _loadProductRating();
-                      });
-                    },
-                  ),
-                  RadioListTile<int>(
-                    title: const Text('Theo loại sản phẩm'),
-                    value: 2,
-                    groupValue: selectedLoadData,
-                    onChanged: (value) {
-                      setState(() {
-                        selectedLoadData = value;
-                        setCheckData();
-                        _loadProductCategory();
-                      });
-                    },
-                  ),
-                  RadioListTile<int>(
-                    title: const Text('Theo xã'),
-                    value: 3,
-                    groupValue: selectedLoadData,
-                    onChanged: (value) {
-                      setState(() {
-                        selectedLoadData = value;
-                        setCheckData();
-                        _loadProductCommune();
-                      });
-                    },
-                  ),
-                  RadioListTile<int>(
-                    title: const Text('Theo huyện'),
-                    value: 4,
-                    groupValue: selectedLoadData,
-                    onChanged: (value) {
-                      setState(() {
-                        selectedLoadData = value;
-                        setCheckData();
-                        _loadProductDistrict();
-                      });
-                    },
-                  ),
-                  RadioListTile<int>(
-                    title: const Text('Theo năm'),
-                    value: 5,
-                    groupValue: selectedLoadData,
-                    onChanged: (value) {
-                      setState(() {
-                        selectedLoadData = value;
-                        setCheckData();
-                        _loadProductYear();
-                      });
-                    },
-                  ),
-                ],
-              ),
-            if (checkSelected == 2)
-              ExpansionTile(
-                leading: const Icon(Icons.business),
-                title: const Text("Thống kê công ty"),
-                subtitle: const Text("Lựa chọn đối tượng thống kê"),
-                children: <Widget>[
-                  RadioListTile<int>(
-                    title: const Text('Theo loại hình công ty'),
-                    value: 1,
-                    groupValue: selectedCompanyData,
-                    onChanged: (value) {
-                      setState(() {
-                        selectedCompanyData = value;
-                        setCheckData();
-                        _loadCompanyTypes();
-                      });
-                    },
-                  ),
-                  RadioListTile<int>(
-                    title: const Text('Theo huyện'),
-                    value: 2,
-                    groupValue: selectedCompanyData,
-                    onChanged: (value) {
-                      setState(() {
-                        selectedCompanyData = value;
-                        setCheckData();
-                        _loadCompanyDistricts();
-                      });
-                    },
-                  ),
-                  RadioListTile<int>(
-                    title: const Text('Theo trạng thái hoạt động'),
-                    value: 3,
-                    groupValue: selectedCompanyData,
-                    onChanged: (value) {
-                      setState(() {
-                        selectedCompanyData = value;
-                        setCheckData();
-                        _loadCompanyStatus();
-                      });
-                    },
-                  ),
-                ],
-              ),
-          ],
-        ),
+      endDrawer: ChartMenu(
+        isAdmin: isAdmin,
+        selectedChart: selectedChart,
+        checkSelected: checkSelected,
+        selectedLoadData: selectedLoadData,
+        selectedCompanyData: selectedCompanyData,
+        selectedOcopData: selectedOcopData,
+        onChartTypeChanged: (value) {
+          setState(() {
+            selectedChart = value;
+          });
+        },
+        onCheckSelectedChanged: (value) {
+          setState(() {
+            checkSelected = value;
+            setCheckData();
+            if (value == 1) {
+              _loadProductRating();
+            } else if (value == 2) {
+              _loadCompanyTypes();
+            } else if (value == 3 && isAdmin) {
+              _loadTotalProductCount();
+            }
+          });
+        },
+        onLoadDataChanged: (value) {
+          setState(() {
+            selectedLoadData = value;
+            setCheckData();
+            switch (value) {
+              case 1:
+                _loadProductRating();
+                break;
+              case 2:
+                _loadProductCategory();
+                break;
+              case 3:
+                _loadProductCommune();
+                break;
+              case 4:
+                _loadProductDistrict();
+                break;
+              case 5:
+                _loadProductYear();
+                break;
+            }
+          });
+        },
+        onCompanyDataChanged: (value) {
+          setState(() {
+            selectedCompanyData = value;
+            setCheckData();
+            switch (value) {
+              case 1:
+                _loadCompanyTypes();
+                break;
+              case 2:
+                _loadCompanyDistricts();
+                break;
+              case 3:
+                _loadCompanyStatus();
+                break;
+            }
+          });
+        },
+        onOcopDataChanged: (value) {
+          setState(() {
+            selectedOcopData = value;
+            setCheckData();
+            switch (value) {
+              case 1:
+                _loadTotalProductCount();
+                break;
+              case 2:
+                _loadProductStatusCounts();
+                break;
+            }
+          });
+        },
       ),
       body: checkData
           ? (selectedChart == 1

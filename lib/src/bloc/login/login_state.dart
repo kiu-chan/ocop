@@ -7,6 +7,7 @@ class LoginState {
   final LoginStatus status;
   final String? error;
   final Map<String, dynamic>? userInfo;
+  final String? role;
 
   LoginState({
     this.email = '',
@@ -15,6 +16,7 @@ class LoginState {
     this.status = LoginStatus.initial,
     this.error,
     this.userInfo,
+    this.role,
   });
 
   LoginState copyWith({
@@ -24,6 +26,7 @@ class LoginState {
     LoginStatus? status,
     String? error,
     Map<String, dynamic>? userInfo,
+    String? role,
   }) {
     return LoginState(
       email: email ?? this.email,
@@ -32,6 +35,7 @@ class LoginState {
       status: status ?? this.status,
       error: error ?? this.error,
       userInfo: userInfo ?? this.userInfo,
+      role: role ?? this.role,
     );
   }
 }

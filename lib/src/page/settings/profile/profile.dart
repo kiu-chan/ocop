@@ -3,7 +3,7 @@ import 'package:ocop/src/page/settings/profile/userInformation.dart';
 import 'package:ocop/mainData/user/authService.dart';
 
 class Profile extends StatefulWidget {
-  const Profile({super.key});
+  const Profile({Key? key}) : super(key: key);
 
   @override
   _ProfileState createState() => _ProfileState();
@@ -11,6 +11,7 @@ class Profile extends StatefulWidget {
 
 class _ProfileState extends State<Profile> {
   Map<String, dynamic>? profile;
+  String? role;
 
   @override
   void initState() {
@@ -20,6 +21,7 @@ class _ProfileState extends State<Profile> {
 
   Future<void> _initializeProfile() async {
     profile = await getProfile();
+    role = await AuthService.getUserRole();
     setState(() {}); // Cập nhật UI sau khi có dữ liệu
   }
 
@@ -83,6 +85,14 @@ class _ProfileState extends State<Profile> {
                               color: Colors.white,
                             ),
                           ),
+                          const SizedBox(height: 5.0),
+                          Text(
+                            role != null ? (role == 'admin' ? 'Admin' : 'User') : '',
+                            style: const TextStyle(
+                              fontSize: 16.0,
+                              color: Colors.white,
+                            ),
+                          ),
                         ],
                       ),
                     ),
@@ -97,7 +107,7 @@ class _ProfileState extends State<Profile> {
                   MaterialPageRoute(
                     builder: (context) => const UserInformation(),
                   ),
-                );
+                ).then((_) => _initializeProfile()); // Refresh profile after returning from UserInformation
               },
               icon: const Icon(
                 Icons.edit_document,

@@ -6,6 +6,7 @@ class AuthService {
   static const String _userEmailKey = 'userEmail';
   static const String _userInfoKey = 'userInfo';
   static const String _communeKey = 'userCommune';
+  static const String _roleKey = 'userRole';
 
   static Future<bool> isLoggedIn() async {
     final prefs = await SharedPreferences.getInstance();
@@ -21,6 +22,7 @@ class AuthService {
       await prefs.remove(_userEmailKey);
       await prefs.remove(_userInfoKey);
       await prefs.remove(_communeKey);
+      await prefs.remove(_roleKey);
     }
   }
 
@@ -28,9 +30,12 @@ class AuthService {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_userInfoKey, json.encode(userInfo));
     
-    // Lưu thông tin xã riêng biệt
     if (userInfo.containsKey('commune')) {
       await prefs.setString(_communeKey, userInfo['commune']);
+    }
+
+    if (userInfo.containsKey('role')) {
+      await prefs.setString(_roleKey, userInfo['role']);
     }
   }
 
@@ -38,10 +43,14 @@ class AuthService {
     final prefs = await SharedPreferences.getInstance();
     final userInfoString = prefs.getString(_userInfoKey);
     final commune = prefs.getString(_communeKey);
+    final role = prefs.getString(_roleKey);
     if (userInfoString != null) {
       Map<String, dynamic> userInfo = json.decode(userInfoString) as Map<String, dynamic>;
       if (commune != null) {
         userInfo['commune'] = commune;
+      }
+      if (role != null) {
+        userInfo['role'] = role;
       }
       return userInfo;
     }
@@ -58,12 +67,18 @@ class AuthService {
     return prefs.getString(_communeKey);
   }
 
+  static Future<String?> getUserRole() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_roleKey);
+  }
+
   static Future<void> logout() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_isLoggedInKey);
     await prefs.remove(_userEmailKey);
     await prefs.remove(_userInfoKey);
     await prefs.remove(_communeKey);
+    await prefs.remove(_roleKey);
   }
 
   static Future<void> updateUserInfo(Map<String, dynamic> newInfo) async {
