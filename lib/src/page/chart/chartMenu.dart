@@ -193,6 +193,18 @@ class _ChartMenuState extends State<ChartMenu> {
                   groupValue: widget.selectedOcopData,
                   onChanged: widget.onOcopDataChanged,
                 ),
+                RadioListTile<int>(
+                  title: const Text('Theo huyện'),
+                  value: 3,
+                  groupValue: widget.selectedOcopData,
+                  onChanged: widget.onOcopDataChanged,
+                ),
+                RadioListTile<int>(
+                  title: const Text('Theo năm'),
+                  value: 4,
+                  groupValue: widget.selectedOcopData,
+                  onChanged: widget.onOcopDataChanged,
+                ),
               ],
             ),
         ],

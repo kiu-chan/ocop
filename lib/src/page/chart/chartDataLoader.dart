@@ -122,4 +122,26 @@ class ChartDataLoader {
       data: statusCounts,
     );
   }
+
+  Future<ChartData> loadOcopFileDistrict() async {
+    var districtData = await databaseData.getOcopFileDistrictCounts();
+    return ChartData(
+      name: "Biểu đồ thống kê số lượng hồ sơ OCOP theo huyện",
+      title: "Hồ sơ OCOP",
+      x_title: "Huyện",
+      y_title: "Số lượng",
+      data: districtData['detailed'] as Map<String, int>,
+    );
+  }
+
+  Future<ChartData> loadOcopFileYear() async {
+  var yearData = await databaseData.getOcopFileYearCounts();
+  return ChartData(
+    name: "Biểu đồ thống kê số lượng hồ sơ OCOP đang hoạt động theo năm",
+    title: "Hồ sơ OCOP",
+    x_title: "Năm",
+    y_title: "Số lượng",
+    data: yearData,
+  );
+}
 }

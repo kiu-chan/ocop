@@ -3,7 +3,8 @@ import 'package:ocop/src/page/map/mapPage.dart';
 import 'package:ocop/src/page/home/homePage.dart';
 import 'package:ocop/src/page/settings/settingPage.dart';
 import 'package:ocop/src/page/chart/chartPage.dart';
-
+import 'package:ocop/src/page/council/councilListPage.dart';
+import 'package:ocop/mainData/user/authService.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -14,39 +15,38 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   int currentIndex = 0;
+  bool isAdmin = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkAdminRole();
+  }
+
+  Future<void> _checkAdminRole() async {
+    final userRole = await AuthService.getUserRole();
+    setState(() {
+      isAdmin = userRole == 'admin';
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    Widget currentWidget = const SizedBox.shrink();
-    switch(currentIndex) {
-      case 0:
-      {
-        currentWidget = const HomePage();
-        break;
-      }
-      
-      case 1:
-      {
-        currentWidget = const MapPage();
-        break;
-      }
+    List<Widget> pages = [
+      const HomePage(),
+      const MapPage(),
+      const ChartPage(),
+      if (isAdmin) const CouncilListPage(),
+      const SettingPage(),
+    ];
 
-      case 2:
-      {
-        currentWidget = const ChartPage();
-        break;
-      }
-
-      case 3:
-      {
-        currentWidget = const SettingPage();
-        break;
-      }
-    }
     return Scaffold(
       body: AnimatedSwitcher(
         duration: const Duration(milliseconds: 500),
-        child:
-            Container(key: ValueKey<int>(currentIndex), child: currentWidget),
+        child: Container(
+          key: ValueKey<int>(currentIndex), 
+          child: pages[currentIndex]
+        ),
       ),
       bottomNavigationBar: BottomNavigationBar(
         onTap: (int index) {
@@ -54,35 +54,30 @@ class _HomeState extends State<Home> {
             currentIndex = index;
           });
         },
-          type: BottomNavigationBarType.fixed,
+        type: BottomNavigationBarType.fixed,
         currentIndex: currentIndex,
-        items: const <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(
-              Icons.home,
-              // color: Colors.black,
-            ),
+        items: <BottomNavigationBarItem>[
+          const BottomNavigationBarItem(
+            icon: Icon(Icons.home),
             label: "Home",
-            // backgroundColor: Colors.white,
           ),
-          BottomNavigationBarItem(
-            icon: Icon(
-              Icons.map_outlined,
-            ),
+          const BottomNavigationBarItem(
+            icon: Icon(Icons.map_outlined),
             label: "Map",
           ),
-          BottomNavigationBarItem(
-              icon: Icon(
-                Icons.ssid_chart,
-                // color: Colors.black,
-              ),
-              label: "Chart"),
-          BottomNavigationBarItem(
-              icon: Icon(
-                Icons.settings,
-                // color: Colors.black,
-              ),
-              label: "Settings"),
+          const BottomNavigationBarItem(
+            icon: Icon(Icons.ssid_chart),
+            label: "Chart",
+          ),
+          if (isAdmin)
+            const BottomNavigationBarItem(
+              icon: Icon(Icons.groups),
+              label: "Hội đồng",
+            ),
+          const BottomNavigationBarItem(
+            icon: Icon(Icons.settings),
+            label: "Settings",
+          ),
         ],
       ),
     );

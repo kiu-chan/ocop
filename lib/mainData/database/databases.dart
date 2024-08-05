@@ -117,6 +117,14 @@ Future<void> connect() async {
     return await productDatabase.getProductStatusCounts();
   }
 
+  Future<Map<String, dynamic>> getOcopFileDistrictCounts() async {
+    return await productDatabase.getOcopFileDistrictCounts();
+  }
+
+  Future<Map<String, int>> getOcopFileYearCounts() async {
+    return await productDatabase.getOcopFileYearCounts();
+  }
+
   Future<List<Map<String, dynamic>>> getRandomNews({int limit = 10}) async {
     return await newsDatabase.getRandomNews(limit: limit);
   }
@@ -242,6 +250,28 @@ Future<void> connect() async {
 
   Future<Map<String, int>> getCompanyStatusCounts() async {
     return await companyDatabase.getCompanyStatusCounts();
+  }
+
+  Future<List<Map<String, dynamic>>> getCouncilList() async {
+    try {
+      final result = await connection!.query('''
+        SELECT id, title, level, created_at, is_archived
+        FROM _ocop_evaluation_council_groups
+        WHERE deleted_at IS NULL
+        ORDER BY created_at DESC
+      ''');
+
+      return result.map((row) => {
+        'id': row[0],
+        'title': row[1],
+        'level': row[2],
+        'created_at': row[3],
+        'is_archived': row[4],
+      }).toList();
+    } catch (e) {
+      print('Lỗi khi truy vấn danh sách hội đồng chấm: $e');
+      return [];
+    }
   }
 
   Future<void> close() async {

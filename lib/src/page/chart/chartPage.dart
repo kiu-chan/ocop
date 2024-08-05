@@ -73,6 +73,8 @@ class _ChartPageState extends State<ChartPage> {
   Future<void> _loadCompanyStatus() => _loadData(dataLoader.loadCompanyStatus);
   Future<void> _loadTotalProductCount() => _loadData(dataLoader.loadTotalProductCount);
   Future<void> _loadProductStatusCounts() => _loadData(dataLoader.loadProductStatusCounts);
+  Future<void> _loadOcopFileDistrict() => _loadData(dataLoader.loadOcopFileDistrict);
+  Future<void> _loadOcopFileYear() => _loadData(dataLoader.loadOcopFileYear);
 
   @override
   Widget build(BuildContext context) {
@@ -168,6 +170,12 @@ class _ChartPageState extends State<ChartPage> {
                 break;
               case 2:
                 _loadProductStatusCounts();
+                break;
+              case 3:
+                _loadOcopFileDistrict();
+                break;
+              case 4:
+                _loadOcopFileYear();
                 break;
             }
           });

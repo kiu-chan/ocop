@@ -528,42 +528,114 @@ Future<Map<String, int>> getProductYearCounts() async {
   }
 }
 
-Future<int> getTotalProductCount() async {
-  try {
-    final result = await connection.query('SELECT COUNT(*) FROM _ocop_products');
-    return result[0][0] as int;
-  } catch (e) {
-    print('Lỗi khi truy vấn tổng số lượng sản phẩm: $e');
-    return 0;
+  Future<int> getTotalProductCount() async {
+    try {
+      final result = await connection.query('''
+        SELECT COUNT(*) 
+        FROM _ocop_products 
+        WHERE deleted_at IS NULL
+      ''');
+      return result[0][0] as int;
+    } catch (e) {
+      print('Lỗi khi truy vấn tổng số lượng sản phẩm: $e');
+      return 0;
+    }
   }
-}
 
-Future<Map<String, int>> getProductStatusCounts() async {
+  Future<Map<String, int>> getProductStatusCounts() async {
+    try {
+      final result = await connection.query('''
+        SELECT 
+          status,
+          COUNT(*) as count
+        FROM 
+          _ocop_products
+        WHERE
+          deleted_at IS NULL
+        GROUP BY 
+          status
+        ORDER BY 
+          count DESC
+      ''');
+
+      Map<String, int> statusCounts = {};
+      for (final row in result) {
+        String status = row[0] as String? ?? 'Không xác định';
+        int count = row[1] as int;
+        statusCounts[status] = count;
+      }
+
+      return statusCounts;
+    } catch (e) {
+      print('Lỗi khi truy vấn dữ liệu trạng thái hồ sơ OCOP: $e');
+      return {};
+    }
+  }
+
+  Future<Map<String, dynamic>> getOcopFileDistrictCounts() async {
+    try {
+      final result = await connection.query('''
+        SELECT md.name, COUNT(p.id) as ocop_count
+        FROM map_districts md
+        LEFT JOIN map_communes mc ON md.id = mc.district_id
+        LEFT JOIN _ocop_products p ON mc.id = p.commune_id
+        WHERE p.deleted_at IS NULL
+        GROUP BY md.name
+        ORDER BY ocop_count DESC
+      ''');
+
+      Map<String, int> detailedData = {};
+      Map<String, int> groupedData = {};
+
+      for (final row in result) {
+        String districtName = row[0] as String;
+        int count = row[1] as int;
+        detailedData[districtName] = count;
+        if (count > 0) {
+          groupedData[count.toString()] = (groupedData[count.toString()] ?? 0) + 1;
+        }
+      }
+
+      return {
+        'detailed': detailedData,
+        'grouped': groupedData,
+      };
+    } catch (e) {
+      print('Lỗi khi truy vấn dữ liệu hồ sơ OCOP theo huyện: $e');
+      return {
+        'detailed': {},
+        'grouped': {},
+      };
+    }
+  }
+
+  Future<Map<String, int>> getOcopFileYearCounts() async {
   try {
     final result = await connection.query('''
       SELECT 
-        status,
+        EXTRACT(YEAR FROM created_at)::integer as year,
         COUNT(*) as count
       FROM 
         _ocop_products
+      WHERE
+        deleted_at IS NULL
       GROUP BY 
-        status
+        EXTRACT(YEAR FROM created_at)::integer
       ORDER BY 
-        count DESC
+        year
     ''');
 
-    Map<String, int> statusCounts = {};
+    Map<String, int> yearCounts = {};
     for (final row in result) {
-      String status = row[0] as String? ?? 'Không xác định';
+      int year = row[0] as int;  // Đảm bảo rằng đây là một số nguyên
       int count = row[1] as int;
-      statusCounts[status] = count;
+      yearCounts[year.toString()] = count;
     }
 
-    return statusCounts;
+    return yearCounts;
   } catch (e) {
-    print('Lỗi khi truy vấn dữ liệu trạng thái hồ sơ OCOP: $e');
+    print('Lỗi khi truy vấn dữ liệu hồ sơ OCOP theo năm: $e');
     return {};
   }
 }
-
 }
