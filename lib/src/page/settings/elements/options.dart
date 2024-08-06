@@ -6,9 +6,17 @@ import 'package:ocop/src/page/settings/profile/userInformation.dart';
 import 'package:ocop/src/bloc/login/login_bloc.dart';
 import 'package:ocop/src/bloc/login/login_event.dart';
 import 'package:ocop/src/bloc/login/login_state.dart';
+import 'package:ocop/src/page/home/home.dart';
 
-class Options extends StatelessWidget {
-  const Options({super.key});
+class Options extends StatefulWidget {
+  const Options({Key? key}) : super(key: key);
+
+  @override
+  _OptionsState createState() => _OptionsState();
+}
+
+class _OptionsState extends State<Options> {
+  bool _isLoading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -161,9 +169,22 @@ class Options extends StatelessWidget {
         borderRadius: BorderRadius.circular(5.0),
       ),
       child: InkWell(
-        onTap: () {
+        onTap: _isLoading ? null : () async {
           if (isLoggedIn) {
+            setState(() {
+              _isLoading = true;
+            });
             context.read<LoginBloc>().add(LogoutRequested());
+            await Future.delayed(const Duration(seconds: 1));
+            if (mounted) {
+              setState(() {
+                _isLoading = false;
+              });
+              Navigator.of(context).pushAndRemoveUntil(
+                MaterialPageRoute(builder: (context) => const Home()),
+                (Route<dynamic> route) => false,
+              );
+            }
           } else {
             Navigator.push(
               context,
@@ -171,47 +192,49 @@ class Options extends StatelessWidget {
             );
           }
         },
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: <Widget>[
-            Row(
-              children: <Widget>[
-                Container(
-                  width: 35.0,
-                  height: 35.0,
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(30.0),
-                    color: const Color.fromARGB(75, 120, 22, 233),
+        child: _isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: <Widget>[
+                  Row(
+                    children: <Widget>[
+                      Container(
+                        width: 35.0,
+                        height: 35.0,
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(30.0),
+                          color: const Color.fromARGB(75, 120, 22, 233),
+                        ),
+                        child: Icon(
+                          isLoggedIn ? Icons.logout : Icons.login,
+                          size: 20.0,
+                          color: Colors.green,
+                        ),
+                      ),
+                      const SizedBox(width: 20.0),
+                      Text(
+                        isLoggedIn ? 'Log Out' : 'Log In',
+                        style: const TextStyle(
+                          fontSize: 20.0,
+                        ),
+                      )
+                    ],
                   ),
-                  child: Icon(
-                    isLoggedIn ? Icons.logout : Icons.login,
-                    size: 20.0,
-                    color: Colors.green,
-                  ),
-                ),
-                const SizedBox(width: 20.0),
-                Text(
-                  isLoggedIn ? 'Log Out' : 'Log In',
-                  style: const TextStyle(
-                    fontSize: 20.0,
-                  ),
-                )
-              ],
-            ),
-            Container(
-              width: 25.0,
-              height: 25.0,
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(5.0),
+                  Container(
+                    width: 25.0,
+                    height: 25.0,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(5.0),
+                    ),
+                    child: const Icon(
+                      Icons.arrow_forward_ios,
+                      size: 12.0,
+                      color: Colors.blue
+                    ),
+                  )
+                ],
               ),
-              child: const Icon(
-                Icons.arrow_forward_ios,
-                size: 12.0,
-                color: Colors.blue
-              ),
-            )
-          ],
-        ),
       ),
     );
   }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:ocop/mainData/database/databases.dart';
 import 'package:intl/intl.dart';
+import 'package:ocop/src/data/councils/councilData.dart';
 
 class CouncilListPage extends StatefulWidget {
   const CouncilListPage({Key? key}) : super(key: key);
@@ -11,11 +12,12 @@ class CouncilListPage extends StatefulWidget {
 
 class _CouncilListPageState extends State<CouncilListPage> {
   final DefaultDatabaseOptions _databaseOptions = DefaultDatabaseOptions();
-  List<Map<String, dynamic>> _councils = [];
-  List<int> _availableYears = [];
-  List<String> _availableDistricts = [];
-  int? _selectedYear;
-  String? _selectedDistrict;
+  List<Council> _councils = [];
+  List<Council> _filteredCouncils = [];
+  Set<String> _years = {};
+  Set<String> _districts = {};
+  Set<String> _selectedYears = {};
+  Set<String> _selectedDistricts = {};
 
   @override
   void initState() {
@@ -25,43 +27,22 @@ class _CouncilListPageState extends State<CouncilListPage> {
 
   Future<void> _loadCouncils() async {
     await _databaseOptions.connect();
-    final councils = await _databaseOptions.connection!.query('''
-      SELECT cg.id, cg.title, cg.level, cg.created_at, cg.is_archived, md.name as district_name
-      FROM _ocop_evaluation_council_groups cg
-      LEFT JOIN map_districts md ON cg.district_id = md.id
-      WHERE cg.deleted_at IS NULL
-      ${_selectedYear != null ? "AND EXTRACT(YEAR FROM cg.created_at) = @year" : ""}
-      ${_selectedDistrict != null ? "AND md.name = @district" : ""}
-      ORDER BY cg.created_at DESC
-    ''', substitutionValues: {
-      if (_selectedYear != null) 'year': _selectedYear,
-      if (_selectedDistrict != null) 'district': _selectedDistrict,
-    });
-    
+    final councilsData = await _databaseOptions.councilsDatabase.getCouncilList();
     setState(() {
-      _councils = councils.map((row) => {
-        'id': row[0],
-        'title': row[1],
-        'level': row[2],
-        'created_at': row[3],
-        'is_archived': row[4],
-        'district_name': row[5] ?? 'Không xác định',
+      _councils = councilsData.map((data) => Council.fromJson(data)).toList();
+      _filteredCouncils = List.from(_councils);
+      _years = _councils.map((c) => DateFormat('yyyy').format(c.createdAt)).toSet();
+      _districts = _councils.map((c) => c.districtName).toSet();
+    });
+  }
+
+  void _filterCouncils() {
+    setState(() {
+      _filteredCouncils = _councils.where((council) {
+        bool yearMatch = _selectedYears.isEmpty || _selectedYears.contains(DateFormat('yyyy').format(council.createdAt));
+        bool districtMatch = _selectedDistricts.isEmpty || _selectedDistricts.contains(council.districtName);
+        return yearMatch && districtMatch;
       }).toList();
-
-      // Lấy danh sách các năm có sẵn
-      _availableYears = _councils
-          .map((council) => DateTime.parse(council['created_at'].toString()).year)
-          .toSet()
-          .toList()
-        ..sort((a, b) => b.compareTo(a));
-
-      // Lấy danh sách các huyện có sẵn
-      _availableDistricts = _councils
-          .map((council) => council['district_name'] as String)
-          .where((district) => district != 'Không xác định')
-          .toSet()
-          .toList()
-        ..sort();
     });
   }
 
@@ -74,7 +55,7 @@ class _CouncilListPageState extends State<CouncilListPage> {
           Builder(
             builder: (BuildContext context) {
               return IconButton(
-                icon: const Icon(Icons.filter_list),
+                icon: const Icon(Icons.menu),
                 onPressed: () {
                   Scaffold.of(context).openEndDrawer();
                 },
@@ -116,70 +97,53 @@ class _CouncilListPageState extends State<CouncilListPage> {
             ExpansionTile(
               leading: const Icon(Icons.calendar_today),
               title: const Text('Năm'),
-              children: [
-                ListTile(
-                  title: const Text('Tất cả các năm'),
-                  selected: _selectedYear == null,
-                  onTap: () {
-                    setState(() {
-                      _selectedYear = null;
-                    });
-                    _loadCouncils();
-                    Navigator.pop(context);
-                  },
-                ),
-                ..._availableYears.map((year) => ListTile(
-                  title: Text(year.toString()),
-                  selected: _selectedYear == year,
-                  onTap: () {
-                    setState(() {
-                      _selectedYear = year;
-                    });
-                    _loadCouncils();
-                    Navigator.pop(context);
-                  },
-                )).toList(),
-              ],
+              children: _years.map((year) => CheckboxListTile(
+                title: Text(year),
+                value: _selectedYears.contains(year),
+                onChanged: (bool? value) {
+                  setState(() {
+                    if (value == true) {
+                      _selectedYears.add(year);
+                    } else {
+                      _selectedYears.remove(year);
+                    }
+                    _filterCouncils();
+                  });
+                },
+              )).toList(),
             ),
             ExpansionTile(
               leading: const Icon(Icons.location_city),
               title: const Text('Huyện'),
-              children: [
-                ListTile(
-                  title: const Text('Tất cả các huyện'),
-                  selected: _selectedDistrict == null,
-                  onTap: () {
-                    setState(() {
-                      _selectedDistrict = null;
-                    });
-                    _loadCouncils();
-                    Navigator.pop(context);
-                  },
-                ),
-                ..._availableDistricts.map((district) => ListTile(
-                  title: Text(district),
-                  selected: _selectedDistrict == district,
-                  onTap: () {
-                    setState(() {
-                      _selectedDistrict = district;
-                    });
-                    _loadCouncils();
-                    Navigator.pop(context);
-                  },
-                )).toList(),
-              ],
+              children: _districts.map((district) => CheckboxListTile(
+                title: Text(district),
+                value: _selectedDistricts.contains(district),
+                onChanged: (bool? value) {
+                  setState(() {
+                    if (value == true) {
+                      _selectedDistricts.add(district);
+                    } else {
+                      _selectedDistricts.remove(district);
+                    }
+                    _filterCouncils();
+                  });
+                },
+              )).toList(),
             ),
           ],
         ),
       ),
       body: ListView.builder(
-        itemCount: _councils.length,
+        itemCount: _filteredCouncils.length,
         itemBuilder: (context, index) {
-          final council = _councils[index];
+          final council = _filteredCouncils[index];
           return ListTile(
-            title: Text(council['title']),
-            subtitle: Text('Cấp: ${council['level']} - Ngày tạo: ${DateFormat('dd/MM/yyyy').format(DateTime.parse(council['created_at'].toString()))}'),
-            trailing: Text(council['is_archived'] ? 'Đã lưu trữ' : 'Đang hoạt động'),
+            title: Text(council.title),
+            subtitle: Text(
+              'Cấp: ${council.level} - Ngày tạo: ${DateFormat('dd/MM/yyyy').format(council.createdAt)}' +
+              '\nHuyện: ${council.districtName}'
+            ),
+            trailing: Text(council.isArchived ? 'Đã lưu trữ' : 'Đang hoạt động'),
             onTap: () {
               // Xử lý khi người dùng nhấn vào một hội đồng
             },

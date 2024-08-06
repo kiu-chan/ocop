@@ -100,19 +100,19 @@ class _ProfileState extends State<Profile> {
                 ],
               ),
             ),
-            IconButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const UserInformation(),
-                  ),
-                ).then((_) => _initializeProfile()); // Refresh profile after returning from UserInformation
-              },
-              icon: const Icon(
-                Icons.edit_document,
-              ),
-            )
+            // IconButton(
+            //   onPressed: () {
+            //     Navigator.push(
+            //       context,
+            //       MaterialPageRoute(
+            //         builder: (context) => const UserInformation(),
+            //       ),
+            //     ).then((_) => _initializeProfile()); // Refresh profile after returning from UserInformation
+            //   },
+            //   icon: const Icon(
+            //     Icons.edit_document,
+            //   ),
+            // )
           ],
         ),
       ),

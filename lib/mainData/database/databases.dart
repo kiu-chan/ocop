@@ -1,3 +1,4 @@
+import 'package:ocop/mainData/database/councils.dart';
 import 'package:postgres/postgres.dart';
 import 'package:ocop/src/data/map/productMapData.dart';
 import 'package:ocop/mainData/database/product.dart';
@@ -21,6 +22,7 @@ class DefaultDatabaseOptions {
   late NewsDatabase newsDatabase;
   late CompanyDatabase companyDatabase;
   late VideosDatabase videosDatabase;
+  late CouncilsDatabase councilsDatabase;
 
 Future<void> connect() async {
   try {
@@ -43,6 +45,7 @@ Future<void> connect() async {
     areaDatabase = AreaDatabase(connection!);
     companyDatabase = CompanyDatabase(connection!);
     videosDatabase = VideosDatabase(connection!);
+    councilsDatabase = CouncilsDatabase(connection!);
   } catch (e) {
     print('Failed to connect to database: $e');
     _connectionFailed = true;
@@ -253,25 +256,7 @@ Future<void> connect() async {
   }
 
   Future<List<Map<String, dynamic>>> getCouncilList() async {
-    try {
-      final result = await connection!.query('''
-        SELECT id, title, level, created_at, is_archived
-        FROM _ocop_evaluation_council_groups
-        WHERE deleted_at IS NULL
-        ORDER BY created_at DESC
-      ''');
-
-      return result.map((row) => {
-        'id': row[0],
-        'title': row[1],
-        'level': row[2],
-        'created_at': row[3],
-        'is_archived': row[4],
-      }).toList();
-    } catch (e) {
-      print('Lỗi khi truy vấn danh sách hội đồng chấm: $e');
-      return [];
-    }
+    return await councilsDatabase.getCouncilList();
   }
 
   Future<void> close() async {
