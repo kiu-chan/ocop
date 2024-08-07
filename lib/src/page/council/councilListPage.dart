@@ -1,10 +1,13 @@
+// councilListPage.dart
+
 import 'package:flutter/material.dart';
 import 'package:ocop/mainData/database/databases.dart';
 import 'package:intl/intl.dart';
 import 'package:ocop/src/data/councils/councilData.dart';
+import 'councilProductsPage.dart';
 
 class CouncilListPage extends StatefulWidget {
-  const CouncilListPage({super.key});
+  const CouncilListPage({Key? key}) : super(key: key);
 
   @override
   _CouncilListPageState createState() => _CouncilListPageState();
@@ -139,12 +142,20 @@ class _CouncilListPageState extends State<CouncilListPage> {
           final council = _filteredCouncils[index];
           return ListTile(
             title: Text(council.title),
-            subtitle: Text( 
+            subtitle: Text(
               'Cấp: ${council.level} - Ngày tạo: ${DateFormat('dd/MM/yyyy').format(council.createdAt)}' '\nHuyện: ${council.districtName}'
             ),
             trailing: Text(council.isArchived ? 'Đã lưu trữ' : 'Đang hoạt động'),
             onTap: () {
-              // Xử lý khi người dùng nhấn vào một hội đồng
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => CouncilProductsPage(
+                    councilId: council.id,
+                    councilTitle: council.title,
+                  ),
+                ),
+              );
             },
           );
         },

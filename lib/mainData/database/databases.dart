@@ -259,6 +259,18 @@ Future<void> connect() async {
     return await councilsDatabase.getCouncilList();
   }
 
+  Future<List<Map<String, dynamic>>> getCouncilProducts(int councilId) async {
+    return await councilsDatabase.getCouncilProducts(councilId);
+  }
+
+  Future<List<Map<String, dynamic>>> getProductEvaluationDetails(int productId, int councilId) async {
+    return await councilsDatabase.getProductEvaluationDetails(productId, councilId);
+  }
+
+  Future<List<Map<String, dynamic>>> getEvaluationPoints(int councilUserId, int evaluationId) async {
+    return await councilsDatabase.getEvaluationPoints(councilUserId, evaluationId);
+  }
+
   Future<void> close() async {
     await connection!.close();
     print('Connection closed.');
