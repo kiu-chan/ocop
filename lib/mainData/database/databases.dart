@@ -263,12 +263,20 @@ Future<void> connect() async {
     return await councilsDatabase.getCouncilProducts(councilId);
   }
 
-  Future<List<Map<String, dynamic>>> getProductEvaluationDetails(int productId, int councilId) async {
+  Future<Map<String, dynamic>> getProductEvaluationDetails(int productId, int councilId) async {
     return await councilsDatabase.getProductEvaluationDetails(productId, councilId);
   }
+  
+  Future<List<Map<String, dynamic>>> getEvaluationPoints(int evaluationId) async {
+    return await councilsDatabase.getEvaluationPoints(evaluationId);
+  }
 
-  Future<List<Map<String, dynamic>>> getEvaluationPoints(int councilUserId, int evaluationId) async {
-    return await councilsDatabase.getEvaluationPoints(councilUserId, evaluationId);
+  Future<int?> getProductEvaluationId(int productId) async {
+    return await councilsDatabase.getProductEvaluationId(productId);
+  }
+
+  Future<List<int>> getCouncilUserIds(int councilGroupId) async {
+    return await councilsDatabase.getCouncilUserIds(councilGroupId);
   }
 
   Future<void> close() async {

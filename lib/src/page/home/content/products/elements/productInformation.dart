@@ -309,7 +309,15 @@ class _ProductInformationState extends State<ProductInformation> {
                       const SizedBox(height: 8),
                       ElevatedButton(
                         onPressed: () => _openMap(widget.product.latitude, widget.product.longitude),
-                        child: const Text('Xem trên bản đồ'),
+                        child: const Text(
+                          'Xem trên bản đồ',
+                          style: TextStyle(
+                            color: Colors.blue,
+                          )
+                          ),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.white,
+                        ),
                       ),
                     ],
                   ),

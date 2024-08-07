@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:ocop/src/data/home/companyData.dart';
 import 'package:ocop/mainData/database/databases.dart';
 import 'package:flutter_html/flutter_html.dart';
+import 'package:ocop/src/page/elements/logo.dart';
 import 'package:ocop/src/page/home/content/products/elements/productCard.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -181,6 +182,8 @@ class _CompanyDetailsState extends State<CompanyDetails> {
                                       return ProductCard(product: company!.products[index]);
                                     },
                                   ),
+                const SizedBox(height: 20),
+                const Center(child: Logo()),
                           ],
                         ),
                       ),

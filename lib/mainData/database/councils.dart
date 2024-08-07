@@ -66,56 +66,127 @@ class CouncilsDatabase {
     }
   }
 
-  Future<List<Map<String, dynamic>>> getProductEvaluationDetails(int productId, int councilId) async {
-    try {
-      final result = await connection.query('''
-        SELECT 
-          e.id as evaluation_id,
-          e.district_score,
-          e.province_score,
-          e.district_star,
-          e.province_star,
-          cgm.council_user_id
-        FROM _ocop_evaluations e
-        JOIN _ocop_evaluation_council_group_members cgm ON e.id = cgm.council_group_id
-        WHERE e.product_id = @productId AND cgm.council_group_id = @councilId
-      ''', substitutionValues: {
-        'productId': productId,
-        'councilId': councilId,
-      });
-      
-      return result.map((row) => {
-        'evaluation_id': row[0],
-        'district_score': row[1],
-        'province_score': row[2],
-        'district_star': row[3],
-        'province_star': row[4],
-        'council_user_id': row[5],
-      }).toList();
-    } catch (e) {
-      print('Lỗi khi truy vấn chi tiết đánh giá sản phẩm: $e');
-      return [];
+Future<Map<String, dynamic>> getProductEvaluationDetails(int productId, int councilId) async {
+  try {
+    final result = await connection.query('''
+      SELECT 
+        e.id as evaluation_id,
+        e.district_score,
+        e.province_score,
+        e.district_star,
+        e.province_star,
+        cgm.council_user_id
+      FROM _ocop_evaluations e
+      JOIN _ocop_evaluation_council_group_members cgm ON e.id = cgm.council_group_id
+      WHERE e.product_id = @productId AND cgm.council_group_id = @councilId
+      LIMIT 1
+    ''', substitutionValues: {
+      'productId': productId,
+      'councilId': councilId,
+    });
+    
+    if (result.isNotEmpty) {
+      return {
+        'evaluation_id': result[0][0],
+        'district_score': result[0][1],
+        'province_score': result[0][2],
+        'district_star': result[0][3],
+        'province_star': result[0][4],
+        'council_user_id': result[0][5],
+      };
     }
+    return {};
+  } catch (e) {
+    print('Lỗi khi truy vấn chi tiết đánh giá sản phẩm: $e');
+    return {};
   }
+}
 
-  Future<List<Map<String, dynamic>>> getEvaluationPoints(int councilUserId, int evaluationId) async {
-    try {
-      final result = await connection.query('''
-        SELECT score_board_criteria_id, point
-        FROM _ocop_evaluation_score_board_points
-        WHERE council_id = @councilUserId AND evaluation_id = @evaluationId
-      ''', substitutionValues: {
-        'councilUserId': councilUserId,
-        'evaluationId': evaluationId,
-      });
-      
-      return result.map((row) => {
-        'score_board_criteria_id': row[0],
-        'point': row[1],
-      }).toList();
-    } catch (e) {
-      print('Lỗi khi truy vấn điểm đánh giá: $e');
-      return [];
-    }
+Future<List<Map<String, dynamic>>> getEvaluationPoints(int evaluationId) async {
+  try {
+    final result = await connection.query('''
+      SELECT 
+        esp.council_id, 
+        cu.name as council_user_name,
+        json_agg(json_build_object(
+          'criteria_id', esp.score_board_criteria_id, 
+          'point', esp.point,
+          'comment', ci.name,
+          'criteria_name', cr.name,
+          'criteria_order', cr.order,
+          'group_sub_name', cgs.name,
+          'group_sub_id', cgs.id,
+          'group_sub_order', cgs.order,
+          'group_name', cg.name,
+          'group_id', cg.id,
+          'group_order', cg.order
+        ) ORDER BY cg.order, cgs.order, cr.order) as points,
+        SUM(esp.point) as total_points
+      FROM _ocop_evaluation_score_board_points esp
+      LEFT JOIN _ocop_criteria_items ci ON esp.score_board_criteria_id = ci.id
+      LEFT JOIN _ocop_criterias cr ON ci.criteria_id = cr.id
+      LEFT JOIN _ocop_criteria_group_subs cgs ON cr.criteria_group_sub_id = cgs.id
+      LEFT JOIN _ocop_criteria_groups cg ON cgs.criteria_group_id = cg.id
+      LEFT JOIN council_users cu ON esp.council_id = cu.id
+      WHERE esp.evaluation_id = @evaluationId
+      GROUP BY esp.council_id, cu.name
+    ''', substitutionValues: {
+      'evaluationId': evaluationId,
+    });
+    
+    return result.map((row) {
+      var points = (row[2] as List).map((item) => Map<String, dynamic>.from(item)).toList();
+      return {
+        'council_id': row[0] as int,
+        'council_user_name': row[1] as String,
+        'points': points,
+        'total_points': row[3] as num,
+      };
+    }).toList();
+  } catch (e) {
+    print('Lỗi khi truy vấn điểm đánh giá: $e');
+    return [];
   }
+}
+
+  Future<int?> getProductEvaluationId(int productId) async {
+  try {
+    final result = await connection.query('''
+      SELECT e.id AS evaluation_id
+      FROM _ocop_evaluations e
+      JOIN _ocop_products p ON e.product_id = p.id
+      WHERE p.id = @productId
+      LIMIT 1
+    ''', substitutionValues: {
+      'productId': productId,
+    });
+    
+    if (result.isNotEmpty) {
+      return result[0][0] as int;
+    }
+    return null;
+  } catch (e) {
+    print('Lỗi khi truy vấn ID đánh giá sản phẩm: $e');
+    return null;
+  }
+}
+
+Future<List<int>> getCouncilUserIds(int councilGroupId) async {
+  try {
+    final result = await connection.query('''
+      SELECT DISTINCT council_user_id
+      FROM _ocop_evaluation_council_group_members
+      WHERE council_group_id = @councilGroupId
+      ORDER BY council_user_id
+    ''', substitutionValues: {
+      'councilGroupId': councilGroupId,
+    });
+    
+    return result.map((row) => row[0] as int).toList();
+  } catch (e) {
+    print('Lỗi khi truy vấn danh sách council_user_id: $e');
+    return [];
+  }
+}
+
 }

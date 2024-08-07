@@ -1,15 +1,13 @@
-// councilProductsPage.dart
-
 import 'package:flutter/material.dart';
 import 'package:ocop/mainData/database/databases.dart';
 import 'package:intl/intl.dart';
-import 'product_evaluation_details_page.dart';
+import 'productEvaluationDetails.dart';
 
 class CouncilProductsPage extends StatefulWidget {
   final int councilId;
   final String councilTitle;
 
-  const CouncilProductsPage({Key? key, required this.councilId, required this.councilTitle}) : super(key: key);
+  const CouncilProductsPage({super.key, required this.councilId, required this.councilTitle});
 
   @override
   _CouncilProductsPageState createState() => _CouncilProductsPageState();
@@ -59,11 +57,11 @@ class _CouncilProductsPageState extends State<CouncilProductsPage> {
 
   Widget _buildBody() {
     if (_isLoading) {
-      return Center(child: CircularProgressIndicator());
+      return const Center(child: CircularProgressIndicator());
     } else if (_errorMessage.isNotEmpty) {
-      return Center(child: Text(_errorMessage, style: TextStyle(color: Colors.red)));
+      return Center(child: Text(_errorMessage, style: const TextStyle(color: Colors.red)));
     } else if (_products.isEmpty) {
-      return Center(child: Text('Không có sản phẩm nào.'));
+      return const Center(child: Text('Không có sản phẩm nào.'));
     } else {
       return ListView.builder(
         itemCount: _products.length,
@@ -100,12 +98,12 @@ class _CouncilProductsPageState extends State<CouncilProductsPage> {
                 title: Text('Ngày hoàn thành: ${_formatDate(product['finalize_at'])}'),
               ),
               ElevatedButton(
-                child: Text('Xem chi tiết đánh giá'),
+                child: const Text('Xem chi tiết đánh giá'),
                 onPressed: () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => ProductEvaluationDetailsPage(
+                      builder: (context) => ProductEvaluationDetails(
                         productId: product['id'],
                         councilId: widget.councilId,
                         productName: product['name'],

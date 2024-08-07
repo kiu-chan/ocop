@@ -1,5 +1,3 @@
-// councilListPage.dart
-
 import 'package:flutter/material.dart';
 import 'package:ocop/mainData/database/databases.dart';
 import 'package:intl/intl.dart';
