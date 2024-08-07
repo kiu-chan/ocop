@@ -8,7 +8,7 @@ import 'chartMenu.dart';
 import 'chartDataLoader.dart';
 
 class ChartPage extends StatefulWidget {
-  const ChartPage({Key? key}) : super(key: key);
+  const ChartPage({super.key});
 
   @override
   _ChartPageState createState() => _ChartPageState();

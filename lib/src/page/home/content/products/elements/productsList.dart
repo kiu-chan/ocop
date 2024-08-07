@@ -4,7 +4,7 @@ import 'package:ocop/src/data/home/productHomeData.dart';
 import 'package:ocop/src/page/home/content/products/elements/productCard.dart';
 
 class ProductsList extends StatefulWidget {
-  const ProductsList({Key? key}) : super(key: key);
+  const ProductsList({super.key});
 
   @override
   _ProductsListState createState() => _ProductsListState();

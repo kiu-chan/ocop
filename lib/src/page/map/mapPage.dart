@@ -14,7 +14,7 @@ import 'mapControllers.dart';
 import 'mapDataLoaders.dart';
 
 class MapPage extends StatefulWidget {
-  const MapPage({Key? key}) : super(key: key);
+  const MapPage({super.key});
 
   @override
   _MapPageState createState() => _MapPageState();
@@ -70,7 +70,7 @@ class _MapPageState extends State<MapPage> {
   Set<int> selectedCommuneIds = {};
   Set<int> selectedDistrictIds = {};
 
-  TextEditingController _searchController = TextEditingController();
+  final TextEditingController _searchController = TextEditingController();
   List<ProductData> _searchProductResults = [];
   List<CompanyData> _searchCompanyResults = [];
   bool _showSearchResults = false;
@@ -325,7 +325,7 @@ class _MapPageState extends State<MapPage> {
                   color: Colors.white,
                   child: TextField(
                     controller: _searchController,
-                    decoration: InputDecoration(
+                    decoration: const InputDecoration(
                       hintText: 'Tìm kiếm sản phẩm hoặc công ty...',
                       prefixIcon: Icon(Icons.search),
                       border: OutlineInputBorder(),

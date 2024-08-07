@@ -7,7 +7,7 @@ import 'package:ocop/src/page/elements/logo.dart';
 import 'package:ocop/mainData/database/databases.dart';
 
 class ForgotPasswordPage extends StatefulWidget {
-  const ForgotPasswordPage({Key? key}) : super(key: key);
+  const ForgotPasswordPage({super.key});
 
   @override
   _ForgotPasswordPageState createState() => _ForgotPasswordPageState();
@@ -51,7 +51,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
     } catch (e) {
       print('Failed to connect to database: $e');
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Failed to connect to database. Please try again later.')),
+        const SnackBar(content: Text('Failed to connect to database. Please try again later.')),
       );
     }
   }
@@ -67,7 +67,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
 
   void startCountdown() {
     _countdownSeconds = 120; // 2 minutes
-    _timer = Timer.periodic(Duration(seconds: 1), (timer) {
+    _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       setState(() {
         if (_countdownSeconds > 0) {
           _countdownSeconds--;
@@ -124,7 +124,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
 
       if (!emailExists) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('This email is not associated with any account.')),
+          const SnackBar(content: Text('This email is not associated with any account.')),
         );
         setState(() {
           _isSending = false;
@@ -138,7 +138,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
         final smtpServer = gmail('lamdaimotcaidi@gmail.com', 'mkiy nvfg dzua hqsb');
 
         final message = Message()
-          ..from = Address('lamdaimotcaidi@gmail.com', 'OCOP Password Reset')
+          ..from = const Address('lamdaimotcaidi@gmail.com', 'OCOP Password Reset')
           ..recipients.add(_emailController.text)
           ..subject = 'Reset Password Code'
           ..text = 'Your reset password code is: $resetCode. This code will expire in 15 minutes.';
@@ -155,18 +155,18 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
           startCountdown();
         } catch (e) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Failed to send reset code. Please try again.')),
+            const SnackBar(content: Text('Failed to send reset code. Please try again.')),
           );
         }
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to generate reset code. Please try again.')),
+          const SnackBar(content: Text('Failed to generate reset code. Please try again.')),
         );
       }
     } catch (e) {
       print('Error sending reset code: $e');
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('An error occurred. Please try again later.')),
+        const SnackBar(content: Text('An error occurred. Please try again later.')),
       );
     } finally {
       setState(() {
@@ -185,17 +185,17 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
             _isCodeVerified = true;
           });
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Code verified successfully. Please enter your new password.')),
+            const SnackBar(content: Text('Code verified successfully. Please enter your new password.')),
           );
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Invalid or expired code. Please try again or request a new code.')),
+            const SnackBar(content: Text('Invalid or expired code. Please try again or request a new code.')),
           );
         }
       } catch (e) {
         print('Error verifying code: $e');
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('An error occurred. Please try again later.')),
+          const SnackBar(content: Text('An error occurred. Please try again later.')),
         );
       }
     }
@@ -209,23 +209,23 @@ Future<void> resetPassword() async {
 
         if (isReset) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Password reset successfully. You can now log in with your new password.')),
+            const SnackBar(content: Text('Password reset successfully. You can now log in with your new password.')),
           );
           Navigator.pop(context); // Return to login page
         } else {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Failed to reset password. Please try again.')),
+            const SnackBar(content: Text('Failed to reset password. Please try again.')),
           );
         }
       } catch (e) {
         print('Error resetting password: $e');
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('An error occurred. Please try again later.')),
+          const SnackBar(content: Text('An error occurred. Please try again later.')),
         );
       }
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Passwords do not match. Please try again.')),
+        const SnackBar(content: Text('Passwords do not match. Please try again.')),
       );
     }
   }
@@ -309,7 +309,7 @@ Future<void> resetPassword() async {
                         if (_countdownSeconds == 0)
                           TextButton(
                             onPressed: resendCode,
-                            child: Text('Resend Code'),
+                            child: const Text('Resend Code'),
                           ),
                       ],
                       if (_isCodeVerified) ...[

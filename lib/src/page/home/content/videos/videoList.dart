@@ -107,7 +107,7 @@ class _VideoListState extends State<VideoList> {
                   child: _buildVideoPlayer(),
                 ),
                 // Video List
-                Container(
+                SizedBox(
                   width: constraints.maxWidth * 0.3, // 30% of the width
                   height: constraints.maxWidth * 0.7 * 9 / 16, // Match the height of the video player
                   child: ListView.builder(

@@ -15,7 +15,7 @@ class ChartMenu extends StatefulWidget {
   final Function(int?) onOcopDataChanged;
 
   const ChartMenu({
-    Key? key,
+    super.key,
     required this.isAdmin,
     required this.selectedChart,
     required this.checkSelected,
@@ -27,7 +27,7 @@ class ChartMenu extends StatefulWidget {
     required this.onLoadDataChanged,
     required this.onCompanyDataChanged,
     required this.onOcopDataChanged,
-  }) : super(key: key);
+  });
 
   @override
   _ChartMenuState createState() => _ChartMenuState();

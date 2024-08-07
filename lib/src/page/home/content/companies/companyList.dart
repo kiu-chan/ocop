@@ -6,7 +6,7 @@ import 'package:ocop/src/page/home/content/companies/companyDetails.dart';
 import 'package:ocop/src/page/home/content/companies/allCompanies.dart';
 
 class CompanyList extends StatefulWidget {
-  const CompanyList({Key? key}) : super(key: key);
+  const CompanyList({super.key});
 
   @override
   _CompanyListState createState() => _CompanyListState();

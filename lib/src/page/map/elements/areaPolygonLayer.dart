@@ -13,7 +13,7 @@ class AreaPolygonLayer extends StatelessWidget {
   final bool showCommunes;
 
   const AreaPolygonLayer({
-    Key? key,
+    super.key,
     required this.communes,
     required this.districts,
     required this.borders,
@@ -21,7 +21,7 @@ class AreaPolygonLayer extends StatelessWidget {
     required this.showBorders,
     required this.showDistricts,
     required this.showCommunes,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

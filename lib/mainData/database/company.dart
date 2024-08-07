@@ -59,7 +59,7 @@ Future<List<CompanyData>> getCompanies() async {
 
 Future<List<Company>> getRandomCompanies({int limit = 10}) async {
   try {
-    final result = await connection!.query('''
+    final result = await connection.query('''
       SELECT pc.id, pc.name, m.id as media_id, m.file_name
       FROM product_companies pc
       LEFT JOIN media m ON pc.id = m.model_id AND m.collection_name = 'logo'
@@ -88,7 +88,7 @@ Future<List<Company>> getRandomCompanies({int limit = 10}) async {
 
 Future<Company?> getCompanyDetails(int id) async {
   try {
-    final companyResult = await connection!.query('''
+    final companyResult = await connection.query('''
       SELECT pc.id, pc.name, pc.introduction, pc.address, pc.phone_number, pc.representative, pc.website, pc.email,
              m.id as media_id, m.file_name, mc.name as commune_name, md.name as district_name,
              ST_X(pc.geom::geometry) as longitude, ST_Y(pc.geom::geometry) as latitude
@@ -109,7 +109,7 @@ Future<Company?> getCompanyDetails(int id) async {
       }
       
       // Lấy danh sách sản phẩm của công ty
-      final productsResult = await connection!.query('''
+      final productsResult = await connection.query('''
         SELECT p.id, p.name, p.rating, pc.name as category_name, m.id as media_id, m.file_name
         FROM products p
         LEFT JOIN product_categories pc ON p.category_id = pc.id
@@ -166,7 +166,7 @@ Future<Company?> getCompanyDetails(int id) async {
 
 Future<List<Company>> getAllCompanies() async {
   try {
-    final result = await connection!.query('''
+    final result = await connection.query('''
       SELECT 
         pc.id, 
         pc.name, 

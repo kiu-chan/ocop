@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:ocop/src/page/settings/profile/userInformation.dart';
 import 'package:ocop/mainData/user/authService.dart';
 
 class Profile extends StatefulWidget {
-  const Profile({Key? key}) : super(key: key);
+  const Profile({super.key});
 
   @override
   _ProfileState createState() => _ProfileState();

@@ -9,7 +9,7 @@ import 'package:ocop/src/bloc/login/login_state.dart';
 import 'package:ocop/src/page/home/home.dart';
 
 class Options extends StatefulWidget {
-  const Options({Key? key}) : super(key: key);
+  const Options({super.key});
 
   @override
   _OptionsState createState() => _OptionsState();

@@ -4,7 +4,7 @@ import 'package:ocop/mainData/database/databases.dart';
 import 'package:ocop/src/page/home/content/companies/companyDetails.dart';
 
 class AllCompanies extends StatefulWidget {
-  const AllCompanies({Key? key}) : super(key: key);
+  const AllCompanies({super.key});
 
   @override
   _AllCompaniesState createState() => _AllCompaniesState();

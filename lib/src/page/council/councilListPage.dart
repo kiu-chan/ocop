@@ -4,7 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:ocop/src/data/councils/councilData.dart';
 
 class CouncilListPage extends StatefulWidget {
-  const CouncilListPage({Key? key}) : super(key: key);
+  const CouncilListPage({super.key});
 
   @override
   _CouncilListPageState createState() => _CouncilListPageState();
@@ -16,8 +16,8 @@ class _CouncilListPageState extends State<CouncilListPage> {
   List<Council> _filteredCouncils = [];
   Set<String> _years = {};
   Set<String> _districts = {};
-  Set<String> _selectedYears = {};
-  Set<String> _selectedDistricts = {};
+  final Set<String> _selectedYears = {};
+  final Set<String> _selectedDistricts = {};
 
   @override
   void initState() {
@@ -139,9 +139,8 @@ class _CouncilListPageState extends State<CouncilListPage> {
           final council = _filteredCouncils[index];
           return ListTile(
             title: Text(council.title),
-            subtitle: Text(
-              'Cấp: ${council.level} - Ngày tạo: ${DateFormat('dd/MM/yyyy').format(council.createdAt)}' +
-              '\nHuyện: ${council.districtName}'
+            subtitle: Text( 
+              'Cấp: ${council.level} - Ngày tạo: ${DateFormat('dd/MM/yyyy').format(council.createdAt)}' '\nHuyện: ${council.districtName}'
             ),
             trailing: Text(council.isArchived ? 'Đã lưu trữ' : 'Đang hoạt động'),
             onTap: () {

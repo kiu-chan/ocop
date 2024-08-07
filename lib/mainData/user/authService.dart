@@ -82,7 +82,6 @@ class AuthService {
   }
 
   static Future<void> updateUserInfo(Map<String, dynamic> newInfo) async {
-    final prefs = await SharedPreferences.getInstance();
     final currentUserInfo = await getUserInfo();
     if (currentUserInfo != null) {
       currentUserInfo.addAll(newInfo);

@@ -1,5 +1,4 @@
 import 'package:latlong2/latlong.dart';
-import 'package:flutter/material.dart';
 
 class AreaData {
   final int id;

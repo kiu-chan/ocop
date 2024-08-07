@@ -17,12 +17,12 @@ class MarkerMap extends StatefulWidget {
   final Set<String> selectedProductTypes;
 
   const MarkerMap({
-    Key? key,
+    super.key,
     required this.imageDataList,
     required this.companies,
     required this.products,
     required this.selectedProductTypes,
-  }) : super(key: key);
+  });
 
   @override
   _MarkerMapState createState() => _MarkerMapState();
@@ -113,23 +113,23 @@ class _MarkerMapState extends State<MarkerMap> {
                               width: 150,
                               fit: BoxFit.contain,
                               errorBuilder: (context, error, stackTrace) =>
-                                  Icon(Icons.business, size: 150),
+                                  const Icon(Icons.business, size: 150),
                             ),
                           ),
-                        SizedBox(height: 10),
+                        const SizedBox(height: 10),
                         Text('Loại sản phẩm: ${company.productTypeName}'),
                         if (company.address != null)
                           Text('Địa chỉ: ${company.address}'),
                         if (company.phoneNumber != null)
                           InkWell(
-                            child: Text('Số điện thoại: ${company.phoneNumber}', style: TextStyle(color: Colors.blue)),
+                            child: Text('Số điện thoại: ${company.phoneNumber}', style: const TextStyle(color: Colors.blue)),
                             onTap: () => _makePhoneCall(company.phoneNumber!),
                           ),
                         if (company.email != null)
                           Text('Email: ${company.email}'),
                         if (company.website != null)
                           InkWell(
-                            child: Text('Website: ${company.website}', style: TextStyle(color: Colors.blue)),
+                            child: Text('Website: ${company.website}', style: const TextStyle(color: Colors.blue)),
                             onTap: () => _launchURL(company.website!),
                           ),
                       ],
@@ -137,7 +137,7 @@ class _MarkerMapState extends State<MarkerMap> {
                   ),
                   actions: [
                     TextButton(
-                      child: Text('Xem chi tiết'),
+                      child: const Text('Xem chi tiết'),
                       onPressed: () {
                         Navigator.of(context).pop();
                         Navigator.push(
@@ -149,7 +149,7 @@ class _MarkerMapState extends State<MarkerMap> {
                       },
                     ),
                     TextButton(
-                      child: Text('Đóng'),
+                      child: const Text('Đóng'),
                       onPressed: () {
                         Navigator.of(context).pop();
                       },
