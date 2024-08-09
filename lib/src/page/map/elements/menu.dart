@@ -25,9 +25,10 @@ class Menu extends StatefulWidget {
   final bool showBorders;
   final Set<int> selectedCommuneIds;
   final Set<int> selectedDistrictIds;
+  final int selectedMapType;
 
   const Menu({
-    super.key,
+    Key? key,
     required this.onClickMap,
     required this.onClickImgData,
     required this.imageDataList,
@@ -48,14 +49,15 @@ class Menu extends StatefulWidget {
     required this.selectedDistrictIds,
     required this.showBorders,
     required this.onToggleBorders,
-  });
+    required this.selectedMapType,
+  }) : super(key: key);
 
   @override
   _MenuState createState() => _MenuState();
 }
 
 class _MenuState extends State<Menu> {
-  int? selectedMap = 1;
+  late int selectedMapType;
   late Set<String> localSelectedProductTypes;
   late Set<int> localSelectedCommuneIds;
   late Set<int> localSelectedDistrictIds;
@@ -65,6 +67,7 @@ class _MenuState extends State<Menu> {
   @override
   void initState() {
     super.initState();
+    selectedMapType = widget.selectedMapType;
     localSelectedProductTypes = Set<String>.from(widget.selectedProductTypes);
     localSelectedCommuneIds = Set<int>.from(widget.selectedCommuneIds);
     localSelectedDistrictIds = Set<int>.from(widget.selectedDistrictIds);
@@ -113,23 +116,23 @@ class _MenuState extends State<Menu> {
             children: <Widget>[
               RadioListTile<int>(
                 title: const Text('Bản đồ địa lý'),
-                value: 1,
-                groupValue: selectedMap,
+                value: 0,
+                groupValue: selectedMapType,
                 onChanged: (value) {
                   setState(() {
-                    selectedMap = value;
-                    widget.onClickMap(0);
+                    selectedMapType = value!;
+                    widget.onClickMap(value);
                   });
                 },
               ),
               RadioListTile<int>(
                 title: const Text('Bản đồ vệ tinh'),
-                value: 2,
-                groupValue: selectedMap,
+                value: 1,
+                groupValue: selectedMapType,
                 onChanged: (value) {
                   setState(() {
-                    selectedMap = value;
-                    widget.onClickMap(1);
+                    selectedMapType = value!;
+                    widget.onClickMap(value);
                   });
                 },
               ),

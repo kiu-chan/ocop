@@ -67,6 +67,7 @@ class _MapPageState extends State<MapPage> {
   bool showCommunes = false;
   bool showDistricts = true;
   bool showBorders = false;
+  int selectedMapType = 0;
   Set<int> selectedCommuneIds = {};
   Set<int> selectedDistrictIds = {};
 
@@ -98,6 +99,7 @@ class _MapPageState extends State<MapPage> {
 
   void _changeMapSource(int mapValue) {
     setState(() {
+      selectedMapType = mapValue;
       mapUrl = listMapUrl[mapValue];
     });
   }
@@ -260,6 +262,7 @@ class _MapPageState extends State<MapPage> {
       ),
       endDrawer: Menu(
         onClickMap: _changeMapSource,
+        selectedMapType: selectedMapType,
         onClickImgData: _setStateProduct,
         imageDataList: imageDataList,
         companyDataList: companies,

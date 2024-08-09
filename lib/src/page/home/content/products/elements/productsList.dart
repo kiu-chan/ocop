@@ -35,17 +35,23 @@ class _ProductsListState extends State<ProductsList> {
     await db.connect();
     final products = await db.getAllProducts();
     setState(() {
-      allProducts = products.map((product) => ProductHome(
-        id: product['id'],
-        name: product['name'],
-        star: product['rating'],
-        category: product['category'] ?? 'Unknown',
-        img: product['img'],
-        district: product['district'] ?? 'Unknown', // New: added district
-      )).toList();
+      allProducts = products
+          .map((product) => ProductHome(
+                id: product['id'],
+                name: product['name'],
+                star: product['rating'],
+                category: product['category'] ?? 'Unknown',
+                img: product['img'],
+                district:
+                    product['district'] ?? 'Unknown', // New: added district
+              ))
+          .toList();
       displayedProducts = List.from(allProducts);
       allCategories = allProducts.map((p) => p.category).toSet().toList();
-      allDistricts = allProducts.map((p) => p.district!).toSet().toList(); // New: get all districts
+      allDistricts = allProducts
+          .map((p) => p.district!)
+          .toSet()
+          .toList(); // New: get all districts
       isLoading = false;
     });
     await db.close();
@@ -54,10 +60,15 @@ class _ProductsListState extends State<ProductsList> {
   void filterProducts() {
     setState(() {
       displayedProducts = allProducts.where((product) {
-        bool nameMatch = product.name.toLowerCase().contains(searchController.text.toLowerCase());
+        bool nameMatch = product.name
+            .toLowerCase()
+            .contains(searchController.text.toLowerCase());
         bool starMatch = selectedStars == 0 || product.star == selectedStars;
-        bool categoryMatch = selectedCategories.isEmpty || selectedCategories.contains(product.category);
-        bool districtMatch = selectedDistricts.isEmpty || selectedDistricts.contains(product.district); // New: district filter
+        bool categoryMatch = selectedCategories.isEmpty ||
+            selectedCategories.contains(product.category);
+        bool districtMatch = selectedDistricts.isEmpty ||
+            selectedDistricts
+                .contains(product.district); // New: district filter
         return nameMatch && starMatch && categoryMatch && districtMatch;
       }).toList();
     });
@@ -162,32 +173,38 @@ class _ProductsListState extends State<ProductsList> {
                   onChanged: (value) => filterProducts(),
                 ),
               ),
-              const Padding(
-                padding: EdgeInsets.symmetric(vertical: 8.0),
-                child: Text('Lọc theo số sao:', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              ExpansionTile(
+                title: const Text('Lọc theo số sao'),
+                children: [
+                  buildStarFilter(),
+                ],
               ),
-              buildStarFilter(),
-              const Padding(
-                padding: EdgeInsets.symmetric(vertical: 8.0),
-                child: Text('Lọc theo danh mục:', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              ExpansionTile(
+                title: const Text('Lọc theo danh mục'),
+                children: [
+                  buildCategoryFilter(),
+                ],
               ),
-              buildCategoryFilter(),
-              const Padding(
-                padding: EdgeInsets.symmetric(vertical: 8.0),
-                child: Text('Lọc theo huyện:', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+              ExpansionTile(
+                title: const Text('Lọc theo huyện'),
+                children: [
+                  buildDistrictFilter(),
+                ],
               ),
-              buildDistrictFilter(), // New: Added district filter
-              ElevatedButton(
-                onPressed: () {
-                  setState(() {
-                    selectedStars = 0;
-                    selectedCategories.clear();
-                    selectedDistricts.clear(); // New: Clear district filter
-                    searchController.clear();
-                    filterProducts();
-                  });
-                },
-                child: const Text('Xóa bộ lọc'),
+              Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: ElevatedButton(
+                  onPressed: () {
+                    setState(() {
+                      selectedStars = 0;
+                      selectedCategories.clear();
+                      selectedDistricts.clear();
+                      searchController.clear();
+                      filterProducts();
+                    });
+                  },
+                  child: const Text('Xóa bộ lọc'),
+                ),
               ),
             ],
           ),
@@ -207,7 +224,8 @@ class _ProductsListState extends State<ProductsList> {
                 ? const Center(child: CircularProgressIndicator())
                 : GridView.builder(
                     padding: const EdgeInsets.all(10),
-                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
                       crossAxisCount: 2,
                       childAspectRatio: 0.8,
                       crossAxisSpacing: 10,

@@ -7,7 +7,7 @@ class CouncilProductsPage extends StatefulWidget {
   final int councilId;
   final String councilTitle;
 
-  const CouncilProductsPage({super.key, required this.councilId, required this.councilTitle});
+  const CouncilProductsPage({Key? key, required this.councilId, required this.councilTitle}) : super(key: key);
 
   @override
   _CouncilProductsPageState createState() => _CouncilProductsPageState();
@@ -64,60 +64,79 @@ class _CouncilProductsPageState extends State<CouncilProductsPage> {
     } else if (_products.isEmpty) {
       return const Center(child: Text('Không có sản phẩm nào.'));
     } else {
-      return ListView.builder(
+      return ListView.separated(
         itemCount: _products.length,
+        separatorBuilder: (context, index) => Divider(height: 1, color: Colors.grey[300]),
         itemBuilder: (context, index) {
           final product = _products[index];
           return ExpansionTile(
-            title: Text(product['name']),
+            title: Text(
+              product['name'] ?? 'Không có tên',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
             subtitle: Text('Danh mục: ${product['category'] ?? 'Không xác định'}'),
             children: [
-              ListTile(
-                title: Text('Trạng thái: ${product['status'] ?? 'N/A'}'),
-              ),
-              ListTile(
-                title: Text('Đánh giá: ${product['rating'] ?? 'N/A'}'),
-              ),
-              ListTile(
-                title: Text('Điểm cấp huyện: ${product['district_score'] ?? 'N/A'}'),
-                subtitle: Text('Sao cấp huyện: ${product['district_star'] ?? 'N/A'}'),
-              ),
-              ListTile(
-                title: Text('Điểm cấp tỉnh: ${product['province_score'] ?? 'N/A'}'),
-                subtitle: Text('Sao cấp tỉnh: ${product['province_star'] ?? 'N/A'}'),
-              ),
-              ListTile(
-                title: Text('Ngày nộp: ${_formatDate(product['submitted_at'])}'),
-              ),
-              ListTile(
-                title: Text('Ngày chấm cấp huyện: ${_formatDate(product['in_district_at'])}'),
-              ),
-              ListTile(
-                title: Text('Ngày chấm cấp tỉnh: ${_formatDate(product['in_province_at'])}'),
-              ),
-              ListTile(
-                title: Text('Ngày hoàn thành: ${_formatDate(product['finalize_at'])}'),
-              ),
-              ElevatedButton(
-                child: const Text('Xem chi tiết đánh giá'),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => ProductEvaluationDetails(
-                        productId: product['id'],
-                        councilId: widget.councilId,
-                        productName: product['name'],
-                      ),
-                    ),
-                  );
-                },
-              ),
+              buildInfoTile('Trạng thái', product['status']?.toString() ?? 'N/A'),
+              buildInfoTile('Đánh giá', product['rating']?.toString() ?? 'N/A'),
+              buildInfoTile('Điểm cấp huyện', product['district_score']?.toString() ?? 'N/A'),
+              buildInfoTile('Sao cấp huyện', product['district_star']?.toString() ?? 'N/A'),
+              buildInfoTile('Điểm cấp tỉnh', product['province_score']?.toString() ?? 'N/A'),
+              buildInfoTile('Sao cấp tỉnh', product['province_star']?.toString() ?? 'N/A'),
+              buildInfoTile('Ngày nộp', _formatDate(product['submitted_at'])),
+              buildInfoTile('Ngày chấm cấp huyện', _formatDate(product['in_district_at'])),
+              buildInfoTile('Ngày chấm cấp tỉnh', _formatDate(product['in_province_at'])),
+              buildInfoTile('Ngày hoàn thành', _formatDate(product['finalize_at'])),
+Padding(
+  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+  child: ElevatedButton(
+    child: const Text(
+      'Xem chi tiết đánh giá',
+      style: TextStyle(
+        fontSize: 16,
+        fontWeight: FontWeight.bold,
+      ),
+    ),
+    style: ElevatedButton.styleFrom(
+      backgroundColor: Colors.blue, // Thay cho primary
+      foregroundColor: Colors.white, // Thay cho onPrimary
+      padding: EdgeInsets.symmetric(vertical: 12, horizontal: 24),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(8),
+      ),
+      elevation: 3,
+    ),
+    onPressed: () {
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => ProductEvaluationDetails(
+            productId: product['id'],
+            councilId: widget.councilId,
+            productName: product['name'] ?? 'Không có tên',
+          ),
+        ),
+      );
+    },
+  ),
+),
             ],
           );
         },
       );
     }
+  }
+
+  Widget buildInfoTile(String title, String value) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(title, style: TextStyle(fontWeight: FontWeight.w500)),
+          Text(value),
+        ],
+      ),
+    );
   }
 
   String _formatDate(dynamic date) {

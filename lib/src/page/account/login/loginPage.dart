@@ -109,7 +109,8 @@ class LoginPageContent extends StatelessWidget {
             borderSide: BorderSide(color: Colors.blue),
           ),
         ),
-        onChanged: (value) => context.read<LoginBloc>().add(EmailChanged(value)),
+        onChanged: (value) =>
+            context.read<LoginBloc>().add(EmailChanged(value)),
       ),
     );
   }
@@ -128,54 +129,58 @@ class LoginPageContent extends StatelessWidget {
           ),
         ),
         obscureText: true,
-        onChanged: (value) => context.read<LoginBloc>().add(PasswordChanged(value)),
+        onChanged: (value) =>
+            context.read<LoginBloc>().add(PasswordChanged(value)),
       ),
     );
   }
 
-Widget _buildRememberMeAndForgotPassword(BuildContext context) {
-  return Row(
-    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-    children: [
-      Expanded(
-        child: CheckboxListTile(
-          title: const Text('Ghi nhớ đăng nhập'),
-          value: context.watch<LoginBloc>().state.rememberMe,
-          controlAffinity: ListTileControlAffinity.leading,
-          activeColor: Colors.blue,
-          onChanged: (value) => context.read<LoginBloc>().add(RememberMeChanged(value ?? false)),
-        ),
-      ),
-      GestureDetector(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const ForgotPasswordPage()),
-          );
-        },
-        child: const SizedBox(
-          width: 150,
-          child: Text(
-            'Quên mật khẩu?',
-            style: TextStyle(
-              decoration: TextDecoration.underline,
-              color: Colors.blue,
-            ),
+  Widget _buildRememberMeAndForgotPassword(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Expanded(
+          child: CheckboxListTile(
+            title: const Text('Ghi nhớ đăng nhập'),
+            value: context.watch<LoginBloc>().state.rememberMe,
+            controlAffinity: ListTileControlAffinity.leading,
+            activeColor: Colors.blue,
+            onChanged: (value) => context
+                .read<LoginBloc>()
+                .add(RememberMeChanged(value ?? false)),
           ),
         ),
-      )
-    ],
-  );
-}
+        GestureDetector(
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => const ForgotPasswordPage()),
+            );
+          },
+          child: const SizedBox(
+            width: 150,
+            child: Text(
+              'Quên mật khẩu?',
+              style: TextStyle(
+                decoration: TextDecoration.underline,
+                color: Colors.blue,
+              ),
+            ),
+          ),
+        )
+      ],
+    );
+  }
 
   Widget _buildLoginButton(BuildContext context, LoginState state) {
     return ElevatedButton(
       onPressed: state.status == LoginStatus.loading
           ? null
           : () => context.read<LoginBloc>().add(LoginSubmitted(
-            email: context.read<LoginBloc>().state.email,
-            password: context.read<LoginBloc>().state.password,
-          )),
+                email: context.read<LoginBloc>().state.email,
+                password: context.read<LoginBloc>().state.password,
+              )),
       style: ElevatedButton.styleFrom(
         foregroundColor: Colors.white,
         backgroundColor: Colors.green,

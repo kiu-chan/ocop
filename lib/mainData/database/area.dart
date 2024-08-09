@@ -4,7 +4,7 @@ class AreaDatabase {
   final PostgreSQLConnection connection;
 
   AreaDatabase(this.connection);
-  
+
   Future<List<Map<String, dynamic>>> getApprovedCommunes() async {
     try {
       final result = await connection.query('''
@@ -14,10 +14,12 @@ class AreaDatabase {
         ORDER BY id
       ''');
 
-      return result.map((row) => {
-        'id': row[0],
-        'name': row[1],
-      }).toList();
+      return result
+          .map((row) => {
+                'id': row[0],
+                'name': row[1],
+              })
+          .toList();
     } catch (e) {
       print('Error fetching communes: $e');
       return [];
@@ -27,8 +29,7 @@ class AreaDatabase {
   Future<List<Map<String, dynamic>>> getAllCommunes() async {
     try {
       final result = await connection.query(
-        'SELECT id, name, ST_AsText(geom) as geom_text FROM map_communes'
-      );
+          'SELECT id, name, ST_AsText(geom) as geom_text FROM map_communes');
 
       return result.map((row) {
         return {
@@ -70,8 +71,7 @@ class AreaDatabase {
   Future<List<Map<String, dynamic>>> getAllDistricts() async {
     try {
       final result = await connection.query(
-        'SELECT id, name, ST_AsText(geom) as geom_text, area, population, updated_year, color FROM map_districts'
-      );
+          'SELECT id, name, ST_AsText(geom) as geom_text, area, population, updated_year, color FROM map_districts');
 
       return result.map((row) {
         return {
@@ -119,8 +119,7 @@ class AreaDatabase {
   Future<List<Map<String, dynamic>>> getBorders() async {
     try {
       final result = await connection.query(
-        'SELECT id, ST_AsText(geom) as geom_text, shape_lenght FROM map_borders'
-      );
+          'SELECT id, ST_AsText(geom) as geom_text, shape_lenght FROM map_borders');
 
       return result.map((row) {
         return {

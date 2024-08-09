@@ -29,7 +29,7 @@ class AuthService {
   static Future<void> setUserInfo(Map<String, dynamic> userInfo) async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_userInfoKey, json.encode(userInfo));
-    
+
     if (userInfo.containsKey('commune')) {
       await prefs.setString(_communeKey, userInfo['commune']);
     }
@@ -45,7 +45,8 @@ class AuthService {
     final commune = prefs.getString(_communeKey);
     final role = prefs.getString(_roleKey);
     if (userInfoString != null) {
-      Map<String, dynamic> userInfo = json.decode(userInfoString) as Map<String, dynamic>;
+      Map<String, dynamic> userInfo =
+          json.decode(userInfoString) as Map<String, dynamic>;
       if (commune != null) {
         userInfo['commune'] = commune;
       }

@@ -6,57 +6,58 @@ class AccountDatabase {
   final PostgreSQLConnection connection;
 
   AccountDatabase(this.connection);
-  
-Future<Map<String, dynamic>?> checkUserCredentials(String email, String password) async {
-  try {
-    // Kiểm tra trong bảng admins trước
-    final adminResult = await connection.query('''
+
+  Future<Map<String, dynamic>?> checkUserCredentials(
+      String email, String password) async {
+    try {
+      // Kiểm tra trong bảng admins trước
+      final adminResult = await connection.query('''
       SELECT id, name, email, password
       FROM admins
       WHERE email = @email
     ''', substitutionValues: {
-      'email': email,
-    });
+        'email': email,
+      });
 
-    if (adminResult.isNotEmpty) {
-      String storedHash = adminResult[0][3];
-      if (BCrypt.checkpw(password, storedHash)) {
-        return {
-          'id': adminResult[0][0],
-          'name': adminResult[0][1],
-          'email': adminResult[0][2],
-          'role': 'admin',
-        };
+      if (adminResult.isNotEmpty) {
+        String storedHash = adminResult[0][3];
+        if (BCrypt.checkpw(password, storedHash)) {
+          return {
+            'id': adminResult[0][0],
+            'name': adminResult[0][1],
+            'email': adminResult[0][2],
+            'role': 'admin',
+          };
+        }
       }
-    }
 
-    // Nếu không phải admin, kiểm tra trong bảng company_users
-    final userResult = await connection.query('''
+      // Nếu không phải admin, kiểm tra trong bảng company_users
+      final userResult = await connection.query('''
       SELECT id, name, email, password, commune_id
       FROM company_users
       WHERE email = @email AND approved = true
     ''', substitutionValues: {
-      'email': email,
-    });
+        'email': email,
+      });
 
-    if (userResult.isNotEmpty) {
-      String storedHash = userResult[0][3];
-      if (BCrypt.checkpw(password, storedHash)) {
-        return {
-          'id': userResult[0][0],
-          'name': userResult[0][1],
-          'email': userResult[0][2],
-          'commune_id': userResult[0][4],
-          'role': 'user',
-        };
+      if (userResult.isNotEmpty) {
+        String storedHash = userResult[0][3];
+        if (BCrypt.checkpw(password, storedHash)) {
+          return {
+            'id': userResult[0][0],
+            'name': userResult[0][1],
+            'email': userResult[0][2],
+            'commune_id': userResult[0][4],
+            'role': 'user',
+          };
+        }
       }
+      return null;
+    } catch (e) {
+      print('Error checking user credentials: $e');
+      return null;
     }
-    return null;
-  } catch (e) {
-    print('Error checking user credentials: $e');
-    return null;
   }
-}
 
   Future<bool> checkUserExists(String email) async {
     try {
@@ -71,7 +72,8 @@ Future<Map<String, dynamic>?> checkUserCredentials(String email, String password
     }
   }
 
-  Future<bool> createUser(String name, String email, String password, int communeId) async {
+  Future<bool> createUser(
+      String name, String email, String password, int communeId) async {
     try {
       String hashedPassword = BCrypt.hashpw(password, BCrypt.gensalt());
 
@@ -128,7 +130,8 @@ Future<Map<String, dynamic>?> checkUserCredentials(String email, String password
       }
 
       if (newInfo.containsKey('password')) {
-        String hashedPassword = BCrypt.hashpw(newInfo['password'], BCrypt.gensalt());
+        String hashedPassword =
+            BCrypt.hashpw(newInfo['password'], BCrypt.gensalt());
         setClause.add('password = @password');
         substitutionValues['password'] = hashedPassword;
       }
@@ -196,16 +199,16 @@ Future<Map<String, dynamic>?> checkUserCredentials(String email, String password
     }
   }
 
-Future<String> createPasswordResetToken(String email) async {
-  try {
-    // Tạo mã code 6 số ngẫu nhiên
-    String code = (Random().nextInt(900000) + 100000).toString();
-    
-    // Mã hóa code
-    String hashedCode = BCrypt.hashpw(code, BCrypt.gensalt());
+  Future<String> createPasswordResetToken(String email) async {
+    try {
+      // Tạo mã code 6 số ngẫu nhiên
+      String code = (Random().nextInt(900000) + 100000).toString();
 
-    // Cập nhật hoặc chèn vào database
-    await connection.execute('''
+      // Mã hóa code
+      String hashedCode = BCrypt.hashpw(code, BCrypt.gensalt());
+
+      // Cập nhật hoặc chèn vào database
+      await connection.execute('''
       INSERT INTO password_resets (email, token, created_at)
       VALUES (@email, @token, CURRENT_TIMESTAMP)
       ON CONFLICT (email) 
@@ -213,16 +216,16 @@ Future<String> createPasswordResetToken(String email) async {
         token = @token, 
         created_at = CURRENT_TIMESTAMP
     ''', substitutionValues: {
-      'email': email,
-      'token': hashedCode,
-    });
+        'email': email,
+        'token': hashedCode,
+      });
 
-    return code; // Trả về code chưa mã hóa để gửi email
-  } catch (e) {
-    print('Error creating password reset token: $e');
-    return '';
+      return code; // Trả về code chưa mã hóa để gửi email
+    } catch (e) {
+      print('Error creating password reset token: $e');
+      return '';
+    }
   }
-}
 
   Future<bool> verifyPasswordResetToken(String email, String code) async {
     try {
@@ -249,64 +252,64 @@ Future<String> createPasswordResetToken(String email) async {
     }
   }
 
-Future<bool> resetPassword(String email, String newPassword) async {
-  try {
-    String hashedPassword = BCrypt.hashpw(newPassword, BCrypt.gensalt());
+  Future<bool> resetPassword(String email, String newPassword) async {
+    try {
+      String hashedPassword = BCrypt.hashpw(newPassword, BCrypt.gensalt());
 
-    final result = await connection.execute('''
+      final result = await connection.execute('''
       UPDATE company_users
       SET password = @password
       WHERE email = @email
     ''', substitutionValues: {
-      'email': email,
-      'password': hashedPassword,
-    });
+        'email': email,
+        'password': hashedPassword,
+      });
 
-    return result == 1; // Trả về true nếu có một hàng được cập nhật
-  } catch (e) {
-    print('Error resetting password: $e');
-    return false;
+      return result == 1; // Trả về true nếu có một hàng được cập nhật
+    } catch (e) {
+      print('Error resetting password: $e');
+      return false;
+    }
   }
-}
 
   Future<int> getRemainingTimeForResetCode(String email) async {
-  try {
-    final result = await connection.query('''
+    try {
+      final result = await connection.query('''
       SELECT EXTRACT(EPOCH FROM (NOW() - created_at)) as seconds_passed
       FROM password_resets
       WHERE email = @email
       ORDER BY created_at DESC
       LIMIT 1
     ''', substitutionValues: {
-      'email': email,
-    });
+        'email': email,
+      });
 
-    if (result.isNotEmpty) {
-      int secondsPassed = result[0][0].round();
-      int remainingTime = 120 - secondsPassed; // 120 seconds = 2 minutes
-      return remainingTime > 0 ? remainingTime : 0;
+      if (result.isNotEmpty) {
+        int secondsPassed = result[0][0].round();
+        int remainingTime = 120 - secondsPassed; // 120 seconds = 2 minutes
+        return remainingTime > 0 ? remainingTime : 0;
+      }
+      return 0;
+    } catch (e) {
+      print('Error getting remaining time for reset code: $e');
+      return 0;
     }
-    return 0;
-  } catch (e) {
-    print('Error getting remaining time for reset code: $e');
-    return 0;
   }
-}
 
-Future<bool> checkEmailExists(String email) async {
-  try {
-    final result = await connection.query('''
+  Future<bool> checkEmailExists(String email) async {
+    try {
+      final result = await connection.query('''
       SELECT COUNT(*) 
       FROM company_users 
       WHERE email = @email
     ''', substitutionValues: {
-      'email': email,
-    });
+        'email': email,
+      });
 
-    return (result[0][0] as int) > 0;
-  } catch (e) {
-    print('Error checking email existence: $e');
-    return false;
+      return (result[0][0] as int) > 0;
+    } catch (e) {
+      print('Error checking email existence: $e');
+      return false;
+    }
   }
-}
 }

@@ -4,7 +4,8 @@ import 'package:ocop/mainData/database/databases.dart';
 import 'user_information_event.dart';
 import 'user_information_state.dart';
 
-class UserInformationBloc extends Bloc<UserInformationEvent, UserInformationState> {
+class UserInformationBloc
+    extends Bloc<UserInformationEvent, UserInformationState> {
   final DefaultDatabaseOptions _databaseOptions;
 
   UserInformationBloc(this._databaseOptions)
@@ -24,10 +25,11 @@ class UserInformationBloc extends Bloc<UserInformationEvent, UserInformationStat
     try {
       final userInfo = await AuthService.getUserInfo();
       final communes = await _databaseOptions.getApprovedCommunes();
-      
+
       // Lấy tên xã từ commune_id
       final userCommune = communes.firstWhere(
-        (commune) => commune['id'].toString() == userInfo?['commune_id'].toString(),
+        (commune) =>
+            commune['id'].toString() == userInfo?['commune_id'].toString(),
         orElse: () => {'name': ''},
       );
 
@@ -76,32 +78,40 @@ class UserInformationBloc extends Bloc<UserInformationEvent, UserInformationStat
       final userInfo = await AuthService.getUserInfo();
       final newInfo = {
         'name': state.name,
-        'commune_id': state.communes.indexOf(state.commune) + 1, // Assuming commune IDs start from 1
+        'commune_id': state.communes.indexOf(state.commune) +
+            1, // Assuming commune IDs start from 1
       };
 
       if (state.currentPassword.isNotEmpty && state.newPassword.isNotEmpty) {
         if (state.newPassword != state.confirmNewPassword) {
-          emit(state.copyWith(isLoading: false, error: 'Mật khẩu mới không khớp'));
+          emit(state.copyWith(
+              isLoading: false, error: 'Mật khẩu mới không khớp'));
           return;
         }
 
-        final isPasswordCorrect = await _databaseOptions.accountDatabase.verifyUserPassword(
+        final isPasswordCorrect =
+            await _databaseOptions.accountDatabase.verifyUserPassword(
           userInfo!['id'],
           state.currentPassword,
         );
         if (!isPasswordCorrect) {
-          emit(state.copyWith(isLoading: false, error: 'Mật khẩu hiện tại không đúng'));
+          emit(state.copyWith(
+              isLoading: false, error: 'Mật khẩu hiện tại không đúng'));
           return;
         }
         newInfo['password'] = state.newPassword;
       }
 
-      final success = await _databaseOptions.accountDatabase.updateUserInfo(userInfo!['id'], newInfo);
+      final success = await _databaseOptions.accountDatabase
+          .updateUserInfo(userInfo!['id'], newInfo);
       if (success) {
-        await AuthService.updateUserInfo({...userInfo, ...newInfo, 'commune': state.commune});
+        await AuthService.updateUserInfo(
+            {...userInfo, ...newInfo, 'commune': state.commune});
         emit(state.copyWith(isLoading: false, isSuccess: true));
       } else {
-        emit(state.copyWith(isLoading: false, error: 'Không thể cập nhật thông tin người dùng'));
+        emit(state.copyWith(
+            isLoading: false,
+            error: 'Không thể cập nhật thông tin người dùng'));
       }
     } catch (e) {
       emit(state.copyWith(isLoading: false, error: e.toString()));

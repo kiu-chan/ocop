@@ -44,7 +44,7 @@ class _HomeState extends State<Home> {
       body: AnimatedSwitcher(
         duration: const Duration(milliseconds: 500),
         child: Container(
-          key: ValueKey<int>(currentIndex), 
+          key: ValueKey<int>(currentIndex),
           child: pages[currentIndex]
         ),
       ),
@@ -56,6 +56,8 @@ class _HomeState extends State<Home> {
         },
         type: BottomNavigationBarType.fixed,
         currentIndex: currentIndex,
+        selectedItemColor: Colors.blue, // Màu xanh dương khi được chọn
+        unselectedItemColor: Colors.grey, // Màu xám khi không được chọn
         items: <BottomNavigationBarItem>[
           const BottomNavigationBarItem(
             icon: Icon(Icons.home),

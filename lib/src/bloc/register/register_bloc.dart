@@ -3,7 +3,6 @@ import 'register_event.dart';
 import 'register_state.dart';
 import 'package:ocop/mainData/database/databases.dart';
 
-
 class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
   final DefaultDatabaseOptions _databaseOptions = DefaultDatabaseOptions();
 
@@ -37,7 +36,8 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
       return;
     }
     if (!isValidPassword(event.password)) {
-      emit(RegisterValidationFailure(error: 'Mật khẩu phải có ít nhất 8 ký tự'));
+      emit(
+          RegisterValidationFailure(error: 'Mật khẩu phải có ít nhất 8 ký tự'));
       return;
     }
     if (event.password != event.confirmPassword) {
@@ -54,11 +54,7 @@ class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
         emit(RegisterFailure(error: 'Email đã tồn tại'));
       } else {
         bool created = await _databaseOptions.createUser(
-          event.name,
-          event.email,
-          event.password,
-          event.communeId
-        );
+            event.name, event.email, event.password, event.communeId);
         if (created) {
           emit(RegisterSuccess());
         } else {

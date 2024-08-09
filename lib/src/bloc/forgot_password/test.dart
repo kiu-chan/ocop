@@ -54,7 +54,9 @@ class _EmailSenderPageState extends State<EmailSenderPage> {
         print('Message sent: ' + sendReport.toString());
       } on MailerException catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to send email. Please check your credentials.')),
+          SnackBar(
+              content:
+                  Text('Failed to send email. Please check your credentials.')),
         );
         print('Message not sent.');
         for (var p in e.problems) {

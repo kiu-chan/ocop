@@ -24,33 +24,34 @@ class DefaultDatabaseOptions {
   late VideosDatabase videosDatabase;
   late CouncilsDatabase councilsDatabase;
 
-Future<void> connect() async {
-  try {
-    connection = PostgreSQLConnection(
-      '163.44.193.74',
-      5432,
-      'bentre_ocop',
-      username: 'postgres',
-      password: 'yfti*m0xZYtRy3QfF)tV',
-    );
-    
-    await connection!.open();
-    print('Connected to PostgreSQL database.');
-    _connectionFailed = false;
+  Future<void> connect() async {
+    try {
+      connection = PostgreSQLConnection(
+        '163.44.193.74',
+        5432,
+        'bentre_ocop',
+        username: 'postgres',
+        password: 'yfti*m0xZYtRy3QfF)tV',
+      );
 
-    productDatabase = ProductDatabase(connection!);
-    newsDatabase = NewsDatabase(connection!);
-    mediaDatabase = MediaDatabase(connection!);
-    accountDatabase = AccountDatabase(connection!);  // Đảm bảo dòng này có mặt
-    areaDatabase = AreaDatabase(connection!);
-    companyDatabase = CompanyDatabase(connection!);
-    videosDatabase = VideosDatabase(connection!);
-    councilsDatabase = CouncilsDatabase(connection!);
-  } catch (e) {
-    print('Failed to connect to database: $e');
-    _connectionFailed = true;
+      await connection!.open();
+      print('Connected to PostgreSQL database.');
+      _connectionFailed = false;
+
+      productDatabase = ProductDatabase(connection!);
+      newsDatabase = NewsDatabase(connection!);
+      mediaDatabase = MediaDatabase(connection!);
+      accountDatabase = AccountDatabase(connection!); // Đảm bảo dòng này có mặt
+      areaDatabase = AreaDatabase(connection!);
+      companyDatabase = CompanyDatabase(connection!);
+      videosDatabase = VideosDatabase(connection!);
+      councilsDatabase = CouncilsDatabase(connection!);
+    } catch (e) {
+      print('Failed to connect to database: $e');
+      _connectionFailed = true;
+    }
   }
-}
+
   bool get connectionFailed => _connectionFailed;
 
   // Tách tọa độ từ chuỗi
@@ -60,8 +61,8 @@ Future<void> connect() async {
   Future<List<ProductData>> getProducts() async {
     return await productDatabase.getProducts();
   }
-  
-  Future<Map<String, int>> getProductRatingCounts() async  {
+
+  Future<Map<String, int>> getProductRatingCounts() async {
     return await productDatabase.getProductRatingCounts();
   }
 
@@ -76,7 +77,7 @@ Future<void> connect() async {
   Future<List<Map<String, dynamic>>> getProductProcesses() async {
     return await productDatabase.getProductProcesses();
   }
-  
+
   Future<List<Map<String, dynamic>>> getRandomProducts() async {
     return await productDatabase.getRandomProducts();
   }
@@ -94,12 +95,13 @@ Future<void> connect() async {
   }
 
   Future<String?> getProductAddress(int productId) async {
-  return await productDatabase.getProductAddress(productId);
+    return await productDatabase.getProductAddress(productId);
   }
 
   Future<Map<String, dynamic>> getProductDetails(int productId) async {
     return await productDatabase.getProductDetails(productId);
   }
+
   Future<Map<String, dynamic>> getProductCommuneCounts() async {
     return await productDatabase.getProductCommuneCounts();
   }
@@ -140,7 +142,8 @@ Future<void> connect() async {
     return await newsDatabase.getNewsContent(newsId);
   }
 
-  Future<List<Map<String, dynamic>>> getAllNews({int page = 1, int perPage = 10}) async {
+  Future<List<Map<String, dynamic>>> getAllNews(
+      {int page = 1, int perPage = 10}) async {
     return await newsDatabase.getAllNews(page: page, perPage: perPage);
   }
 
@@ -156,7 +159,8 @@ Future<void> connect() async {
     return await mediaDatabase.getMedia();
   }
 
-  Future<Map<String, dynamic>?> checkUserCredentials(String email, String password) async {
+  Future<Map<String, dynamic>?> checkUserCredentials(
+      String email, String password) async {
     return await accountDatabase.checkUserCredentials(email, password);
   }
 
@@ -164,7 +168,8 @@ Future<void> connect() async {
     return await accountDatabase.checkUserExists(email);
   }
 
-  Future<bool> createUser(String name, String email, String password, int communeId) async {
+  Future<bool> createUser(
+      String name, String email, String password, int communeId) async {
     return await accountDatabase.createUser(name, email, password, communeId);
   }
 
@@ -183,6 +188,7 @@ Future<void> connect() async {
   Future<String> createPasswordResetToken(String email) async {
     return await accountDatabase.createPasswordResetToken(email);
   }
+
   Future<bool> verifyPasswordResetToken(String email, String code) async {
     return await accountDatabase.verifyPasswordResetToken(email, code);
   }
@@ -263,11 +269,14 @@ Future<void> connect() async {
     return await councilsDatabase.getCouncilProducts(councilId);
   }
 
-  Future<Map<String, dynamic>> getProductEvaluationDetails(int productId, int councilId) async {
-    return await councilsDatabase.getProductEvaluationDetails(productId, councilId);
+  Future<Map<String, dynamic>> getProductEvaluationDetails(
+      int productId, int councilId) async {
+    return await councilsDatabase.getProductEvaluationDetails(
+        productId, councilId);
   }
-  
-  Future<List<Map<String, dynamic>>> getEvaluationPoints(int evaluationId) async {
+
+  Future<List<Map<String, dynamic>>> getEvaluationPoints(
+      int evaluationId) async {
     return await councilsDatabase.getEvaluationPoints(evaluationId);
   }
 

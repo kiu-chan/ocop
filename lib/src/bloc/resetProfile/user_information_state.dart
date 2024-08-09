@@ -48,5 +48,15 @@ class UserInformationState extends Equatable {
   }
 
   @override
-  List<Object?> get props => [name, commune, communes, currentPassword, newPassword, confirmNewPassword, isLoading, isSuccess, error];
+  List<Object?> get props => [
+        name,
+        commune,
+        communes,
+        currentPassword,
+        newPassword,
+        confirmNewPassword,
+        isLoading,
+        isSuccess,
+        error
+      ];
 }

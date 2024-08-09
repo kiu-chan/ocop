@@ -33,7 +33,7 @@ class _CouncilListPageState extends State<CouncilListPage> {
       _councils = councilsData.map((data) => Council.fromJson(data)).toList();
       _filteredCouncils = List.from(_councils);
       _years = _councils.map((c) => DateFormat('yyyy').format(c.createdAt)).toSet();
-      _districts = _councils.map((c) => c.districtName).toSet();
+      _districts = _councils.map((c) => c.level.toLowerCase() == 'province' ? 'Tỉnh' : c.districtName).toSet();
     });
   }
 
@@ -41,7 +41,9 @@ class _CouncilListPageState extends State<CouncilListPage> {
     setState(() {
       _filteredCouncils = _councils.where((council) {
         bool yearMatch = _selectedYears.isEmpty || _selectedYears.contains(DateFormat('yyyy').format(council.createdAt));
-        bool districtMatch = _selectedDistricts.isEmpty || _selectedDistricts.contains(council.districtName);
+        bool districtMatch = _selectedDistricts.isEmpty || 
+          (_selectedDistricts.contains('Tỉnh') && council.level.toLowerCase() == 'province') ||
+          _selectedDistricts.contains(council.districtName);
         return yearMatch && districtMatch;
       }).toList();
     });
@@ -116,7 +118,7 @@ class _CouncilListPageState extends State<CouncilListPage> {
             ),
             ExpansionTile(
               leading: const Icon(Icons.location_city),
-              title: const Text('Huyện'),
+              title: const Text('Huyện/Tỉnh'),
               children: _districts.map((district) => CheckboxListTile(
                 title: Text(district),
                 value: _selectedDistricts.contains(district),
@@ -135,16 +137,38 @@ class _CouncilListPageState extends State<CouncilListPage> {
           ],
         ),
       ),
-      body: ListView.builder(
+      body: ListView.separated(
         itemCount: _filteredCouncils.length,
+        separatorBuilder: (context, index) => Divider(height: 1, color: Colors.grey[300]),
         itemBuilder: (context, index) {
           final council = _filteredCouncils[index];
           return ListTile(
-            title: Text(council.title),
-            subtitle: Text(
-              'Cấp: ${council.level} - Ngày tạo: ${DateFormat('dd/MM/yyyy').format(council.createdAt)}' '\nHuyện: ${council.districtName}'
+            title: Text(
+              council.title,
+              style: TextStyle(fontWeight: FontWeight.bold),
             ),
-            trailing: Text(council.isArchived ? 'Đã lưu trữ' : 'Đang hoạt động'),
+            subtitle: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('Cấp: ${council.level}'),
+                Text('Ngày tạo: ${DateFormat('dd/MM/yyyy').format(council.createdAt)}'),
+                if (council.level.toLowerCase() != 'province')
+                  Text('Huyện: ${council.districtName}'),
+              ],
+            ),
+            trailing: Container(
+              padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              decoration: BoxDecoration(
+                color: council.isArchived ? Colors.grey[300] : Colors.green[100],
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Text(
+                council.isArchived ? 'Đã lưu trữ' : 'Đang hoạt động',
+                style: TextStyle(
+                  color: council.isArchived ? Colors.black54 : Colors.green[800],
+                ),
+              ),
+            ),
             onTap: () {
               Navigator.push(
                 context,

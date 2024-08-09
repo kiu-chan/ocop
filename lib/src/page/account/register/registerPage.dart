@@ -20,7 +20,8 @@ class _RegisterPageState extends State<RegisterPage> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
-  final TextEditingController _confirmPasswordController = TextEditingController();
+  final TextEditingController _confirmPasswordController =
+      TextEditingController();
 
   List<Map<String, dynamic>> _communes = [];
   int? _selectedCommuneId;
@@ -70,9 +71,13 @@ class _RegisterPageState extends State<RegisterPage> {
                 context,
                 MaterialPageRoute(builder: (context) => const Home()),
               );
-            } else if (state is RegisterFailure || state is RegisterValidationFailure) {
+            } else if (state is RegisterFailure ||
+                state is RegisterValidationFailure) {
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text(state is RegisterFailure ? state.error : (state as RegisterValidationFailure).error)),
+                SnackBar(
+                    content: Text(state is RegisterFailure
+                        ? state.error
+                        : (state as RegisterValidationFailure).error)),
               );
             }
           },
@@ -94,11 +99,15 @@ class _RegisterPageState extends State<RegisterPage> {
                               const SizedBox(height: 20),
                               _buildTextField(_nameController, 'Họ tên'),
                               const SizedBox(height: 20),
-                              _buildTextField(_emailController, 'Địa chỉ email'),
+                              _buildTextField(
+                                  _emailController, 'Địa chỉ email'),
                               const SizedBox(height: 20),
-                              _buildTextField(_passwordController, 'Mật khẩu', isPassword: true),
+                              _buildTextField(_passwordController, 'Mật khẩu',
+                                  isPassword: true),
                               const SizedBox(height: 20),
-                              _buildTextField(_confirmPasswordController, 'Xác nhận mật khẩu', isPassword: true),
+                              _buildTextField(_confirmPasswordController,
+                                  'Xác nhận mật khẩu',
+                                  isPassword: true),
                               const SizedBox(height: 20),
                               _buildCommuneDropdown(),
                               const SizedBox(height: 40),
@@ -120,7 +129,8 @@ class _RegisterPageState extends State<RegisterPage> {
     );
   }
 
-  Widget _buildTextField(TextEditingController controller, String label, {bool isPassword = false}) {
+  Widget _buildTextField(TextEditingController controller, String label,
+      {bool isPassword = false}) {
     return FractionallySizedBox(
       widthFactor: 0.9,
       child: TextField(

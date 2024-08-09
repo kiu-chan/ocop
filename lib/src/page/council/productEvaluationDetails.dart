@@ -7,20 +7,17 @@ class ProductEvaluationDetails extends StatefulWidget {
   final String productName;
 
   const ProductEvaluationDetails({
-    super.key,
+    Key? key,
     required this.productId,
     required this.councilId,
     required this.productName,
-  });
+  }) : super(key: key);
 
   @override
   _ProductEvaluationDetailsState createState() => _ProductEvaluationDetailsState();
 }
 
 class _ProductEvaluationDetailsState extends State<ProductEvaluationDetails> {
-  final Color groupColor = Colors.blue[100]!;
-  final Color subGroupColor = Colors.green[100]!;
-  final Color criteriaColor = Colors.orange[100]!;
   final DefaultDatabaseOptions _databaseOptions = DefaultDatabaseOptions();
   int? _evaluationId;
   List<Map<String, dynamic>> _evaluationPoints = [];
@@ -66,69 +63,104 @@ class _ProductEvaluationDetailsState extends State<ProductEvaluationDetails> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Đánh giá: ${widget.productName}'),
+        title: Text('Chi tiết đánh giá: ${widget.productName}'),
+        backgroundColor: Colors.blue,
       ),
       body: _buildBody(),
-      backgroundColor: Colors.white,
+      backgroundColor: Colors.grey[100],
     );
   }
 
-Widget _buildBody() {
-  if (_isLoading) {
-    return Center(child: CircularProgressIndicator());
-  } else if (_errorMessage.isNotEmpty) {
-    return Center(child: Text(_errorMessage, style: TextStyle(color: Colors.red)));
-  } else if (_evaluationPoints.isEmpty) {
-    return Center(child: Text('Không có dữ liệu đánh giá.'));
-  } else {
-    return ListView(
-      children: [
-        ListTile(
-          title: Text(
-            'ID Đánh giá: $_evaluationId',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+  Widget _buildBody() {
+    if (_isLoading) {
+      return Center(child: CircularProgressIndicator());
+    } else if (_errorMessage.isNotEmpty) {
+      return Center(child: Text(_errorMessage, style: TextStyle(color: Colors.red)));
+    } else if (_evaluationPoints.isEmpty) {
+      return Center(child: Text('Không có dữ liệu đánh giá.'));
+    } else {
+      return ListView(
+        padding: EdgeInsets.all(16),
+        children: [
+          Card(
+            elevation: 4,
+            child: Padding(
+              padding: EdgeInsets.all(16),
+              child: Text(
+                'ID Đánh giá: $_evaluationId',
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+            ),
           ),
-        ),
-        Divider(),
-        ..._evaluationPoints.map((councilData) {
-          var points = (councilData['points'] as List).cast<Map<String, dynamic>>();
-          var groupedPoints = groupPointsByGroup(points);
-          return ExpansionTile(
-            title: Text('Người chấm: ${councilData['council_user_name']}'),
-            subtitle: Text('Tổng điểm: ${councilData['total_points']}'),
-            children: [
-              ...groupedPoints.entries.map((groupEntry) {
-                return ExpansionTile(
-                  title: Text('${groupEntry.key}'),
-                  children: [
-                    ...groupEntry.value.entries.map((subGroupEntry) {
-                      return ExpansionTile(
-                        title: Text('${subGroupEntry.key}'),
-                        children: [
-                          ...subGroupEntry.value.map((point) {
-                            return ExpansionTile(
-                              title: Text('${point['criteria_name']}'),
-                              subtitle: Text('Điểm: ${point['point']}'),
-                              children: [
-                                ListTile(
-                                  title: Text('Nhận xét: ${point['comment']}'),
-                                ),
-                              ],
-                            );
-                          }),
-                        ],
-                      );
-                    }),
-                  ],
-                );
-              }),
-            ],
-          );
-        }),
-      ],
+          SizedBox(height: 16),
+          ..._evaluationPoints.map((councilData) {
+            var points = (councilData['points'] as List).cast<Map<String, dynamic>>();
+            var groupedPoints = groupPointsByGroup(points);
+            return Card(
+              elevation: 4,
+              margin: EdgeInsets.only(bottom: 16),
+              child: ExpansionTile(
+                title: Text('Người chấm: ${councilData['council_user_name'] ?? 'Không xác định'}'),
+                subtitle: Text('Tổng điểm: ${councilData['total_points'] ?? 'N/A'}'),
+                children: [
+                  ...groupedPoints.entries.map((groupEntry) {
+                    return _buildGroupTile(groupEntry.key, groupEntry.value);
+                  }),
+                ],
+              ),
+            );
+          }),
+        ],
+      );
+    }
+  }
+
+  Widget _buildGroupTile(String groupName, Map<String, List<Map<String, dynamic>>> subGroups) {
+    return ExpansionTile(
+      title: Text(groupName, style: TextStyle(fontWeight: FontWeight.bold)),
+      children: subGroups.entries.map((subGroupEntry) {
+        return _buildSubGroupTile(subGroupEntry.key, subGroupEntry.value);
+      }).toList(),
     );
   }
-}
+
+  Widget _buildSubGroupTile(String subGroupName, List<Map<String, dynamic>> criteria) {
+    return ExpansionTile(
+      title: Text(subGroupName, style: TextStyle(fontStyle: FontStyle.italic)),
+      children: criteria.map((point) {
+        return ListTile(
+          title: Text(point['criteria_name'] ?? 'Không có tên tiêu chí'),
+          subtitle: Text('Điểm: ${point['point'] ?? 'N/A'}'),
+          trailing: IconButton(
+            icon: Icon(Icons.info_outline),
+            onPressed: () {
+              _showCommentDialog(point['criteria_name'] ?? 'Không có tên tiêu chí', point['comment'] ?? 'Không có nhận xét');
+            },
+          ),
+        );
+      }).toList(),
+    );
+  }
+
+  void _showCommentDialog(String criteriaName, String comment) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(criteriaName),
+          content: Text(comment),
+          actions: <Widget>[
+            TextButton(
+              child: Text('Đóng'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
 
   Map<String, Map<String, List<Map<String, dynamic>>>> groupPointsByGroup(List<Map<String, dynamic>> points) {
     Map<String, Map<String, List<Map<String, dynamic>>>> groupedPoints = {};
