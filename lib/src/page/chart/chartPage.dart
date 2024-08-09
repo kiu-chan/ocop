@@ -95,6 +95,7 @@ class _ChartPageState extends State<ChartPage> {
           ),
         ],
       ),
+      backgroundColor: Colors.white,
       endDrawer: ChartMenu(
         isAdmin: isAdmin,
         selectedChart: selectedChart,

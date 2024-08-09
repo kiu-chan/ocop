@@ -52,6 +52,7 @@ class _CouncilProductsPageState extends State<CouncilProductsPage> {
         title: Text('Sản phẩm của ${widget.councilTitle}'),
       ),
       body: _buildBody(),
+      backgroundColor: Colors.white,
     );
   }
 

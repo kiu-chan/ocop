@@ -37,7 +37,9 @@ class _BarChartSampleState extends State<BarChartSample> {
     final values = sortedData.map((e) => e.value).toList();
 
     final maxY = values.reduce((a, b) => a > b ? a : b).toDouble();
-    final yInterval = (maxY / 5).ceilToDouble();
+    final adjustedMaxY = maxY * 1.1; // Increase maxY by 10%
+    final yInterval = (adjustedMaxY / 5).ceilToDouble();
+    final roundedMaxY = (yInterval * 5).ceilToDouble();
 
     final barGroups = titles.asMap().entries.map((entry) {
       final index = entry.key;
@@ -64,11 +66,10 @@ class _BarChartSampleState extends State<BarChartSample> {
         child: BarChart(
           BarChartData(
             alignment: BarChartAlignment.spaceAround,
-            maxY: maxY,
+            maxY: roundedMaxY,
             minY: 0,
             barTouchData: BarTouchData(
               touchTooltipData: BarTouchTooltipData(
-                // tooltipBgColor: Colors.blueGrey,
                 getTooltipItem: (group, groupIndex, rod, rodIndex) {
                   return BarTooltipItem(
                     '${titles[groupIndex]}: ${rod.toY.round()}',

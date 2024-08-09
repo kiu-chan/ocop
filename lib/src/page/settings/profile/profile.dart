@@ -35,6 +35,7 @@ class _ProfileState extends State<Profile> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       body: Container(
         color: const Color.fromARGB(255, 161, 212, 254),
         padding: const EdgeInsets.only(top: 20, left: 20),

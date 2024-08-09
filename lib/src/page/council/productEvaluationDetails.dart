@@ -69,6 +69,7 @@ class _ProductEvaluationDetailsState extends State<ProductEvaluationDetails> {
         title: Text('Đánh giá: ${widget.productName}'),
       ),
       body: _buildBody(),
+      backgroundColor: Colors.white,
     );
   }
 

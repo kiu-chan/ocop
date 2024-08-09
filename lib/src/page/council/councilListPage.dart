@@ -65,6 +65,7 @@ class _CouncilListPageState extends State<CouncilListPage> {
           ),
         ],
       ),
+      backgroundColor: Colors.white,
       endDrawer: Drawer(
         child: ListView(
           padding: EdgeInsets.zero,

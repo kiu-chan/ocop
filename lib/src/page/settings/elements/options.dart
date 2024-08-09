@@ -23,6 +23,7 @@ class _OptionsState extends State<Options> {
     return BlocProvider(
       create: (context) => LoginBloc()..add(CheckLoginStatus()),
       child: Scaffold(
+      backgroundColor: Colors.white,
         body: BlocBuilder<LoginBloc, LoginState>(
           builder: (context, state) {
             final bool isLoggedIn = state.status == LoginStatus.success;

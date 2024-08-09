@@ -17,7 +17,7 @@ class ChartDataLoader {
       name: "Biểu đồ thống kê sản phẩm theo số sao",
       title: "sao",
       x_title: "Số sao",
-      y_title: "Số lượng sản phẩm",
+      y_title: "Số lượng",
       data: groupedRating,
     );
   }
@@ -28,7 +28,7 @@ class ChartDataLoader {
       name: "Biểu đồ thống kê sản phẩm theo phân loại",
       title: "",
       x_title: "Phân loại",
-      y_title: "Số lượng sản phẩm",
+      y_title: "Số lượng",
       data: groupedRating,
     );
   }
@@ -38,8 +38,8 @@ class ChartDataLoader {
     return ChartData(
       name: "Biểu đồ thống kê số lượng xã theo số lượng sản phẩm",
       title: "Sản phẩm",
-      x_title: "Số lượng sản phẩm",
-      y_title: "Số xã",
+      x_title: "Số lượng",
+      y_title: "Số lượng",
       data: communeData['grouped'] as Map<String, int>,
       detailedData: communeData['detailed'] as Map<String, int>,
       useDetailedDataForTable: true,

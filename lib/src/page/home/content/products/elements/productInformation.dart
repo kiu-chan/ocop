@@ -292,7 +292,7 @@ class _ProductInformationState extends State<ProductInformation> {
                             InkWell(
                               onTap: () => _launchURL(widget.product.website),
                               child: Text(
-                                widget.product.website!,
+                                'Truy cập trang web',
                                 style: TextStyle(
                                   color: Colors.blue[100],
                                   decoration: TextDecoration.underline,
@@ -339,7 +339,10 @@ class _ProductInformationState extends State<ProductInformation> {
                 Padding(
                   padding: const EdgeInsets.all(16.0),
                   child: widget.product.describe != null && widget.product.describe!.isNotEmpty
-                      ? Text(widget.product.describe!)
+                      ? Text(
+                        widget.product.describe!,
+                        textAlign: TextAlign.justify,
+                        )
                       : const Text('Không có mô tả cho sản phẩm này.'),
                 ),
                 const SizedBox(height: 20),
