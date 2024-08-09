@@ -7,6 +7,7 @@ import 'package:ocop/src/bloc/login/login_bloc.dart';
 import 'package:ocop/src/bloc/login/login_event.dart';
 import 'package:ocop/src/bloc/login/login_state.dart';
 import 'package:ocop/src/page/home/home.dart';
+import 'package:ocop/mainData/user/authService.dart';
 
 class Options extends StatefulWidget {
   const Options({super.key});
@@ -17,6 +18,20 @@ class Options extends StatefulWidget {
 
 class _OptionsState extends State<Options> {
   bool _isLoading = false;
+  bool isAdmin = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkAdminRole();
+  }
+
+    Future<void> _checkAdminRole() async {
+    final userRole = await AuthService.getUserRole();
+    setState(() {
+      isAdmin = userRole == 'admin';
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -31,7 +46,7 @@ class _OptionsState extends State<Options> {
               padding: const EdgeInsets.all(5.0),
               child: Column(
                 children: <Widget>[
-                  if (isLoggedIn) _buildProfileOption(context),
+                  if (isLoggedIn && !isAdmin) _buildProfileOption(context),
                   _buildIntroduceOption(context),
                   _buildLoginLogoutButton(context, state),
                 ],

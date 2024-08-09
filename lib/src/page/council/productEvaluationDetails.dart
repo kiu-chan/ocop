@@ -116,6 +116,7 @@ class _ProductEvaluationDetailsState extends State<ProductEvaluationDetails> {
   }
 
   Widget _buildGroupTile(String groupName, Map<String, List<Map<String, dynamic>>> subGroups) {
+    if (groupName.isEmpty) return SizedBox.shrink(); // Không hiển thị nếu groupName trống
     return ExpansionTile(
       title: Text(groupName, style: TextStyle(fontWeight: FontWeight.bold)),
       children: subGroups.entries.map((subGroupEntry) {
@@ -125,20 +126,23 @@ class _ProductEvaluationDetailsState extends State<ProductEvaluationDetails> {
   }
 
   Widget _buildSubGroupTile(String subGroupName, List<Map<String, dynamic>> criteria) {
+    if (subGroupName.isEmpty) return Column(children: criteria.map(_buildCriteriaTile).toList());
     return ExpansionTile(
       title: Text(subGroupName, style: TextStyle(fontStyle: FontStyle.italic)),
-      children: criteria.map((point) {
-        return ListTile(
-          title: Text(point['criteria_name'] ?? 'Không có tên tiêu chí'),
-          subtitle: Text('Điểm: ${point['point'] ?? 'N/A'}'),
-          trailing: IconButton(
-            icon: Icon(Icons.info_outline),
-            onPressed: () {
-              _showCommentDialog(point['criteria_name'] ?? 'Không có tên tiêu chí', point['comment'] ?? 'Không có nhận xét');
-            },
-          ),
-        );
-      }).toList(),
+      children: criteria.map(_buildCriteriaTile).toList(),
+    );
+  }
+
+  Widget _buildCriteriaTile(Map<String, dynamic> point) {
+    return ListTile(
+      title: Text(point['criteria_name'] ?? 'Không có tên tiêu chí'),
+      subtitle: Text('Điểm: ${point['point'] ?? 'N/A'}'),
+      trailing: IconButton(
+        icon: Icon(Icons.info_outline),
+        onPressed: () {
+          _showCommentDialog(point['criteria_name'] ?? 'Không có tên tiêu chí', point['comment'] ?? 'Không có nhận xét');
+        },
+      ),
     );
   }
 
@@ -165,8 +169,9 @@ class _ProductEvaluationDetailsState extends State<ProductEvaluationDetails> {
   Map<String, Map<String, List<Map<String, dynamic>>>> groupPointsByGroup(List<Map<String, dynamic>> points) {
     Map<String, Map<String, List<Map<String, dynamic>>>> groupedPoints = {};
     for (var point in points) {
-      String groupName = point['group_name'] ?? 'Không xác định';
-      String subGroupName = point['group_sub_name'] ?? 'Không xác định';
+      String groupName = point['group_name'] ?? '';
+      String subGroupName = point['group_sub_name'] ?? '';
+      if (groupName.isEmpty) continue; // Bỏ qua nếu group_name trống
       if (!groupedPoints.containsKey(groupName)) {
         groupedPoints[groupName] = {};
       }

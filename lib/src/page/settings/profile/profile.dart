@@ -70,14 +70,17 @@ class _ProfileState extends State<Profile> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(
-                            profile != null ? profile!['name'] ?? 'Chưa có tên' : 'Chưa có thông tin người dùng',
-                            style: const TextStyle(
-                              fontSize: 24.0,
-                              fontWeight: FontWeight.bold,
+                          Expanded(
+                            child: Text(
+                              profile != null ? profile!['name'] ?? 'Chưa có tên' : 'Chưa có thông tin',
+                              style: const TextStyle(
+                                fontSize: 24.0,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ),
                           const SizedBox(height: 5.0),
+                          if(role != 'admin')
                           Text(
                             profile != null ? profile!['commune'] ?? 'Chưa có xã' : 'Đăng nhập để xem thông tin',
                             style: const TextStyle(

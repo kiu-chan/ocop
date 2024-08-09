@@ -182,8 +182,8 @@ class _CompanyDetailsState extends State<CompanyDetails> {
                                       return ProductCard(product: company!.products[index]);
                                     },
                                   ),
-                const SizedBox(height: 20),
-                const Center(child: Logo()),
+                            const SizedBox(height: 20),
+                            const Center(child: Logo()),
                           ],
                         ),
                       ),
