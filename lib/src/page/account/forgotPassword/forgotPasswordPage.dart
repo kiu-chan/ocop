@@ -135,7 +135,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
       String resetCode = await databaseOptions.accountDatabase.createPasswordResetToken(_emailController.text);
 
       if (resetCode.isNotEmpty) {
-        final smtpServer = gmail('lamdaimotcaidi@gmail.com', 'mkiy nvfg dzua hqsb');
+        final smtpServer = gmail('hotro.ocopbentre@gmail.com', 'tfrd gzze qpxt rlks ');
 
         final message = Message()
           ..from = const Address('lamdaimotcaidi@gmail.com', 'OCOP Password Reset')
