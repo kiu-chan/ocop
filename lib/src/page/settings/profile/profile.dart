@@ -72,7 +72,9 @@ class _ProfileState extends State<Profile> {
                         children: [
                           Expanded(
                             child: Text(
-                              profile != null ? profile!['name'] ?? 'Chưa có tên' : 'Chưa có thông tin',
+                              profile != null
+                                  ? profile!['name'] ?? 'Chưa có tên'
+                                  : 'Chưa có thông tin',
                               style: const TextStyle(
                                 fontSize: 24.0,
                                 fontWeight: FontWeight.bold,
@@ -80,17 +82,20 @@ class _ProfileState extends State<Profile> {
                             ),
                           ),
                           const SizedBox(height: 5.0),
-                          if(role != 'admin')
-                          Text(
-                            profile != null ? profile!['commune'] ?? 'Chưa có xã' : 'Đăng nhập để xem thông tin',
-                            style: const TextStyle(
-                              fontSize: 16.0,
-                              color: Colors.white,
+                          if (role != 'admin')
+                            Text(
+                              profile != null
+                                  ? profile!['commune'] ?? 'Chưa có xã'
+                                  : 'Đăng nhập để xem thông tin',
+                              style: const TextStyle(
+                                fontSize: 16.0,
+                                color: Colors.white,
+                              ),
                             ),
-                          ),
                           const SizedBox(height: 5.0),
                           Text(
-                            role != null ? (role == 'admin' ? 'Admin' : 'User') : '',
+                            role ?? '',
+                            // role != null ? (role == 'admin' ? 'Admin' : 'User') : '',
                             style: const TextStyle(
                               fontSize: 16.0,
                               color: Colors.white,

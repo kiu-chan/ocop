@@ -41,7 +41,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
       final userInfo = await _databaseOptions.checkUserCredentials(
           state.email, state.password);
       if (userInfo != null) {
-        if (userInfo['role'] == 'user') {
+        if (userInfo['role'] != 'admin' && userInfo['role'] != 'district' && userInfo['role'] != 'province') {
           // Lấy thông tin xã cho user
           final commune =
               await _databaseOptions.getCommuneInfo(userInfo['commune_id']);
@@ -50,7 +50,7 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
           }
         }
         await AuthService.setLoggedIn(true, state.email);
-        await AuthService.setUserInfo(userInfo); // Sẽ lưu cả role
+        await AuthService.setUserInfo(userInfo);
         emit(state.copyWith(
           status: LoginStatus.success,
           userInfo: userInfo,

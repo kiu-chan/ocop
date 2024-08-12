@@ -10,7 +10,7 @@ class AccountDatabase {
   Future<Map<String, dynamic>?> checkUserCredentials(
       String email, String password) async {
     try {
-      // Kiểm tra trong bảng admins trước
+      // Check admins table first
       final adminResult = await connection.query('''
       SELECT id, name, email, password
       FROM admins
@@ -31,8 +31,8 @@ class AccountDatabase {
         }
       }
 
-      // Nếu không phải admin, kiểm tra trong bảng company_users
-      final userResult = await connection.query('''
+      // Check company_users table
+      final companyUserResult = await connection.query('''
       SELECT id, name, email, password, commune_id
       FROM company_users
       WHERE email = @email AND approved = true
@@ -40,18 +40,124 @@ class AccountDatabase {
         'email': email,
       });
 
-      if (userResult.isNotEmpty) {
-        String storedHash = userResult[0][3];
+      if (companyUserResult.isNotEmpty) {
+        String storedHash = companyUserResult[0][3];
         if (BCrypt.checkpw(password, storedHash)) {
           return {
-            'id': userResult[0][0],
-            'name': userResult[0][1],
-            'email': userResult[0][2],
-            'commune_id': userResult[0][4],
-            'role': 'user',
+            'id': companyUserResult[0][0],
+            'name': companyUserResult[0][1],
+            'email': companyUserResult[0][2],
+            'commune_id': companyUserResult[0][4],
+            'role': 'company',
           };
         }
       }
+
+      // Check commune_users table
+      final communeUserResult = await connection.query('''
+      SELECT id, name, email, password, commune_id
+      FROM commune_users
+      WHERE email = @email AND approved = true
+    ''', substitutionValues: {
+        'email': email,
+      });
+
+      if (communeUserResult.isNotEmpty) {
+        String storedHash = communeUserResult[0][3];
+        print(1);
+        if (BCrypt.checkpw(password, storedHash)) {
+          return {
+            'id': communeUserResult[0][0],
+            'name': communeUserResult[0][1],
+            'email': communeUserResult[0][2],
+            'commune_id': communeUserResult[0][4],
+            'role': 'commune',
+          };
+        }
+      }
+
+      final councilUserResult = await connection.query('''
+      SELECT id, name, email, password, commune_id
+      FROM council_users
+      WHERE email = @email AND approved = true
+    ''', substitutionValues: {
+        'email': email,
+      });
+
+      if (councilUserResult.isNotEmpty) {
+        String storedHash = councilUserResult[0][3];
+        if (BCrypt.checkpw(password, storedHash)) {
+          return {
+            'id': councilUserResult[0][0],
+            'name': councilUserResult[0][1],
+            'email': councilUserResult[0][2],
+            'commune_id': councilUserResult[0][4],
+            'role': 'council',
+          };
+        }
+      }
+
+      final distributorUserResult = await connection.query('''
+      SELECT id, name, email, password, commune_id
+      FROM distributor_users
+      WHERE email = @email AND approved = true
+    ''', substitutionValues: {
+        'email': email,
+      });
+
+      if (distributorUserResult.isNotEmpty) {
+        String storedHash = distributorUserResult[0][3];
+        if (BCrypt.checkpw(password, storedHash)) {
+          return {
+            'id': distributorUserResult[0][0],
+            'name': distributorUserResult[0][1],
+            'email': distributorUserResult[0][2],
+            'commune_id': distributorUserResult[0][4],
+            'role': 'distributor',
+          };
+        }
+      }
+
+      final districtResult = await connection.query('''
+      SELECT id, name, email, password
+      FROM district_users
+      WHERE email = @email AND approved = true
+    ''', substitutionValues: {
+        'email': email,
+      });
+
+      if (districtResult.isNotEmpty) {
+        String storedHash = districtResult[0][3];
+        if (BCrypt.checkpw(password, storedHash)) {
+          return {
+            'id': districtResult[0][0],
+            'name': districtResult[0][1],
+            'email': districtResult[0][2],
+            'role': 'district',
+          };
+        }
+      }
+
+      final provinceResult = await connection.query('''
+      SELECT id, name, email, password
+      FROM province_users
+      WHERE email = @email AND approved = true
+    ''', substitutionValues: {
+        'email': email,
+      });
+
+      if (provinceResult.isNotEmpty) {
+        String storedHash = provinceResult[0][3];
+        if (BCrypt.checkpw(password, storedHash)) {
+          return {
+            'id': provinceResult[0][0],
+            'name': provinceResult[0][1],
+            'email': provinceResult[0][2],
+            'role': 'province',
+          };
+        }
+      }
+
       return null;
     } catch (e) {
       print('Error checking user credentials: $e');
@@ -62,7 +168,7 @@ class AccountDatabase {
   Future<bool> checkUserExists(String email) async {
     try {
       final result = await connection.query(
-        'SELECT COUNT(*) FROM company_users WHERE email = @email',
+        'SELECT COUNT(*) FROM (SELECT email FROM admins UNION SELECT email FROM company_users UNION SELECT email FROM commune_users) AS all_users WHERE email = @email',
         substitutionValues: {'email': email},
       );
       return (result[0][0] as int) > 0;
@@ -78,7 +184,7 @@ class AccountDatabase {
       String hashedPassword = BCrypt.hashpw(password, BCrypt.gensalt());
 
       await connection.query('''
-        INSERT INTO company_users (
+        INSERT INTO commune_users (
           approved,
           created_at,
           updated_at,
@@ -143,7 +249,13 @@ class AccountDatabase {
       substitutionValues['userId'] = userId;
 
       final result = await connection.execute('''
-        UPDATE company_users
+        UPDATE (
+          SELECT * FROM admins
+          UNION ALL
+          SELECT * FROM company_users
+          UNION ALL
+          SELECT * FROM commune_users
+        ) AS all_users
         SET ${setClause.join(', ')}, updated_at = CURRENT_TIMESTAMP
         WHERE id = @userId
       ''', substitutionValues: substitutionValues);
@@ -159,7 +271,13 @@ class AccountDatabase {
     try {
       final result = await connection.query('''
         SELECT password
-        FROM company_users
+        FROM (
+          SELECT id, password FROM admins
+          UNION ALL
+          SELECT id, password FROM company_users
+          UNION ALL
+          SELECT id, password FROM commune_users
+        ) AS all_users
         WHERE id = @userId
       ''', substitutionValues: {
         'userId': userId,
@@ -201,13 +319,9 @@ class AccountDatabase {
 
   Future<String> createPasswordResetToken(String email) async {
     try {
-      // Tạo mã code 6 số ngẫu nhiên
       String code = (Random().nextInt(900000) + 100000).toString();
-
-      // Mã hóa code
       String hashedCode = BCrypt.hashpw(code, BCrypt.gensalt());
 
-      // Cập nhật hoặc chèn vào database
       await connection.execute('''
       INSERT INTO password_resets (email, token, created_at)
       VALUES (@email, @token, CURRENT_TIMESTAMP)
@@ -220,7 +334,7 @@ class AccountDatabase {
         'token': hashedCode,
       });
 
-      return code; // Trả về code chưa mã hóa để gửi email
+      return code;
     } catch (e) {
       print('Error creating password reset token: $e');
       return '';
@@ -257,7 +371,13 @@ class AccountDatabase {
       String hashedPassword = BCrypt.hashpw(newPassword, BCrypt.gensalt());
 
       final result = await connection.execute('''
-      UPDATE company_users
+      UPDATE (
+        SELECT id, email, password FROM admins
+        UNION ALL
+        SELECT id, email, password FROM company_users
+        UNION ALL
+        SELECT id, email, password FROM commune_users
+      ) AS all_users
       SET password = @password
       WHERE email = @email
     ''', substitutionValues: {
@@ -265,7 +385,7 @@ class AccountDatabase {
         'password': hashedPassword,
       });
 
-      return result == 1; // Trả về true nếu có một hàng được cập nhật
+      return result == 1;
     } catch (e) {
       print('Error resetting password: $e');
       return false;
@@ -300,7 +420,13 @@ class AccountDatabase {
     try {
       final result = await connection.query('''
       SELECT COUNT(*) 
-      FROM company_users 
+      FROM (
+        SELECT email FROM admins
+        UNION ALL
+        SELECT email FROM company_users
+        UNION ALL
+        SELECT email FROM commune_users
+      ) AS all_users 
       WHERE email = @email
     ''', substitutionValues: {
         'email': email,
