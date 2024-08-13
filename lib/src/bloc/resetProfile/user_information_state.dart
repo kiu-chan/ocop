@@ -10,6 +10,7 @@ class UserInformationState extends Equatable {
   final bool isLoading;
   final bool isSuccess;
   final String? error;
+  final String role;
 
   const UserInformationState({
     required this.name,
@@ -21,6 +22,7 @@ class UserInformationState extends Equatable {
     this.isLoading = false,
     this.isSuccess = false,
     this.error,
+    required this.role,
   });
 
   UserInformationState copyWith({
@@ -33,6 +35,7 @@ class UserInformationState extends Equatable {
     bool? isLoading,
     bool? isSuccess,
     String? error,
+    String? role,
   }) {
     return UserInformationState(
       name: name ?? this.name,
@@ -44,6 +47,7 @@ class UserInformationState extends Equatable {
       isLoading: isLoading ?? this.isLoading,
       isSuccess: isSuccess ?? this.isSuccess,
       error: error,
+      role: role ?? this.role,
     );
   }
 
@@ -57,6 +61,7 @@ class UserInformationState extends Equatable {
         confirmNewPassword,
         isLoading,
         isSuccess,
-        error
+        error,
+        role,
       ];
 }
