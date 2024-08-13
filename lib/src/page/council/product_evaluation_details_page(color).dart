@@ -7,11 +7,11 @@ class ProductEvaluationDetailsPage extends StatefulWidget {
   final String productName;
 
   const ProductEvaluationDetailsPage({
-    Key? key,
+    super.key,
     required this.productId,
     required this.councilId,
     required this.productName,
-  }) : super(key: key);
+  });
 
   @override
   _ProductEvaluationDetailsPageState createState() => _ProductEvaluationDetailsPageState();
@@ -74,26 +74,26 @@ class _ProductEvaluationDetailsPageState extends State<ProductEvaluationDetailsP
 
 Widget _buildBody() {
   if (_isLoading) {
-    return Center(child: CircularProgressIndicator());
+    return const Center(child: CircularProgressIndicator());
   } else if (_errorMessage.isNotEmpty) {
-    return Center(child: Text(_errorMessage, style: TextStyle(color: Colors.red)));
+    return Center(child: Text(_errorMessage, style: const TextStyle(color: Colors.red)));
   } else if (_evaluationPoints.isEmpty) {
-    return Center(child: Text('Không có dữ liệu đánh giá.'));
+    return const Center(child: Text('Không có dữ liệu đánh giá.'));
   } else {
     return ListView(
       children: [
         ListTile(
           title: Text(
             'ID Đánh giá: $_evaluationId',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
         ),
-        Divider(),
+        const Divider(),
         ..._evaluationPoints.map((councilData) {
           var points = (councilData['points'] as List).cast<Map<String, dynamic>>();
           var groupedPoints = groupPointsByGroup(points);
           return Card(
-            margin: EdgeInsets.all(8),
+            margin: const EdgeInsets.all(8),
             child: ExpansionTile(
               title: Text('Người chấm: ${councilData['council_user_name']}'),
               subtitle: Text('Tổng điểm: ${councilData['total_points']}'),
@@ -101,21 +101,21 @@ Widget _buildBody() {
                 ...groupedPoints.entries.map((groupEntry) {
                   return Card(
                     color: groupColor,
-                    margin: EdgeInsets.symmetric(vertical: 4, horizontal: 8),
+                    margin: const EdgeInsets.symmetric(vertical: 4, horizontal: 8),
                     child: ExpansionTile(
-                      title: Text('${groupEntry.key}', style: TextStyle(fontWeight: FontWeight.bold)),
+                      title: Text(groupEntry.key, style: const TextStyle(fontWeight: FontWeight.bold)),
                       children: [
                         ...groupEntry.value.entries.map((subGroupEntry) {
                           return Card(
                             color: subGroupColor,
-                            margin: EdgeInsets.symmetric(vertical: 2, horizontal: 16),
+                            margin: const EdgeInsets.symmetric(vertical: 2, horizontal: 16),
                             child: ExpansionTile(
-                              title: Text('${subGroupEntry.key}', style: TextStyle(fontWeight: FontWeight.bold)),
+                              title: Text(subGroupEntry.key, style: const TextStyle(fontWeight: FontWeight.bold)),
                               children: [
                                 ...subGroupEntry.value.map((point) {
                                   return Card(
                                     color: criteriaColor,
-                                    margin: EdgeInsets.symmetric(vertical: 1, horizontal: 24),
+                                    margin: const EdgeInsets.symmetric(vertical: 1, horizontal: 24),
                                     child: ExpansionTile(
                                       title: Text('${point['criteria_name']}'),
                                       subtitle: Text('Điểm: ${point['point']}'),

@@ -50,6 +50,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
       print('Connected to database');
     } catch (e) {
       print('Failed to connect to database: $e');
+      // ignore: use_build_context_synchronously
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Failed to connect to database. Please try again later.')),
       );

@@ -7,7 +7,7 @@ class CouncilProductsPage extends StatefulWidget {
   final int councilId;
   final String councilTitle;
 
-  const CouncilProductsPage({Key? key, required this.councilId, required this.councilTitle}) : super(key: key);
+  const CouncilProductsPage({super.key, required this.councilId, required this.councilTitle});
 
   @override
   _CouncilProductsPageState createState() => _CouncilProductsPageState();
@@ -72,7 +72,7 @@ class _CouncilProductsPageState extends State<CouncilProductsPage> {
           return ExpansionTile(
             title: Text(
               product['name'] ?? 'Không có tên',
-              style: TextStyle(fontWeight: FontWeight.bold),
+              style: const TextStyle(fontWeight: FontWeight.bold),
             ),
             subtitle: Text('Danh mục: ${product['category'] ?? 'Không xác định'}'),
             children: [
@@ -99,7 +99,7 @@ Padding(
     style: ElevatedButton.styleFrom(
       backgroundColor: Colors.blue, // Thay cho primary
       foregroundColor: Colors.white, // Thay cho onPrimary
-      padding: EdgeInsets.symmetric(vertical: 12, horizontal: 24),
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(8),
       ),
@@ -132,7 +132,7 @@ Padding(
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(title, style: TextStyle(fontWeight: FontWeight.w500)),
+          Text(title, style: const TextStyle(fontWeight: FontWeight.w500)),
           Text(value),
         ],
       ),

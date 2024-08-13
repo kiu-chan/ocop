@@ -101,7 +101,7 @@ class _NewContentState extends State<NewContent> {
                       ],
                     ),
                   ),
-                  Center(child: const Logo()),
+                  const Center(child: Logo()),
                 ],
               ),
             ),

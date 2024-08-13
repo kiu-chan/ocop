@@ -5,7 +5,7 @@ import 'package:ocop/src/data/councils/councilData.dart';
 import 'councilProductsPage.dart';
 
 class CouncilListPage extends StatefulWidget {
-  const CouncilListPage({Key? key}) : super(key: key);
+  const CouncilListPage({super.key});
 
   @override
   _CouncilListPageState createState() => _CouncilListPageState();
@@ -145,7 +145,7 @@ class _CouncilListPageState extends State<CouncilListPage> {
           return ListTile(
             title: Text(
               council.title,
-              style: TextStyle(fontWeight: FontWeight.bold),
+              style: const TextStyle(fontWeight: FontWeight.bold),
             ),
             subtitle: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -157,7 +157,7 @@ class _CouncilListPageState extends State<CouncilListPage> {
               ],
             ),
             trailing: Container(
-              padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
               decoration: BoxDecoration(
                 color: council.isArchived ? Colors.grey[300] : Colors.green[100],
                 borderRadius: BorderRadius.circular(12),

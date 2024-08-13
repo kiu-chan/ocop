@@ -4,7 +4,7 @@ import 'package:ocop/mainData/database/databases.dart';
 import 'package:ocop/src/page/home/home.dart';
 
 class UserInformation extends StatefulWidget {
-  const UserInformation({Key? key}) : super(key: key);
+  const UserInformation({super.key});
 
   @override
   _UserInformationState createState() => _UserInformationState();

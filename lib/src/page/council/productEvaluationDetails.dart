@@ -7,11 +7,11 @@ class ProductEvaluationDetails extends StatefulWidget {
   final String productName;
 
   const ProductEvaluationDetails({
-    Key? key,
+    super.key,
     required this.productId,
     required this.councilId,
     required this.productName,
-  }) : super(key: key);
+  });
 
   @override
   _ProductEvaluationDetailsState createState() => _ProductEvaluationDetailsState();
@@ -73,32 +73,32 @@ class _ProductEvaluationDetailsState extends State<ProductEvaluationDetails> {
 
   Widget _buildBody() {
     if (_isLoading) {
-      return Center(child: CircularProgressIndicator());
+      return const Center(child: CircularProgressIndicator());
     } else if (_errorMessage.isNotEmpty) {
-      return Center(child: Text(_errorMessage, style: TextStyle(color: Colors.red)));
+      return Center(child: Text(_errorMessage, style: const TextStyle(color: Colors.red)));
     } else if (_evaluationPoints.isEmpty) {
-      return Center(child: Text('Không có dữ liệu đánh giá.'));
+      return const Center(child: Text('Không có dữ liệu đánh giá.'));
     } else {
       return ListView(
-        padding: EdgeInsets.all(16),
+        padding: const EdgeInsets.all(16),
         children: [
           Card(
             elevation: 4,
             child: Padding(
-              padding: EdgeInsets.all(16),
+              padding: const EdgeInsets.all(16),
               child: Text(
                 'ID Đánh giá: $_evaluationId',
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
             ),
           ),
-          SizedBox(height: 16),
+          const SizedBox(height: 16),
           ..._evaluationPoints.map((councilData) {
             var points = (councilData['points'] as List).cast<Map<String, dynamic>>();
             var groupedPoints = groupPointsByGroup(points);
             return Card(
               elevation: 4,
-              margin: EdgeInsets.only(bottom: 16),
+              margin: const EdgeInsets.only(bottom: 16),
               child: ExpansionTile(
                 title: Text('Người chấm: ${councilData['council_user_name'] ?? 'Không xác định'}'),
                 subtitle: Text('Tổng điểm: ${councilData['total_points'] ?? 'N/A'}'),
@@ -116,9 +116,9 @@ class _ProductEvaluationDetailsState extends State<ProductEvaluationDetails> {
   }
 
   Widget _buildGroupTile(String groupName, Map<String, List<Map<String, dynamic>>> subGroups) {
-    if (groupName.isEmpty) return SizedBox.shrink(); // Không hiển thị nếu groupName trống
+    if (groupName.isEmpty) return const SizedBox.shrink(); // Không hiển thị nếu groupName trống
     return ExpansionTile(
-      title: Text(groupName, style: TextStyle(fontWeight: FontWeight.bold)),
+      title: Text(groupName, style: const TextStyle(fontWeight: FontWeight.bold)),
       children: subGroups.entries.map((subGroupEntry) {
         return _buildSubGroupTile(subGroupEntry.key, subGroupEntry.value);
       }).toList(),
@@ -128,7 +128,7 @@ class _ProductEvaluationDetailsState extends State<ProductEvaluationDetails> {
   Widget _buildSubGroupTile(String subGroupName, List<Map<String, dynamic>> criteria) {
     if (subGroupName.isEmpty) return Column(children: criteria.map(_buildCriteriaTile).toList());
     return ExpansionTile(
-      title: Text(subGroupName, style: TextStyle(fontStyle: FontStyle.italic)),
+      title: Text(subGroupName, style: const TextStyle(fontStyle: FontStyle.italic)),
       children: criteria.map(_buildCriteriaTile).toList(),
     );
   }
@@ -138,7 +138,7 @@ class _ProductEvaluationDetailsState extends State<ProductEvaluationDetails> {
       title: Text(point['criteria_name'] ?? 'Không có tên tiêu chí'),
       subtitle: Text('Điểm: ${point['point'] ?? 'N/A'}'),
       trailing: IconButton(
-        icon: Icon(Icons.info_outline),
+        icon: const Icon(Icons.info_outline),
         onPressed: () {
           _showCommentDialog(point['criteria_name'] ?? 'Không có tên tiêu chí', point['comment'] ?? 'Không có nhận xét');
         },
@@ -155,7 +155,7 @@ class _ProductEvaluationDetailsState extends State<ProductEvaluationDetails> {
           content: Text(comment),
           actions: <Widget>[
             TextButton(
-              child: Text('Đóng'),
+              child: const Text('Đóng'),
               onPressed: () {
                 Navigator.of(context).pop();
               },

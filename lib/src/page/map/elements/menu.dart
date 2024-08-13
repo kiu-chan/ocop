@@ -28,7 +28,7 @@ class Menu extends StatefulWidget {
   final int selectedMapType;
 
   const Menu({
-    Key? key,
+    super.key,
     required this.onClickMap,
     required this.onClickImgData,
     required this.imageDataList,
@@ -50,7 +50,7 @@ class Menu extends StatefulWidget {
     required this.showBorders,
     required this.onToggleBorders,
     required this.selectedMapType,
-  }) : super(key: key);
+  });
 
   @override
   _MenuState createState() => _MenuState();
