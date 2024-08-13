@@ -22,6 +22,10 @@ class _UserInformationState extends State<UserInformation> {
   bool _isLoading = false;
   String? _userRole;
 
+  bool _obscureCurrentPassword = true;
+  bool _obscureNewPassword = true;
+  bool _obscureConfirmPassword = true;
+
   final DefaultDatabaseOptions _databaseOptions = DefaultDatabaseOptions();
 
   @override
@@ -64,7 +68,9 @@ class _UserInformationState extends State<UserInformation> {
         'name': _nameController.text,
       };
 
-      if (_userRole != 'admin' && _userRole != 'district' && _userRole != 'province') {
+      if (_userRole != 'admin' &&
+          _userRole != 'district' &&
+          _userRole != 'province') {
         final selectedCommuneData = _communes.firstWhere(
           (c) => c['name'] == _selectedCommune,
           orElse: () => {'id': null},
@@ -74,30 +80,36 @@ class _UserInformationState extends State<UserInformation> {
         }
       }
 
-      if (_newPasswordController.text.isNotEmpty) {
-        final isPasswordCorrect = await _databaseOptions.accountDatabase.verifyUserPassword(
-          _userInfo!['id'],
-          _currentPasswordController.text,
+      // Verify current password before allowing any changes
+      final isPasswordCorrect =
+          await _databaseOptions.accountDatabase.verifyUserPassword(
+        _userInfo!['id'],
+        _currentPasswordController.text,
+        _userRole ?? 'unknown', // Pass userRole here
+      );
+      print(!isPasswordCorrect);
+      if (!isPasswordCorrect) {
+        setState(() {
+          _isLoading = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Mật khẩu hiện tại không đúng')),
         );
-        if (!isPasswordCorrect) {
-          setState(() {
-            _isLoading = false;
-          });
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Mật khẩu hiện tại không đúng')),
-          );
-          return;
-        }
+        return;
+      }
+
+      if (_newPasswordController.text.isNotEmpty) {
         newInfo['password'] = _newPasswordController.text;
       }
 
-      final success = await _databaseOptions.accountDatabase.updateUserInfo(_userInfo!['id'], newInfo, _userRole ?? 'unknown');
+      final success = await _databaseOptions.accountDatabase
+          .updateUserInfo(_userInfo!['id'], newInfo, _userRole ?? 'unknown');
       if (success) {
         final updatedUserInfo = Map<String, dynamic>.from(_userInfo!);
         updatedUserInfo.addAll(newInfo);
         updatedUserInfo['commune'] = _selectedCommune;
         await AuthService.updateUserInfo(updatedUserInfo);
-        
+
         await Future.delayed(const Duration(seconds: 1));
 
         setState(() {
@@ -106,7 +118,9 @@ class _UserInformationState extends State<UserInformation> {
         });
 
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Thông tin người dùng đã được cập nhật thành công')),
+          const SnackBar(
+              content:
+                  Text('Thông tin người dùng đã được cập nhật thành công')),
         );
 
         Navigator.of(context).pushReplacement(
@@ -117,10 +131,34 @@ class _UserInformationState extends State<UserInformation> {
           _isLoading = false;
         });
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Không thể cập nhật thông tin người dùng')),
+          const SnackBar(
+              content: Text('Không thể cập nhật thông tin người dùng')),
         );
       }
     }
+  }
+
+  Widget _buildPasswordField({
+    required TextEditingController controller,
+    required String labelText,
+    required bool obscureText,
+    required VoidCallback onToggle,
+    String? Function(String?)? validator,
+  }) {
+    return TextFormField(
+      controller: controller,
+      decoration: InputDecoration(
+        labelText: labelText,
+        suffixIcon: IconButton(
+          icon: Icon(
+            obscureText ? Icons.visibility_off : Icons.visibility,
+          ),
+          onPressed: onToggle,
+        ),
+      ),
+      obscureText: obscureText,
+      validator: validator,
+    );
   }
 
   @override
@@ -140,7 +178,8 @@ class _UserInformationState extends State<UserInformation> {
                 children: [
                   TextFormField(
                     controller: _nameController,
-                    decoration: const InputDecoration(labelText: 'Tên người dùng'),
+                    decoration:
+                        const InputDecoration(labelText: 'Tên người dùng'),
                     validator: (value) {
                       if (value == null || value.isEmpty) {
                         return 'Vui lòng nhập tên của bạn';
@@ -149,7 +188,9 @@ class _UserInformationState extends State<UserInformation> {
                     },
                   ),
                   const SizedBox(height: 16),
-                  if (_userRole != 'admin' && _userRole != 'district' && _userRole != 'province')
+                  if (_userRole != 'admin' &&
+                      _userRole != 'district' &&
+                      _userRole != 'province')
                     DropdownButtonFormField<String>(
                       value: _selectedCommune,
                       decoration: const InputDecoration(labelText: 'Xã'),
@@ -172,24 +213,38 @@ class _UserInformationState extends State<UserInformation> {
                       },
                     ),
                   const SizedBox(height: 16),
-                  TextFormField(
+                  _buildPasswordField(
                     controller: _currentPasswordController,
-                    decoration: const InputDecoration(labelText: 'Mật khẩu hiện tại'),
-                    obscureText: true,
-                  ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _newPasswordController,
-                    decoration: const InputDecoration(labelText: 'Mật khẩu mới'),
-                    obscureText: true,
-                  ),
-                  const SizedBox(height: 16),
-                  TextFormField(
-                    controller: _confirmNewPasswordController,
-                    decoration: const InputDecoration(labelText: 'Xác nhận mật khẩu mới'),
-                    obscureText: true,
+                    labelText: 'Mật khẩu hiện tại',
+                    obscureText: _obscureCurrentPassword,
+                    onToggle: () => setState(() =>
+                        _obscureCurrentPassword = !_obscureCurrentPassword),
                     validator: (value) {
-                      if (_newPasswordController.text.isNotEmpty && value != _newPasswordController.text) {
+                      if (value == null || value.isEmpty) {
+                        return 'Vui lòng nhập mật khẩu hiện tại';
+                      }
+                      return null;
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  _buildPasswordField(
+                    controller: _newPasswordController,
+                    labelText:
+                        'Mật khẩu mới (để trống nếu không muốn thay đổi)',
+                    obscureText: _obscureNewPassword,
+                    onToggle: () => setState(
+                        () => _obscureNewPassword = !_obscureNewPassword),
+                  ),
+                  const SizedBox(height: 16),
+                  _buildPasswordField(
+                    controller: _confirmNewPasswordController,
+                    labelText: 'Xác nhận mật khẩu mới',
+                    obscureText: _obscureConfirmPassword,
+                    onToggle: () => setState(() =>
+                        _obscureConfirmPassword = !_obscureConfirmPassword),
+                    validator: (value) {
+                      if (_newPasswordController.text.isNotEmpty &&
+                          value != _newPasswordController.text) {
                         return 'Mật khẩu không khớp';
                       }
                       return null;

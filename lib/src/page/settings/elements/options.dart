@@ -26,7 +26,7 @@ class _OptionsState extends State<Options> {
     _checkAdminRole();
   }
 
-    Future<void> _checkAdminRole() async {
+  Future<void> _checkAdminRole() async {
     final userRole = await AuthService.getUserRole();
     setState(() {
       isAdmin = userRole == 'admin';
@@ -38,7 +38,7 @@ class _OptionsState extends State<Options> {
     return BlocProvider(
       create: (context) => LoginBloc()..add(CheckLoginStatus()),
       child: Scaffold(
-      backgroundColor: Colors.white,
+        backgroundColor: Colors.white,
         body: BlocBuilder<LoginBloc, LoginState>(
           builder: (context, state) {
             final bool isLoggedIn = state.status == LoginStatus.success;
@@ -105,11 +105,8 @@ class _OptionsState extends State<Options> {
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(5.0),
               ),
-              child: const Icon(
-                Icons.arrow_forward_ios,
-                size: 12.0,
-                color: Color.fromRGBO(77, 210, 255, 1)
-              ),
+              child: const Icon(Icons.arrow_forward_ios,
+                  size: 12.0, color: Color.fromRGBO(77, 210, 255, 1)),
             )
           ],
         ),
@@ -185,29 +182,31 @@ class _OptionsState extends State<Options> {
         borderRadius: BorderRadius.circular(5.0),
       ),
       child: InkWell(
-        onTap: _isLoading ? null : () async {
-          if (isLoggedIn) {
-            setState(() {
-              _isLoading = true;
-            });
-            context.read<LoginBloc>().add(LogoutRequested());
-            await Future.delayed(const Duration(seconds: 1));
-            if (mounted) {
-              setState(() {
-                _isLoading = false;
-              });
-              Navigator.of(context).pushAndRemoveUntil(
-                MaterialPageRoute(builder: (context) => const Home()),
-                (Route<dynamic> route) => false,
-              );
-            }
-          } else {
-            Navigator.push(
-              context,
-              MaterialPageRoute(builder: (context) => const LoginPage()),
-            );
-          }
-        },
+        onTap: _isLoading
+            ? null
+            : () async {
+                if (isLoggedIn) {
+                  setState(() {
+                    _isLoading = true;
+                  });
+                  context.read<LoginBloc>().add(LogoutRequested());
+                  await Future.delayed(const Duration(seconds: 1));
+                  if (mounted) {
+                    setState(() {
+                      _isLoading = false;
+                    });
+                    Navigator.of(context).pushAndRemoveUntil(
+                      MaterialPageRoute(builder: (context) => const Home()),
+                      (Route<dynamic> route) => false,
+                    );
+                  }
+                } else {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const LoginPage()),
+                  );
+                }
+              },
         child: _isLoading
             ? const Center(child: CircularProgressIndicator())
             : Row(
@@ -243,11 +242,8 @@ class _OptionsState extends State<Options> {
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(5.0),
                     ),
-                    child: const Icon(
-                      Icons.arrow_forward_ios,
-                      size: 12.0,
-                      color: Colors.blue
-                    ),
+                    child: const Icon(Icons.arrow_forward_ios,
+                        size: 12.0, color: Colors.blue),
                   )
                 ],
               ),

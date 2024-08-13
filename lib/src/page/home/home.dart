@@ -16,6 +16,8 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
   int currentIndex = 0;
   bool isAdmin = false;
+  bool isCouncil = false;
+  bool checkIcon = false;
 
   @override
   void initState() {
@@ -27,6 +29,10 @@ class _HomeState extends State<Home> {
     final userRole = await AuthService.getUserRole();
     setState(() {
       isAdmin = userRole == 'admin';
+      // isCouncil = userRole == 'council';  //tạm thời tắt
+      if (isAdmin || isCouncil) {
+        checkIcon = true;
+      }
     });
   }
 
@@ -36,7 +42,7 @@ class _HomeState extends State<Home> {
       const HomePage(),
       const MapPage(),
       const ChartPage(),
-      if (isAdmin) const CouncilListPage(),
+      if (checkIcon) const CouncilListPage(),
       const SettingPage(),
     ];
 
@@ -44,9 +50,7 @@ class _HomeState extends State<Home> {
       body: AnimatedSwitcher(
         duration: const Duration(milliseconds: 500),
         child: Container(
-          key: ValueKey<int>(currentIndex),
-          child: pages[currentIndex]
-        ),
+            key: ValueKey<int>(currentIndex), child: pages[currentIndex]),
       ),
       bottomNavigationBar: BottomNavigationBar(
         onTap: (int index) {
@@ -71,7 +75,7 @@ class _HomeState extends State<Home> {
             icon: Icon(Icons.ssid_chart),
             label: "Chart",
           ),
-          if (isAdmin)
+          if (checkIcon)
             const BottomNavigationBarItem(
               icon: Icon(Icons.groups),
               label: "Hội đồng",

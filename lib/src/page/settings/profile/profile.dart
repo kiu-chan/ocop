@@ -82,7 +82,9 @@ class _ProfileState extends State<Profile> {
                             ),
                           ),
                           const SizedBox(height: 5.0),
-                          if (role != 'admin')
+                          if (role != 'admin' &&
+                              role != 'district' &&
+                              role != 'province')
                             Text(
                               profile != null
                                   ? profile!['commune'] ?? 'Chưa có xã'

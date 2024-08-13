@@ -31,7 +31,8 @@ class AuthService {
     await prefs.setString(_userInfoKey, json.encode(userInfo));
 
     if (userInfo.containsKey('commune')) {
-      await prefs.setString(_communeKey, userInfo['commune']);
+      String communeValue = userInfo['commune'] as String? ?? '';
+      await prefs.setString(_communeKey, communeValue);
     }
 
     if (userInfo.containsKey('role')) {

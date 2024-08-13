@@ -179,8 +179,8 @@ class DefaultDatabaseOptions {
     return await accountDatabase.updateUserInfo(userId, newInfo, userRole ?? 'unknown');
   }
 
-  Future<bool> verifyUserPassword(int userId, String password) async {
-    return await accountDatabase.verifyUserPassword(userId, password);
+  Future<bool> verifyUserPassword(int userId, String password, String userRole) async {
+    return await accountDatabase.verifyUserPassword(userId, password, userRole);
   }
 
   Future<Map<String, dynamic>?> getCommuneInfo(int communeId) async {
