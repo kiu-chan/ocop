@@ -141,7 +141,7 @@ class AccountDatabase {
       final provinceResult = await connection.query('''
       SELECT id, name, email, password
       FROM province_users
-      WHERE email = @email AND approved = true
+      WHERE email = @email
     ''', substitutionValues: {
         'email': email,
       });
@@ -377,6 +377,14 @@ class AccountDatabase {
         SELECT id, email, password FROM company_users
         UNION ALL
         SELECT id, email, password FROM commune_users
+        UNION ALL
+        SELECT id, email, password FROM distributor_users
+        UNION ALL
+        SELECT id, email, password FROM district_users
+        UNION ALL
+        SELECT id, email, password FROM province_users
+        UNION ALL
+        SELECT id, email, password FROM council_users
       ) AS all_users
       SET password = @password
       WHERE email = @email
@@ -426,6 +434,14 @@ class AccountDatabase {
         SELECT email FROM company_users
         UNION ALL
         SELECT email FROM commune_users
+        UNION ALL
+        SELECT email FROM distributor_users
+        UNION ALL
+        SELECT email FROM district_users
+        UNION ALL
+        SELECT email FROM province_users
+        UNION ALL
+        SELECT email FROM council_users
       ) AS all_users 
       WHERE email = @email
     ''', substitutionValues: {
