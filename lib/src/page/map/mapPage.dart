@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:latlong2/latlong.dart';
+import 'package:ocop/config/path.dart';
+import 'package:ocop/config/map.dart';
 import 'package:ocop/src/page/map/elements/menu.dart';
 import 'package:ocop/src/data/map/ImageData.dart';
 import 'package:ocop/src/data/map/MapData.dart';
@@ -34,39 +36,33 @@ class _MapPageState extends State<MapPage> {
   List<AreaData> districts = [];
   List<AreaData> borders = [];
 
-  double currentZoom = 10.38;
+  double currentZoom = MapConfig().getDefaultZoom();
 
   int? selectedMap = 1;
   
   String mapName = "Bản đồ";
-  List<String> listMapUrl = [
-    "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
-    "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
-  ];
-  String mapUrl = "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
+  List<String> listMapUrl = AppPath().listMapUrl;
+  String mapUrl = AppPath().mapUrl;
   final String namePackage = "com.example.app";
 
-  final LatLng mapLat = LatLng(10.2417, 106.3748);  //Tọa độ mặc định
-  final LatLng mapLatFinal = LatLng(10.2417, 106.3748);  //Tọa độ mặc định
+  final LatLng mapLat = MapConfig().getDefaultMap();  //Tọa độ mặc định
+  final LatLng mapLatFinal = MapConfig().getDefaultMap();  //Tọa độ mặc định
 
   List<ImageData> imageDataList = [];
 
   List<ImageData> listImgRender = [];
   List<MapData> polygonData = [];
-  List<String> listPaths = [
-    'lib/src/assets/geodata/vungDem.geojson',
-    'lib/src/assets/geodata/vungLoi.geojson',
-  ];
+  List<String> listPaths = AppPath().listPaths;
   final List<Color> orderedColors = [
     Colors.red, Colors.blue, Colors.green, Colors.yellow, Colors.orange,
     Colors.purple, Colors.teal, Colors.pink, Colors.cyan, Colors.brown,
     Colors.indigo, Colors.lime, Colors.deepOrange, Colors.lightBlue, Colors.pinkAccent,
   ];
 
-  bool isOfflineMode = false;
-  bool showCommunes = false;
-  bool showDistricts = true;
-  bool showBorders = false;
+  bool isOfflineMode = MapConfig.isOfflineMode;
+  bool showCommunes = MapConfig.showCommunes;
+  bool showDistricts = MapConfig.showDistricts;
+  bool showBorders = MapConfig.showBorders;
   int selectedMapType = 0;
   Set<int> selectedCommuneIds = {};
   Set<int> selectedDistrictIds = {};
