@@ -6,10 +6,10 @@ import 'user_information_state.dart';
 
 class UserInformationBloc
     extends Bloc<UserInformationEvent, UserInformationState> {
-  final DefaultDatabaseOptions _databaseOptions;
+  final DefaultDatabaseOptions databaseOptions;
 
-  UserInformationBloc(this._databaseOptions)
-      : super(const UserInformationState(name: '', commune: '', communes: [])) {
+  UserInformationBloc(this.databaseOptions)
+      : super(const UserInformationState(name: '', commune: '', communes: [], role: '')) {
     on<LoadUserInformation>(_onLoadUserInformation);
     on<UpdateUserName>(_onUpdateUserName);
     on<UpdateUserCommune>(_onUpdateUserCommune);
@@ -24,19 +24,23 @@ class UserInformationBloc
     emit(state.copyWith(isLoading: true));
     try {
       final userInfo = await AuthService.getUserInfo();
-      final communes = await _databaseOptions.getApprovedCommunes();
+      final userRole = await AuthService.getUserRole();
+      final communes = await databaseOptions.getApprovedCommunes();
 
-      // Lấy tên xã từ commune_id
-      final userCommune = communes.firstWhere(
-        (commune) =>
-            commune['id'].toString() == userInfo?['commune_id'].toString(),
-        orElse: () => {'name': ''},
-      );
+      String userCommune = '';
+      if (userRole != 'admin' && userRole != 'district' && userRole != 'province') {
+        final communeData = communes.firstWhere(
+          (commune) => commune['id'].toString() == userInfo?['commune_id'].toString(),
+          orElse: () => {'name': ''},
+        );
+        userCommune = communeData['name'] as String;
+      }
 
       emit(state.copyWith(
         name: userInfo?['name'] ?? '',
-        commune: userCommune['name'] as String,
+        commune: userCommune,
         communes: communes.map((c) => c['name'] as String).toList(),
+        role: userRole,
         isLoading: false,
       ));
     } catch (e) {
@@ -78,9 +82,12 @@ class UserInformationBloc
       final userInfo = await AuthService.getUserInfo();
       final newInfo = {
         'name': state.name,
-        'commune_id': state.communes.indexOf(state.commune) +
-            1, // Assuming commune IDs start from 1
       };
+
+      if (state.role != 'admin' && state.role != 'district' && state.role != 'province') {
+        final selectedCommune = state.communes.indexOf(state.commune) + 1;
+        newInfo['commune_id'] = selectedCommune.toString();
+      }
 
       if (state.currentPassword.isNotEmpty && state.newPassword.isNotEmpty) {
         if (state.newPassword != state.confirmNewPassword) {
@@ -90,7 +97,7 @@ class UserInformationBloc
         }
 
         final isPasswordCorrect =
-            await _databaseOptions.accountDatabase.verifyUserPassword(
+            await databaseOptions.accountDatabase.verifyUserPassword(
           userInfo!['id'],
           state.currentPassword,
         );
@@ -102,8 +109,8 @@ class UserInformationBloc
         newInfo['password'] = state.newPassword;
       }
 
-      final success = await _databaseOptions.accountDatabase
-          .updateUserInfo(userInfo!['id'], newInfo);
+      final success = await databaseOptions.accountDatabase
+          .updateUserInfo(userInfo!['id'], newInfo, state.role);
       if (success) {
         await AuthService.updateUserInfo(
             {...userInfo, ...newInfo, 'commune': state.commune});

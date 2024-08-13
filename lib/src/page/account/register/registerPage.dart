@@ -64,72 +64,87 @@ class _RegisterPageState extends State<RegisterPage> {
             ),
           ],
         ),
-        body: BlocListener<RegisterBloc, RegisterState>(
+        body: BlocConsumer<RegisterBloc, RegisterState>(
           listener: (context, state) {
-            if (state is RegisterSuccess) {
+            if (state.status == RegisterStatus.success) {
               Navigator.pushReplacement(
                 context,
                 MaterialPageRoute(builder: (context) => const Home()),
               );
-            } else if (state is RegisterFailure ||
-                state is RegisterValidationFailure) {
+            } else if (state.status == RegisterStatus.failure) {
               ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                    content: Text(state is RegisterFailure
-                        ? state.error
-                        : (state as RegisterValidationFailure).error)),
+                SnackBar(content: Text(state.errors.join(', '))),
               );
             }
           },
-          child: BlocBuilder<RegisterBloc, RegisterState>(
-            builder: (context, state) {
-              return Center(
-                child: Stack(
-                  children: [
-                    const BackGround(),
-                    Center(
-                      child: SingleChildScrollView(
-                        child: Container(
-                          width: double.infinity,
-                          color: Colors.white,
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: <Widget>[
-                              const Logo(),
-                              const SizedBox(height: 20),
-                              _buildTextField(_nameController, 'Họ tên'),
-                              const SizedBox(height: 20),
-                              _buildTextField(
-                                  _emailController, 'Địa chỉ email'),
-                              const SizedBox(height: 20),
-                              _buildTextField(_passwordController, 'Mật khẩu',
-                                  isPassword: true),
-                              const SizedBox(height: 20),
-                              _buildTextField(_confirmPasswordController,
-                                  'Xác nhận mật khẩu',
-                                  isPassword: true),
-                              const SizedBox(height: 20),
-                              _buildCommuneDropdown(),
-                              const SizedBox(height: 40),
-                              _buildRegisterButton(context, state),
-                              const SizedBox(height: 10),
-                              _buildLoginLink(context),
-                            ],
-                          ),
+          builder: (context, state) {
+            return Center(
+              child: Stack(
+                children: [
+                  const BackGround(),
+                  Center(
+                    child: SingleChildScrollView(
+                      child: Container(
+                        width: double.infinity,
+                        color: Colors.white,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: <Widget>[
+                            const Logo(),
+                            const SizedBox(height: 20),
+                            _buildTextField(
+                                _nameController,
+                                'Họ tên',
+                                (value) => context
+                                    .read<RegisterBloc>()
+                                    .add(NameChanged(value))),
+                            const SizedBox(height: 20),
+                            _buildTextField(
+                                _emailController,
+                                'Địa chỉ email',
+                                (value) => context
+                                    .read<RegisterBloc>()
+                                    .add(EmailChanged(value))),
+                            const SizedBox(height: 20),
+                            _buildTextField(
+                                _passwordController,
+                                'Mật khẩu',
+                                (value) => context
+                                    .read<RegisterBloc>()
+                                    .add(PasswordChanged(value)),
+                                isPassword: true),
+                            const SizedBox(height: 20),
+                            _buildTextField(
+                                _confirmPasswordController,
+                                'Xác nhận mật khẩu',
+                                (value) => context
+                                    .read<RegisterBloc>()
+                                    .add(ConfirmPasswordChanged(value)),
+                                isPassword: true),
+                            const SizedBox(height: 20),
+                            _buildCommuneDropdown(context),
+                            const SizedBox(height: 40),
+                            _buildRegisterButton(context, state),
+                            const SizedBox(height: 10),
+                            _buildLoginLink(context),
+                            const SizedBox(height: 20),
+                            _buildErrorMessages(context, state),
+                          ],
                         ),
                       ),
                     ),
-                  ],
-                ),
-              );
-            },
-          ),
+                  ),
+                ],
+              ),
+            );
+          },
         ),
       ),
     );
   }
 
   Widget _buildTextField(TextEditingController controller, String label,
+      Function(String) onChanged,
       {bool isPassword = false}) {
     return FractionallySizedBox(
       widthFactor: 0.9,
@@ -145,11 +160,12 @@ class _RegisterPageState extends State<RegisterPage> {
           ),
         ),
         obscureText: isPassword,
+        onChanged: onChanged,
       ),
     );
   }
 
-  Widget _buildCommuneDropdown() {
+  Widget _buildCommuneDropdown(BuildContext context) {
     return FractionallySizedBox(
       widthFactor: 0.9,
       child: DropdownButtonFormField<int>(
@@ -164,6 +180,9 @@ class _RegisterPageState extends State<RegisterPage> {
           setState(() {
             _selectedCommuneId = value;
           });
+          if (value != null) {
+            context.read<RegisterBloc>().add(CommuneChanged(value));
+          }
         },
         decoration: const InputDecoration(
           labelText: 'Chọn xã',
@@ -180,30 +199,17 @@ class _RegisterPageState extends State<RegisterPage> {
 
   Widget _buildRegisterButton(BuildContext context, RegisterState state) {
     return ElevatedButton(
-      onPressed: state is RegisterLoading
+      onPressed: state.status == RegisterStatus.loading
           ? null
           : () {
-              if (_selectedCommuneId == null) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Vui lòng chọn xã')),
-                );
-                return;
-              }
-              BlocProvider.of<RegisterBloc>(context).add(
-                RegisterButtonPressed(
-                  name: _nameController.text,
-                  email: _emailController.text,
-                  password: _passwordController.text,
-                  confirmPassword: _confirmPasswordController.text,
-                  communeId: _selectedCommuneId!,
-                ),
-              );
+              context.read<RegisterBloc>().add(ClearErrors());
+              context.read<RegisterBloc>().add(RegisterSubmitted());
             },
       style: ElevatedButton.styleFrom(
         foregroundColor: Colors.white,
         backgroundColor: Colors.green,
       ),
-      child: state is RegisterLoading
+      child: state.status == RegisterStatus.loading
           ? const CircularProgressIndicator()
           : const Text('Register'),
     );
@@ -225,6 +231,20 @@ class _RegisterPageState extends State<RegisterPage> {
           color: Colors.blue,
         ),
       ),
+    );
+  }
+
+  Widget _buildErrorMessages(BuildContext context, RegisterState state) {
+    return Column(
+      children: state.errors
+          .map((error) => Padding(
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                child: Text(
+                  error,
+                  style: const TextStyle(color: Colors.red),
+                ),
+              ))
+          .toList(),
     );
   }
 }

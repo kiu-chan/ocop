@@ -220,7 +220,7 @@ class AccountDatabase {
     }
   }
 
-  Future<bool> updateUserInfo(int userId, Map<String, dynamic> newInfo) async {
+  Future<bool> updateUserInfo(int userId, Map<String, dynamic> newInfo, String userRole) async {
     try {
       var setClause = <String>[];
       var substitutionValues = <String, dynamic>{};
@@ -230,14 +230,13 @@ class AccountDatabase {
         substitutionValues['name'] = newInfo['name'];
       }
 
-      if (newInfo.containsKey('commune_id')) {
+      if (newInfo.containsKey('commune_id') && userRole != 'admin' && userRole != 'district' && userRole != 'province') {
         setClause.add('commune_id = @communeId');
         substitutionValues['communeId'] = int.parse(newInfo['commune_id']);
       }
 
       if (newInfo.containsKey('password')) {
-        String hashedPassword =
-            BCrypt.hashpw(newInfo['password'], BCrypt.gensalt());
+        String hashedPassword = BCrypt.hashpw(newInfo['password'], BCrypt.gensalt());
         setClause.add('password = @password');
         substitutionValues['password'] = hashedPassword;
       }
@@ -248,14 +247,35 @@ class AccountDatabase {
 
       substitutionValues['userId'] = userId;
 
+      String tableName;
+      switch (userRole) {
+        case 'admin':
+          tableName = 'admins';
+          break;
+        case 'company':
+          tableName = 'company_users';
+          break;
+        case 'commune':
+          tableName = 'commune_users';
+          break;
+        case 'distributor':
+          tableName = 'distributor_users';
+          break;
+        case 'district':
+          tableName = 'district_users';
+          break;
+        case 'province':
+          tableName = 'province_users';
+          break;
+        case 'council':
+          tableName = 'council_users';
+          break;
+        default:
+          return false;
+      }
+
       final result = await connection.execute('''
-        UPDATE (
-          SELECT * FROM admins
-          UNION ALL
-          SELECT * FROM company_users
-          UNION ALL
-          SELECT * FROM commune_users
-        ) AS all_users
+        UPDATE $tableName
         SET ${setClause.join(', ')}, updated_at = CURRENT_TIMESTAMP
         WHERE id = @userId
       ''', substitutionValues: substitutionValues);

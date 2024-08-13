@@ -6,65 +6,112 @@ import 'package:ocop/mainData/database/databases.dart';
 class RegisterBloc extends Bloc<RegisterEvent, RegisterState> {
   final DefaultDatabaseOptions _databaseOptions = DefaultDatabaseOptions();
 
-  RegisterBloc() : super(RegisterInitial()) {
-    on<RegisterButtonPressed>(_onRegisterButtonPressed);
+  RegisterBloc() : super(RegisterState()) {
+    on<NameChanged>(_onNameChanged);
+    on<EmailChanged>(_onEmailChanged);
+    on<PasswordChanged>(_onPasswordChanged);
+    on<ConfirmPasswordChanged>(_onConfirmPasswordChanged);
+    on<CommuneChanged>(_onCommuneChanged);
+    on<RegisterSubmitted>(_onRegisterSubmitted);
+    on<ClearErrors>(_onClearErrors);
   }
 
-  bool isValidEmail(String email) {
-    final emailRegExp = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
-    return emailRegExp.hasMatch(email);
+  void _onNameChanged(NameChanged event, Emitter<RegisterState> emit) {
+    emit(state.copyWith(name: event.name));
   }
 
-  bool isValidPassword(String password) {
-    return password.length >= 8; // Minimum 8 characters
+  void _onEmailChanged(EmailChanged event, Emitter<RegisterState> emit) {
+    emit(state.copyWith(email: event.email));
   }
 
-  Future<void> _onRegisterButtonPressed(
-    RegisterButtonPressed event,
+  void _onPasswordChanged(PasswordChanged event, Emitter<RegisterState> emit) {
+    emit(state.copyWith(password: event.password));
+  }
+
+  void _onConfirmPasswordChanged(ConfirmPasswordChanged event, Emitter<RegisterState> emit) {
+    emit(state.copyWith(confirmPassword: event.confirmPassword));
+  }
+
+  void _onCommuneChanged(CommuneChanged event, Emitter<RegisterState> emit) {
+    emit(state.copyWith(communeId: event.communeId));
+  }
+
+  void _onClearErrors(ClearErrors event, Emitter<RegisterState> emit) {
+    emit(state.copyWith(errors: []));
+  }
+
+  Future<void> _onRegisterSubmitted(
+    RegisterSubmitted event,
     Emitter<RegisterState> emit,
   ) async {
-    emit(RegisterLoading());
+    emit(state.copyWith(status: RegisterStatus.loading, errors: []));
     await Future.delayed(const Duration(seconds: 1));
 
-    // Validation
-    if (event.name.isEmpty) {
-      emit(RegisterValidationFailure(error: 'Vui lòng nhập họ tên'));
-      return;
+    List<String> errors = [];
+
+    if (state.name.isEmpty) {
+      errors.add('Vui lòng nhập họ tên');
     }
-    if (!isValidEmail(event.email)) {
-      emit(RegisterValidationFailure(error: 'Địa chỉ email không hợp lệ'));
-      return;
+    if (!_isValidEmail(state.email)) {
+      errors.add('Địa chỉ email không hợp lệ');
     }
-    if (!isValidPassword(event.password)) {
-      emit(
-          RegisterValidationFailure(error: 'Mật khẩu phải có ít nhất 8 ký tự'));
-      return;
+    if (!_isValidPassword(state.password)) {
+      errors.add('Mật khẩu phải có ít nhất 8 ký tự');
     }
-    if (event.password != event.confirmPassword) {
-      emit(RegisterValidationFailure(error: 'Mật khẩu xác nhận không khớp'));
+    if (state.password != state.confirmPassword) {
+      errors.add('Mật khẩu xác nhận không khớp');
+    }
+    if (state.communeId == null) {
+      errors.add('Vui lòng chọn xã');
+    }
+
+    if (errors.isNotEmpty) {
+      emit(state.copyWith(status: RegisterStatus.failure, errors: errors));
       return;
     }
 
     try {
       await _databaseOptions.connect();
 
-      bool userExists = await _databaseOptions.checkUserExists(event.email);
+      bool userExists = await _databaseOptions.checkUserExists(state.email);
 
       if (userExists) {
-        emit(RegisterFailure(error: 'Email đã tồn tại'));
+        emit(state.copyWith(
+          status: RegisterStatus.failure,
+          errors: ['Email đã tồn tại'],
+        ));
       } else {
         bool created = await _databaseOptions.createUser(
-            event.name, event.email, event.password, event.communeId);
+          state.name,
+          state.email,
+          state.password,
+          state.communeId!,
+        );
         if (created) {
-          emit(RegisterSuccess());
+          emit(state.copyWith(status: RegisterStatus.success, errors: []));
         } else {
-          emit(RegisterFailure(error: 'Đăng ký thất bại'));
+          emit(state.copyWith(
+            status: RegisterStatus.failure,
+            errors: ['Đăng ký thất bại'],
+          ));
         }
       }
     } catch (e) {
-      emit(RegisterFailure(error: 'Đã xảy ra lỗi: $e'));
+      emit(state.copyWith(
+        status: RegisterStatus.failure,
+        errors: ['Đã xảy ra lỗi: $e'],
+      ));
     } finally {
       await _databaseOptions.close();
     }
+  }
+
+  bool _isValidEmail(String email) {
+    final emailRegExp = RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$');
+    return emailRegExp.hasMatch(email);
+  }
+
+  bool _isValidPassword(String password) {
+    return password.length >= 8;
   }
 }

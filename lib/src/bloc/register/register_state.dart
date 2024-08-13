@@ -1,19 +1,41 @@
-abstract class RegisterState {}
+enum RegisterStatus { initial, loading, success, failure }
 
-class RegisterInitial extends RegisterState {}
+class RegisterState {
+  final String name;
+  final String email;
+  final String password;
+  final String confirmPassword;
+  final int? communeId;
+  final RegisterStatus status;
+  final List<String> errors;
 
-class RegisterLoading extends RegisterState {}
+  RegisterState({
+    this.name = '',
+    this.email = '',
+    this.password = '',
+    this.confirmPassword = '',
+    this.communeId,
+    this.status = RegisterStatus.initial,
+    this.errors = const [],
+  });
 
-class RegisterSuccess extends RegisterState {}
-
-class RegisterFailure extends RegisterState {
-  final String error;
-
-  RegisterFailure({required this.error});
-}
-
-class RegisterValidationFailure extends RegisterState {
-  final String error;
-
-  RegisterValidationFailure({required this.error});
+  RegisterState copyWith({
+    String? name,
+    String? email,
+    String? password,
+    String? confirmPassword,
+    int? communeId,
+    RegisterStatus? status,
+    List<String>? errors,
+  }) {
+    return RegisterState(
+      name: name ?? this.name,
+      email: email ?? this.email,
+      password: password ?? this.password,
+      confirmPassword: confirmPassword ?? this.confirmPassword,
+      communeId: communeId ?? this.communeId,
+      status: status ?? this.status,
+      errors: errors ?? this.errors,
+    );
+  }
 }

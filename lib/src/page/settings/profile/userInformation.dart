@@ -4,7 +4,7 @@ import 'package:ocop/mainData/database/databases.dart';
 import 'package:ocop/src/page/home/home.dart';
 
 class UserInformation extends StatefulWidget {
-  const UserInformation({super.key});
+  const UserInformation({Key? key}) : super(key: key);
 
   @override
   _UserInformationState createState() => _UserInformationState();
@@ -20,6 +20,7 @@ class _UserInformationState extends State<UserInformation> {
   Map<String, dynamic>? _userInfo;
   List<Map<String, dynamic>> _communes = [];
   bool _isLoading = false;
+  String? _userRole;
 
   final DefaultDatabaseOptions _databaseOptions = DefaultDatabaseOptions();
 
@@ -36,8 +37,10 @@ class _UserInformationState extends State<UserInformation> {
 
   Future<void> _loadUserInfo() async {
     final userInfo = await AuthService.getUserInfo();
+    final userRole = await AuthService.getUserRole();
     setState(() {
       _userInfo = userInfo;
+      _userRole = userRole;
       _nameController.text = userInfo?['name'] ?? '';
       _selectedCommune = userInfo?['commune'];
     });
@@ -57,15 +60,19 @@ class _UserInformationState extends State<UserInformation> {
         _isLoading = true;
       });
 
-      final selectedCommuneData = _communes.firstWhere(
-        (c) => c['name'] == _selectedCommune,
-        orElse: () => {'id': null},
-      );
-
       final newInfo = {
         'name': _nameController.text,
-        'commune_id': selectedCommuneData['id']?.toString(),
       };
+
+      if (_userRole != 'admin' && _userRole != 'district' && _userRole != 'province') {
+        final selectedCommuneData = _communes.firstWhere(
+          (c) => c['name'] == _selectedCommune,
+          orElse: () => {'id': null},
+        );
+        if (selectedCommuneData['id'] != null) {
+          newInfo['commune_id'] = selectedCommuneData['id'].toString();
+        }
+      }
 
       if (_newPasswordController.text.isNotEmpty) {
         final isPasswordCorrect = await _databaseOptions.accountDatabase.verifyUserPassword(
@@ -84,14 +91,13 @@ class _UserInformationState extends State<UserInformation> {
         newInfo['password'] = _newPasswordController.text;
       }
 
-      final success = await _databaseOptions.accountDatabase.updateUserInfo(_userInfo!['id'], newInfo);
+      final success = await _databaseOptions.accountDatabase.updateUserInfo(_userInfo!['id'], newInfo, _userRole ?? 'unknown');
       if (success) {
         final updatedUserInfo = Map<String, dynamic>.from(_userInfo!);
         updatedUserInfo.addAll(newInfo);
         updatedUserInfo['commune'] = _selectedCommune;
         await AuthService.updateUserInfo(updatedUserInfo);
         
-        // Đảm bảo vòng xoay hiển thị ít nhất 1 giây
         await Future.delayed(const Duration(seconds: 1));
 
         setState(() {
@@ -143,27 +149,28 @@ class _UserInformationState extends State<UserInformation> {
                     },
                   ),
                   const SizedBox(height: 16),
-                  DropdownButtonFormField<String>(
-                    value: _selectedCommune,
-                    decoration: const InputDecoration(labelText: 'Xã'),
-                    items: _communes.map((commune) {
-                      return DropdownMenuItem<String>(
-                        value: commune['name'] as String,
-                        child: Text(commune['name'] as String),
-                      );
-                    }).toList(),
-                    onChanged: (String? newValue) {
-                      setState(() {
-                        _selectedCommune = newValue;
-                      });
-                    },
-                    validator: (value) {
-                      if (value == null || value.isEmpty) {
-                        return 'Vui lòng chọn xã';
-                      }
-                      return null;
-                    },
-                  ),
+                  if (_userRole != 'admin' && _userRole != 'district' && _userRole != 'province')
+                    DropdownButtonFormField<String>(
+                      value: _selectedCommune,
+                      decoration: const InputDecoration(labelText: 'Xã'),
+                      items: _communes.map((commune) {
+                        return DropdownMenuItem<String>(
+                          value: commune['name'] as String,
+                          child: Text(commune['name'] as String),
+                        );
+                      }).toList(),
+                      onChanged: (String? newValue) {
+                        setState(() {
+                          _selectedCommune = newValue;
+                        });
+                      },
+                      validator: (value) {
+                        if (value == null || value.isEmpty) {
+                          return 'Vui lòng chọn xã';
+                        }
+                        return null;
+                      },
+                    ),
                   const SizedBox(height: 16),
                   TextFormField(
                     controller: _currentPasswordController,

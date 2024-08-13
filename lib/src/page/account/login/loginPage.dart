@@ -36,10 +36,6 @@ class LoginPageContent extends StatelessWidget {
           Navigator.of(context).pushReplacement(
             MaterialPageRoute(builder: (context) => const Home()),
           );
-        } else if (state.status == LoginStatus.failure) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(state.error ?? 'An error occurred')),
-          );
         }
       },
       builder: (context, state) {
@@ -66,7 +62,7 @@ class LoginPageContent extends StatelessWidget {
                 const BackGround(),
                 Center(
                   child: Container(
-                    height: 400,
+                    height: 450,
                     color: Colors.white,
                     child: SingleChildScrollView(
                       child: Column(
@@ -83,6 +79,8 @@ class LoginPageContent extends StatelessWidget {
                           _buildLoginButton(context, state),
                           const SizedBox(height: 10),
                           _buildRegisterLink(context),
+                          const SizedBox(height: 20),
+                          _buildErrorMessages(context, state),
                         ],
                       ),
                     ),
@@ -177,10 +175,13 @@ class LoginPageContent extends StatelessWidget {
     return ElevatedButton(
       onPressed: state.status == LoginStatus.loading
           ? null
-          : () => context.read<LoginBloc>().add(LoginSubmitted(
+          : () {
+              context.read<LoginBloc>().add(ClearErrors());
+              context.read<LoginBloc>().add(LoginSubmitted(
                 email: context.read<LoginBloc>().state.email,
                 password: context.read<LoginBloc>().state.password,
-              )),
+              ));
+            },
       style: ElevatedButton.styleFrom(
         foregroundColor: Colors.white,
         backgroundColor: Colors.green,
@@ -207,6 +208,18 @@ class LoginPageContent extends StatelessWidget {
           color: Colors.blue,
         ),
       ),
+    );
+  }
+
+  Widget _buildErrorMessages(BuildContext context, LoginState state) {
+    return Column(
+      children: state.errors.map((error) => Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4),
+        child: Text(
+          error,
+          style: const TextStyle(color: Colors.red),
+        ),
+      )).toList(),
     );
   }
 }

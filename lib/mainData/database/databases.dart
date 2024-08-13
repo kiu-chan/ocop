@@ -1,4 +1,5 @@
 import 'package:ocop/mainData/database/councils.dart';
+import 'package:ocop/mainData/user/authService.dart';
 import 'package:postgres/postgres.dart';
 import 'package:ocop/src/data/map/productMapData.dart';
 import 'package:ocop/mainData/database/product.dart';
@@ -174,7 +175,8 @@ class DefaultDatabaseOptions {
   }
 
   Future<bool> updateUserInfo(int userId, Map<String, dynamic> newInfo) async {
-    return await accountDatabase.updateUserInfo(userId, newInfo);
+    final userRole = await AuthService.getUserRole(); // Assume this method exists
+    return await accountDatabase.updateUserInfo(userId, newInfo, userRole ?? 'unknown');
   }
 
   Future<bool> verifyUserPassword(int userId, String password) async {

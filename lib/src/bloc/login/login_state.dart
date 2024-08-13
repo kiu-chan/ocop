@@ -5,7 +5,7 @@ class LoginState {
   final String password;
   final bool rememberMe;
   final LoginStatus status;
-  final String? error;
+  final List<String> errors;
   final Map<String, dynamic>? userInfo;
   final String? role;
 
@@ -14,7 +14,7 @@ class LoginState {
     this.password = '',
     this.rememberMe = false,
     this.status = LoginStatus.initial,
-    this.error,
+    this.errors = const [],
     this.userInfo,
     this.role,
   });
@@ -24,7 +24,7 @@ class LoginState {
     String? password,
     bool? rememberMe,
     LoginStatus? status,
-    String? error,
+    List<String>? errors,
     Map<String, dynamic>? userInfo,
     String? role,
   }) {
@@ -33,7 +33,7 @@ class LoginState {
       password: password ?? this.password,
       rememberMe: rememberMe ?? this.rememberMe,
       status: status ?? this.status,
-      error: error ?? this.error,
+      errors: errors ?? this.errors,
       userInfo: userInfo ?? this.userInfo,
       role: role ?? this.role,
     );

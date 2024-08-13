@@ -24,3 +24,5 @@ class LoginSubmitted extends LoginEvent {
 class CheckLoginStatus extends LoginEvent {}
 
 class LogoutRequested extends LoginEvent {}
+
+class ClearErrors extends LoginEvent {}

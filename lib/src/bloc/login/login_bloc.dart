@@ -14,8 +14,8 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
     on<LoginSubmitted>(_onLoginSubmitted);
     on<CheckLoginStatus>(_onCheckLoginStatus);
     on<LogoutRequested>(_onLogoutRequested);
+    on<ClearErrors>(_onClearErrors);
 
-    // Kết nối đến cơ sở dữ liệu khi khởi tạo Bloc
     _databaseOptions.connect().catchError((error) {
       print('Lỗi khi kết nối đến cơ sở dữ liệu: $error');
     });
@@ -35,14 +35,13 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
 
   Future<void> _onLoginSubmitted(
       LoginSubmitted event, Emitter<LoginState> emit) async {
-    emit(state.copyWith(status: LoginStatus.loading));
+    emit(state.copyWith(status: LoginStatus.loading, errors: []));
     await Future.delayed(const Duration(seconds: 1));
     try {
       final userInfo = await _databaseOptions.checkUserCredentials(
           state.email, state.password);
       if (userInfo != null) {
         if (userInfo['role'] != 'admin' && userInfo['role'] != 'district' && userInfo['role'] != 'province') {
-          // Lấy thông tin xã cho user
           final commune =
               await _databaseOptions.getCommuneInfo(userInfo['commune_id']);
           if (commune != null) {
@@ -55,15 +54,17 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
           status: LoginStatus.success,
           userInfo: userInfo,
           role: userInfo['role'],
+          errors: [],
         ));
       } else {
         emit(state.copyWith(
-            status: LoginStatus.failure, error: 'Invalid email or password'));
+            status: LoginStatus.failure,
+            errors: ['Email hoặc mật khẩu không chính xác']));
       }
     } catch (error) {
       emit(state.copyWith(
           status: LoginStatus.failure,
-          error: 'Login failed: ${error.toString()}'));
+          errors: ['Đăng nhập thất bại: ${error.toString()}']));
     }
   }
 
@@ -78,9 +79,9 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
           status: LoginStatus.success,
           userInfo: userInfo,
           role: role,
+          errors: [],
         ));
       } else {
-        // User is logged in but we don't have their info, treat as logged out
         await AuthService.logout();
         emit(LoginState());
       }
@@ -93,6 +94,10 @@ class LoginBloc extends Bloc<LoginEvent, LoginState> {
       LogoutRequested event, Emitter<LoginState> emit) async {
     await AuthService.logout();
     emit(LoginState());
+  }
+
+  void _onClearErrors(ClearErrors event, Emitter<LoginState> emit) {
+    emit(state.copyWith(errors: []));
   }
 
   @override

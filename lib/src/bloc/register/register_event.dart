@@ -1,17 +1,30 @@
 abstract class RegisterEvent {}
 
-class RegisterButtonPressed extends RegisterEvent {
+class NameChanged extends RegisterEvent {
   final String name;
-  final String email;
-  final String password;
-  final String confirmPassword;
-  final int communeId;
-
-  RegisterButtonPressed({
-    required this.name,
-    required this.email,
-    required this.password,
-    required this.confirmPassword,
-    required this.communeId,
-  });
+  NameChanged(this.name);
 }
+
+class EmailChanged extends RegisterEvent {
+  final String email;
+  EmailChanged(this.email);
+}
+
+class PasswordChanged extends RegisterEvent {
+  final String password;
+  PasswordChanged(this.password);
+}
+
+class ConfirmPasswordChanged extends RegisterEvent {
+  final String confirmPassword;
+  ConfirmPasswordChanged(this.confirmPassword);
+}
+
+class CommuneChanged extends RegisterEvent {
+  final int communeId;
+  CommuneChanged(this.communeId);
+}
+
+class RegisterSubmitted extends RegisterEvent {}
+
+class ClearErrors extends RegisterEvent {}
