@@ -4,7 +4,7 @@ import 'package:ocop/src/page/home/homePage.dart';
 import 'package:ocop/src/page/settings/settingPage.dart';
 import 'package:ocop/src/page/chart/chartPage.dart';
 import 'package:ocop/src/page/council/councilListPage.dart';
-import 'package:ocop/mainData/user/authService.dart';
+import 'package:ocop/config/home.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -15,9 +15,7 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   int currentIndex = 0;
-  bool isAdmin = false;
-  bool isCouncil = false;
-  bool checkIcon = false;
+  final HomeConfig _homeConfig = HomeConfig();
 
   @override
   void initState() {
@@ -26,14 +24,8 @@ class _HomeState extends State<Home> {
   }
 
   Future<void> _checkAdminRole() async {
-    final userRole = await AuthService.getUserRole();
-    setState(() {
-      isAdmin = userRole == 'admin';
-      // isCouncil = userRole == 'council';  //tạm thời tắt
-      if (isAdmin || isCouncil) {
-        checkIcon = true;
-      }
-    });
+    await _homeConfig.getCheckItem();
+    setState(() {});
   }
 
   @override
@@ -42,7 +34,7 @@ class _HomeState extends State<Home> {
       const HomePage(),
       const MapPage(),
       const ChartPage(),
-      if (checkIcon) const CouncilListPage(),
+      if (_homeConfig.checkIcon) const CouncilListPage(),
       const SettingPage(),
     ];
 
@@ -50,7 +42,9 @@ class _HomeState extends State<Home> {
       body: AnimatedSwitcher(
         duration: const Duration(milliseconds: 500),
         child: Container(
-            key: ValueKey<int>(currentIndex), child: pages[currentIndex]),
+          key: ValueKey<int>(currentIndex),
+          child: pages[currentIndex],
+        ),
       ),
       bottomNavigationBar: BottomNavigationBar(
         onTap: (int index) {
@@ -60,8 +54,8 @@ class _HomeState extends State<Home> {
         },
         type: BottomNavigationBarType.fixed,
         currentIndex: currentIndex,
-        selectedItemColor: Colors.blue, // Màu xanh dương khi được chọn
-        unselectedItemColor: Colors.grey, // Màu xám khi không được chọn
+        selectedItemColor: Colors.blue,
+        unselectedItemColor: Colors.grey,
         items: <BottomNavigationBarItem>[
           const BottomNavigationBarItem(
             icon: Icon(Icons.home),
@@ -75,10 +69,10 @@ class _HomeState extends State<Home> {
             icon: Icon(Icons.ssid_chart),
             label: "Chart",
           ),
-          if (checkIcon)
+          if (_homeConfig.checkIcon)
             const BottomNavigationBarItem(
               icon: Icon(Icons.groups),
-              label: "Hội đồng",
+              label: "Council",
             ),
           const BottomNavigationBarItem(
             icon: Icon(Icons.settings),
