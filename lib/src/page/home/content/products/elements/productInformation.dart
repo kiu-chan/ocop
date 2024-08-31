@@ -5,6 +5,7 @@ import 'package:ocop/src/page/elements/logo.dart';
 import 'package:ocop/mainData/database/databases.dart';
 import 'package:html/parser.dart' show parse;
 import 'package:url_launcher/url_launcher.dart';
+import 'package:ocop/src/page/home/content/companies/companyDetails.dart';
 
 class ProductInformation extends StatefulWidget {
   final ProductHome product;
@@ -42,6 +43,9 @@ class _ProductInformationState extends State<ProductInformation> {
     final images = await db.getProductImages(widget.product.id);
     final address = await db.getProductAddress(widget.product.id);
     final details = await db.getProductDetails(widget.product.id);
+
+    print('Product Details received: $details');
+
     setState(() {
       if (content != null) {
         widget.product.describe = _convertHtmlToPlainText(content);
@@ -49,12 +53,22 @@ class _ProductInformationState extends State<ProductInformation> {
       widget.product.imageUrls = images;
       widget.product.address = address ?? 'Không có thông tin';
       widget.product.companyName = details['company_name'];
+      widget.product.companyId = details['company_id'];
       widget.product.phoneNumber = details['phone_number'];
       widget.product.representative = details['representative'];
       widget.product.email = details['email'];
       widget.product.website = details['website'];
       widget.product.latitude = details['latitude'];
       widget.product.longitude = details['longitude'];
+
+      print('After setting values:');
+      print('Company ID: ${widget.product.companyId}');
+      print('Company Name: ${widget.product.companyName}');
+      print('Phone Number: ${widget.product.phoneNumber}');
+      print('Representative: ${widget.product.representative}');
+      print('Email: ${widget.product.email}');
+      print('Website: ${widget.product.website}');
+
       isLoading = false;
     });
     await db.close();
@@ -62,13 +76,15 @@ class _ProductInformationState extends State<ProductInformation> {
 
   String _convertHtmlToPlainText(String htmlString) {
     final document = parse(htmlString);
-    final String parsedString = parse(document.body!.text).documentElement!.text;
+    final String parsedString =
+        parse(document.body!.text).documentElement!.text;
     return parsedString;
   }
 
   void _openMap(double? latitude, double? longitude) async {
     if (latitude != null && longitude != null) {
-      final uri = Uri.parse('https://www.google.com/maps/search/?api=1&query=$latitude,$longitude');
+      final uri = Uri.parse(
+          'https://www.google.com/maps/search/?api=1&query=$latitude,$longitude');
       if (await canLaunchUrl(uri)) {
         await launchUrl(uri, mode: LaunchMode.externalApplication);
       } else {
@@ -122,7 +138,9 @@ class _ProductInformationState extends State<ProductInformation> {
                   aspectRatio: 4 / 3,
                   child: PageView.builder(
                     controller: _pageController,
-                    itemCount: widget.product.imageUrls.isNotEmpty ? widget.product.imageUrls.length : 1,
+                    itemCount: widget.product.imageUrls.isNotEmpty
+                        ? widget.product.imageUrls.length
+                        : 1,
                     onPageChanged: (index) {
                       setState(() {
                         currentImageIndex = index;
@@ -171,7 +189,9 @@ class _ProductInformationState extends State<ProductInformation> {
                             margin: const EdgeInsets.symmetric(horizontal: 4),
                             decoration: BoxDecoration(
                               border: Border.all(
-                                color: currentImageIndex == index ? Colors.blue : Colors.grey,
+                                color: currentImageIndex == index
+                                    ? Colors.blue
+                                    : Colors.grey,
                                 width: 2,
                               ),
                             ),
@@ -217,14 +237,17 @@ class _ProductInformationState extends State<ProductInformation> {
                     children: <Widget>[
                       Text(
                         "Tên sản phẩm: ${widget.product.name}",
-                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                        style: const TextStyle(
+                            color: Colors.white, fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 8),
                       Row(
                         children: [
                           const Text(
                             "Số sao đạt:",
-                            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold),
                           ),
                           Star(value: widget.product.star),
                         ],
@@ -232,29 +255,59 @@ class _ProductInformationState extends State<ProductInformation> {
                       const SizedBox(height: 8),
                       Text(
                         "Danh mục: ${widget.product.category}",
-                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                        style: const TextStyle(
+                            color: Colors.white, fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 8),
                       Text(
                         "Địa chỉ: ${widget.product.address}",
-                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                        style: const TextStyle(
+                            color: Colors.white, fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 8),
-                      Text(
-                        "Cơ sở sản xuất: ${widget.product.companyName ?? 'Không có thông tin'}",
-                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              "Cơ sở sản xuất: ${widget.product.companyName ?? 'Không có thông tin'}",
+                              style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                          if (widget.product.companyId != null)
+                            GestureDetector(
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => CompanyDetails(
+                                        companyId: widget.product.companyId!),
+                                  ),
+                                );
+                              },
+                              child: const Icon(
+                                Icons.visibility,
+                                color: Colors.white,
+                              ),
+                            ),
+                        ],
                       ),
                       const SizedBox(height: 8),
-                      if (widget.product.phoneNumber != null && widget.product.phoneNumber!.isNotEmpty)
+                      if (widget.product.phoneNumber != null &&
+                          widget.product.phoneNumber!.isNotEmpty)
                         Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             const Text(
                               "Số điện thoại: ",
-                              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold),
                             ),
                             InkWell(
-                              onTap: () => _makePhoneCall(widget.product.phoneNumber),
+                              onTap: () =>
+                                  _makePhoneCall(widget.product.phoneNumber),
                               child: Text(
                                 widget.product.phoneNumber!,
                                 style: TextStyle(
@@ -268,26 +321,32 @@ class _ProductInformationState extends State<ProductInformation> {
                       else
                         const Text(
                           "Số điện thoại: Không có thông tin",
-                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                              color: Colors.white, fontWeight: FontWeight.bold),
                         ),
                       const SizedBox(height: 8),
                       Text(
                         "Người đại diện: ${widget.product.representative ?? 'Không có thông tin'}",
-                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                        style: const TextStyle(
+                            color: Colors.white, fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 8),
                       Text(
                         "Email: ${widget.product.email ?? 'Không có thông tin'}",
-                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                        style: const TextStyle(
+                            color: Colors.white, fontWeight: FontWeight.bold),
                       ),
                       const SizedBox(height: 8),
-                      if (widget.product.website != null && widget.product.website!.isNotEmpty)
+                      if (widget.product.website != null &&
+                          widget.product.website!.isNotEmpty)
                         Row(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             const Text(
                               "Trang web: ",
-                              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold),
                             ),
                             InkWell(
                               onTap: () => _launchURL(widget.product.website),
@@ -304,17 +363,17 @@ class _ProductInformationState extends State<ProductInformation> {
                       else
                         const Text(
                           "Trang web: Không có thông tin",
-                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                          style: TextStyle(
+                              color: Colors.white, fontWeight: FontWeight.bold),
                         ),
                       const SizedBox(height: 8),
                       ElevatedButton(
-                        onPressed: () => _openMap(widget.product.latitude, widget.product.longitude),
-                        child: const Text(
-                          'Xem trên bản đồ',
-                          style: TextStyle(
-                            color: Colors.blue,
-                          )
-                          ),
+                        onPressed: () => _openMap(
+                            widget.product.latitude, widget.product.longitude),
+                        child: const Text('Xem trên bản đồ',
+                            style: TextStyle(
+                              color: Colors.blue,
+                            )),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.white,
                         ),
@@ -338,10 +397,11 @@ class _ProductInformationState extends State<ProductInformation> {
                 const SizedBox(height: 10),
                 Padding(
                   padding: const EdgeInsets.all(16.0),
-                  child: widget.product.describe != null && widget.product.describe!.isNotEmpty
+                  child: widget.product.describe != null &&
+                          widget.product.describe!.isNotEmpty
                       ? Text(
-                        widget.product.describe!,
-                        textAlign: TextAlign.justify,
+                          widget.product.describe!,
+                          textAlign: TextAlign.justify,
                         )
                       : const Text('Không có mô tả cho sản phẩm này.'),
                 ),

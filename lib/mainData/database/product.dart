@@ -407,35 +407,40 @@ class ProductDatabase {
     }
   }
 
-  Future<Map<String, dynamic>> getProductDetails(int productId) async {
-    try {
-      final result = await connection.query('''
-      SELECT p.id, c.name as company_name, c.phone_number, c.representative, c.email, c.website,
-             ST_X(p.geom::geometry) as longitude, ST_Y(p.geom::geometry) as latitude
-      FROM public.products p
-      LEFT JOIN public.product_companies c ON p.company_id = c.id
-      WHERE p.id = @id
-    ''', substitutionValues: {
-        'id': productId,
-      });
+Future<Map<String, dynamic>> getProductDetails(int productId) async {
+  try {
+    final result = await connection.query('''
+    SELECT p.id, c.id as company_id, c.name as company_name, c.phone_number, c.representative, c.email, c.website,
+           ST_X(p.geom::geometry) as longitude, ST_Y(p.geom::geometry) as latitude
+    FROM public.products p
+    LEFT JOIN public.product_companies c ON p.company_id = c.id
+    WHERE p.id = @id
+  ''', substitutionValues: {
+      'id': productId,
+    });
 
-      if (result.isNotEmpty) {
-        return {
-          'company_name': result[0][1],
-          'phone_number': result[0][2],
-          'representative': result[0][3],
-          'email': result[0][4],
-          'website': result[0][5],
-          'longitude': result[0][6],
-          'latitude': result[0][7],
-        };
-      }
-      return {};
-    } catch (e) {
-      print('Lỗi khi truy vấn chi tiết sản phẩm: $e');
-      return {};
+    if (result.isNotEmpty) {
+      print('Raw Product Details Result: ${result[0]}');
+      var details = {
+        'company_id': result[0][1],
+        'company_name': result[0][2],
+        'phone_number': result[0][3],
+        'representative': result[0][4],
+        'email': result[0][5],
+        'website': result[0][6],
+        'longitude': result[0][7],
+        'latitude': result[0][8],
+      };
+      print('Processed Product Details: $details');
+      return details;
     }
+    print('No results found for product ID: $productId');
+    return {};
+  } catch (e) {
+    print('Lỗi khi truy vấn chi tiết sản phẩm: $e');
+    return {};
   }
+}
 
   Future<Map<String, dynamic>> getProductCommuneCounts() async {
     try {

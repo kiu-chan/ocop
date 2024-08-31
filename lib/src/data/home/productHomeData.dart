@@ -3,18 +3,19 @@ class ProductHome {
   final String name;
   final int star;
   final String category;
-  String? img;
+  final String? img;
   String? describe;
   List<String> imageUrls = [];
   String? address;
   String? companyName;
+  int? companyId;  // Đảm bảo rằng đây là kiểu int?
   String? phoneNumber;
   String? representative;
   String? email;
   String? website;
   double? latitude;
   double? longitude;
-  String? district; // Thêm trường này
+  String? district;
 
   ProductHome({
     required this.id,
@@ -25,12 +26,13 @@ class ProductHome {
     this.describe,
     this.address,
     this.companyName,
+    this.companyId,
     this.phoneNumber,
     this.representative,
     this.email,
     this.website,
     this.latitude,
     this.longitude,
-    this.district, // Thêm trường này
+    this.district,
   });
 }
