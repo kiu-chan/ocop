@@ -134,23 +134,69 @@ class AreaDatabase {
     }
   }
 
-Future<int> getProductCountForCommune(int communeId) async {
-  try {
-    final result = await connection.query('''
+  Future<int> getProductCountForCommune(int communeId) async {
+    try {
+      final result = await connection.query('''
       SELECT COUNT(*) as product_count
       FROM products
       WHERE commune_id = @communeId
     ''', substitutionValues: {
-      'communeId': communeId,
-    });
+        'communeId': communeId,
+      });
 
-    if (result.isNotEmpty) {
-      return result[0][0] as int;
+      if (result.isNotEmpty) {
+        return result[0][0] as int;
+      }
+      return 0;
+    } catch (e) {
+      print('Lỗi khi truy vấn số lượng sản phẩm của xã: $e');
+      return 0;
     }
-    return 0;
-  } catch (e) {
-    print('Lỗi khi truy vấn số lượng sản phẩm của xã: $e');
-    return 0;
   }
-}
+
+  Future<Map<String, dynamic>?> getDistrictDetails(int districtId) async {
+    try {
+      final result = await connection.query(
+        'SELECT id, name, area, population FROM map_districts WHERE id = @id',
+        substitutionValues: {'id': districtId},
+      );
+
+      if (result.isNotEmpty) {
+        var row = result[0];
+        return {
+          'id': row[0] as int,
+          'name': row[1] as String,
+          'area':
+              row[2] is String ? double.tryParse(row[2]) : row[2] as double?,
+          'population':
+              row[3] is String ? int.tryParse(row[3]) : row[3] as int?,
+        };
+      }
+      return null;
+    } catch (e) {
+      print('Lỗi khi truy vấn dữ liệu huyện: $e');
+      return null;
+    }
+  }
+
+  Future<int> getProductCountForDistrict(int districtId) async {
+    try {
+      final result = await connection.query('''
+      SELECT COUNT(*) as product_count
+      FROM products p
+      JOIN map_communes mc ON p.commune_id = mc.id
+      WHERE mc.district_id = @districtId
+    ''', substitutionValues: {
+        'districtId': districtId,
+      });
+
+      if (result.isNotEmpty) {
+        return result[0][0] as int;
+      }
+      return 0;
+    } catch (e) {
+      print('Lỗi khi truy vấn số lượng sản phẩm của huyện: $e');
+      return 0;
+    }
+  }
 }

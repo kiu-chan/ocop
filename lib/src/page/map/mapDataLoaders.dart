@@ -139,4 +139,12 @@ class MapDataLoader {
   Future<int> getProductCountForCommune(int communeId) async {
     return await databaseData.getProductCountForCommune(communeId);
   }
+
+  Future<Map<String, dynamic>?> getDistrictDetails(int districtId) async {
+    return await databaseData.getDistrictDetails(districtId);
+  }
+
+  Future<int> getProductCountForDistrict(int districtId) async {
+    return await databaseData.getProductCountForDistrict(districtId);
+  }
 }

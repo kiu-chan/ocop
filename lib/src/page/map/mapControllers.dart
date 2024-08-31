@@ -24,8 +24,9 @@ class MapControllers {
     mapController.move(mapController.center, newZoom);
   }
 
-  void handleMapTap(LatLng tappedPoint, List<AreaData> communes, Function showCommuneInfo) {
-    print("Tapped point: $tappedPoint");
+void handleMapTap(LatLng tappedPoint, List<AreaData> communes, List<AreaData> districts, bool showCommunes, Function showCommuneInfo, Function showDistrictInfo) {
+  print("Tapped point: $tappedPoint");
+  if (showCommunes) {
     for (var commune in communes) {
       if (commune.isVisible) {
         for (var polygon in commune.polygons) {
@@ -37,8 +38,21 @@ class MapControllers {
         }
       }
     }
-    print("No commune found at tapped point");
+  } else {
+    for (var district in districts) {
+      if (district.isVisible) {
+        for (var polygon in district.polygons) {
+          if (_isPointInPolygon(tappedPoint, polygon)) {
+            print("Found district: ${district.id}");
+            showDistrictInfo(district);
+            return;
+          }
+        }
+      }
+    }
   }
+  print("No area found at tapped point");
+}
 
   bool _isPointInPolygon(LatLng point, List<LatLng> polygon) {
     var isInside = false;

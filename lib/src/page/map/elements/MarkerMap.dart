@@ -113,14 +113,19 @@ class _MarkerMapState extends State<MarkerMap> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         if (company.logoUrl != null)
-                          Center(
-                            child: Image.network(
-                              company.logoUrl!,
-                              height: 150,
-                              width: 150,
-                              fit: BoxFit.contain,
-                              errorBuilder: (context, error, stackTrace) =>
-                                  const Icon(Icons.business, size: 150),
+                          SizedBox(
+                            width: double.infinity,
+                            child: AspectRatio(
+                              aspectRatio: 16 / 9, // Tỷ lệ khung hình 16:9
+                              child: Image.network(
+                                company.logoUrl!,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) =>
+                                    Container(
+                                  color: Colors.grey[300],
+                                  child: const Icon(Icons.business, size: 100),
+                                ),
+                              ),
                             ),
                           ),
                         const SizedBox(height: 10),
@@ -284,12 +289,14 @@ class _MarkerMapState extends State<MarkerMap> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   if (images.isNotEmpty)
-                    Center(
-                      child: Image.network(
-                        images[0],
-                        height: 200,
-                        width: 200,
-                        fit: BoxFit.contain,
+                    SizedBox(
+                      width: double.infinity,
+                      child: AspectRatio(
+                        aspectRatio: 16 / 9,
+                        child: Image.network(
+                          images[0],
+                          fit: BoxFit.cover,
+                        ),
                       ),
                     ),
                   const SizedBox(height: 10),

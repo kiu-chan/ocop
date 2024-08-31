@@ -243,6 +243,14 @@ class DefaultDatabaseOptions {
     return await areaDatabase.getProductCountForCommune(communeId);
   }
 
+  Future<Map<String, dynamic>?> getDistrictDetails(int districtId) async {
+    return await areaDatabase.getDistrictDetails(districtId);
+  }
+
+  Future<int> getProductCountForDistrict(int districtId) async {
+    return await areaDatabase.getProductCountForDistrict(districtId);
+  }
+
   Future<List<Company>> getRandomCompanies({int limit = 10}) async {
     return await companyDatabase.getRandomCompanies(limit: limit);
   }

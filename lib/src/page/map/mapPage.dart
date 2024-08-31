@@ -219,6 +219,45 @@ class _MapPageState extends State<MapPage> {
     }
   }
 
+  void _showDistrictInfo(AreaData district) async {
+    print("Showing info for district with ID: ${district.id}");
+    var districtDetails = await dataLoader.getDistrictDetails(district.id);
+    var productCount = await dataLoader.getProductCountForDistrict(district.id);
+
+    if (districtDetails != null) {
+      showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: Text(districtDetails['name'] ?? 'Không có tên'),
+            content: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Text('ID: ${districtDetails['id'] ?? 'N/A'}'),
+                Text(
+                    'Diện tích: ${districtDetails['area']?.toStringAsFixed(2) ?? 'N/A'} km²'),
+                Text(
+                    'Dân số: ${districtDetails['population']?.toString() ?? 'N/A'} người'),
+                Text('Số lượng sản phẩm: $productCount'),
+              ],
+            ),
+            actions: <Widget>[
+              TextButton(
+                child: const Text('Đóng'),
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+              ),
+            ],
+          );
+        },
+      );
+    } else {
+      print('Không tìm thấy thông tin chi tiết cho huyện.');
+    }
+  }
+
   void _search(String query) {
     setState(() {
       if (query.isEmpty) {
@@ -307,7 +346,8 @@ class _MapPageState extends State<MapPage> {
               interactiveFlags: InteractiveFlag.all & ~InteractiveFlag.rotate,
               onTap: (_, latlng) {
                 print("Map tapped at $latlng");
-                mapControllers.handleMapTap(latlng, communes, _showCommuneInfo);
+                mapControllers.handleMapTap(latlng, communes, districts,
+                    showCommunes, _showCommuneInfo, _showDistrictInfo);
               },
             ),
             children: [
