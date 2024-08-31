@@ -135,4 +135,8 @@ class MapDataLoader {
   Future<void> close() async {
     await databaseData.close();
   }
+
+  Future<int> getProductCountForCommune(int communeId) async {
+    return await databaseData.getProductCountForCommune(communeId);
+  }
 }

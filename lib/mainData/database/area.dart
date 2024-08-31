@@ -133,4 +133,24 @@ class AreaDatabase {
       return [];
     }
   }
+
+Future<int> getProductCountForCommune(int communeId) async {
+  try {
+    final result = await connection.query('''
+      SELECT COUNT(*) as product_count
+      FROM products
+      WHERE commune_id = @communeId
+    ''', substitutionValues: {
+      'communeId': communeId,
+    });
+
+    if (result.isNotEmpty) {
+      return result[0][0] as int;
+    }
+    return 0;
+  } catch (e) {
+    print('Lỗi khi truy vấn số lượng sản phẩm của xã: $e');
+    return 0;
+  }
+}
 }

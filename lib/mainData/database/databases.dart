@@ -239,6 +239,10 @@ class DefaultDatabaseOptions {
     return await areaDatabase.getBorders();
   }
 
+  Future<int> getProductCountForCommune(int communeId) async {
+    return await areaDatabase.getProductCountForCommune(communeId);
+  }
+
   Future<List<Company>> getRandomCompanies({int limit = 10}) async {
     return await companyDatabase.getRandomCompanies(limit: limit);
   }

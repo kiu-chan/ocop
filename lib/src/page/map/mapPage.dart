@@ -184,6 +184,7 @@ class _MapPageState extends State<MapPage> {
   void _showCommuneInfo(AreaData commune) async {
     print("Showing info for commune with ID: ${commune.id}");
     var communeDetails = await dataLoader.getCommuneDetails(commune.id);
+    var productCount = await dataLoader.getProductCountForCommune(commune.id);
 
     if (communeDetails != null) {
       showDialog(
@@ -199,6 +200,7 @@ class _MapPageState extends State<MapPage> {
                 Text(
                     'Diện tích: ${communeDetails['area'] != null ? communeDetails['area'].toStringAsFixed(2) : 'N/A'} km²'),
                 Text('Dân số: ${communeDetails['population'] ?? 'N/A'} người'),
+                Text('Số lượng sản phẩm: $productCount'),
               ],
             ),
             actions: <Widget>[
