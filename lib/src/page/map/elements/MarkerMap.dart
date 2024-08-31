@@ -4,6 +4,7 @@ import 'package:ocop/src/data/map/ImageData.dart';
 import 'package:ocop/src/data/map/companiesData.dart';
 import 'package:ocop/src/data/map/productMapData.dart';
 import 'package:ocop/src/data/home/productHomeData.dart';
+import 'package:ocop/src/page/elements/star.dart';
 import 'package:ocop/src/page/home/content/products/elements/productInformation.dart';
 import 'package:ocop/src/page/home/content/companies/companyDetails.dart';
 import 'package:ocop/mainData/database/databases.dart';
@@ -34,7 +35,9 @@ class _MarkerMapState extends State<MarkerMap> {
   @override
   Widget build(BuildContext context) {
     return MarkerLayer(
-      markers: _buildMarkers(context) + _buildCompanyMarkers() + _buildProductMarkers(context),
+      markers: _buildMarkers(context) +
+          _buildCompanyMarkers() +
+          _buildProductMarkers(context),
     );
   }
 
@@ -50,7 +53,8 @@ class _MarkerMapState extends State<MarkerMap> {
               point: location,
               builder: (ctx) => GestureDetector(
                 onTap: () {
-                  ProductData? product = _findProductByLocationAndCategory(location, imageData.title);
+                  ProductData? product = _findProductByLocationAndCategory(
+                      location, imageData.title);
                   if (product != null) {
                     _showProductInfo(ctx, product);
                   } else {
@@ -88,7 +92,10 @@ class _MarkerMapState extends State<MarkerMap> {
   }
 
   List<Marker> _buildCompanyMarkers() {
-    return widget.companies.where((company) => widget.selectedProductTypes.contains(company.productTypeName)).map((company) {
+    return widget.companies
+        .where((company) =>
+            widget.selectedProductTypes.contains(company.productTypeName))
+        .map((company) {
       return Marker(
         width: 50.0,
         height: 50.0,
@@ -122,14 +129,16 @@ class _MarkerMapState extends State<MarkerMap> {
                           Text('Địa chỉ: ${company.address}'),
                         if (company.phoneNumber != null)
                           InkWell(
-                            child: Text('Số điện thoại: ${company.phoneNumber}', style: const TextStyle(color: Colors.blue)),
+                            child: Text('Số điện thoại: ${company.phoneNumber}',
+                                style: const TextStyle(color: Colors.blue)),
                             onTap: () => _makePhoneCall(company.phoneNumber!),
                           ),
                         if (company.email != null)
                           Text('Email: ${company.email}'),
                         if (company.website != null)
                           InkWell(
-                            child: Text('Website: ${company.website}', style: const TextStyle(color: Colors.blue)),
+                            child: Text('Website: ${company.website}',
+                                style: const TextStyle(color: Colors.blue)),
                             onTap: () => _launchURL(company.website!),
                           ),
                       ],
@@ -143,7 +152,8 @@ class _MarkerMapState extends State<MarkerMap> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => CompanyDetails(companyId: company.id),
+                            builder: (context) =>
+                                CompanyDetails(companyId: company.id),
                           ),
                         );
                       },
@@ -173,7 +183,10 @@ class _MarkerMapState extends State<MarkerMap> {
   }
 
   List<Marker> _buildProductMarkers(BuildContext context) {
-    return widget.products.where((product) => widget.selectedProductTypes.contains(product.categoryName)).map((product) {
+    return widget.products
+        .where((product) =>
+            widget.selectedProductTypes.contains(product.categoryName))
+        .map((product) {
       return Marker(
         width: 50.0,
         height: 50.0,
@@ -188,17 +201,20 @@ class _MarkerMapState extends State<MarkerMap> {
               color: Colors.red,
               border: Border.all(color: Colors.white, width: 2),
             ),
-            child: const Icon(Icons.shopping_basket, color: Colors.white, size: 30),
+            child: const Icon(Icons.shopping_basket,
+                color: Colors.white, size: 30),
           ),
         ),
       );
     }).toList();
   }
 
-  ProductData? _findProductByLocationAndCategory(LatLng location, String category) {
+  ProductData? _findProductByLocationAndCategory(
+      LatLng location, String category) {
     try {
       return widget.products.firstWhere(
-        (product) => product.location == location && product.categoryName == category,
+        (product) =>
+            product.location == location && product.categoryName == category,
       );
     } catch (e) {
       return null;
@@ -279,9 +295,16 @@ class _MarkerMapState extends State<MarkerMap> {
                   const SizedBox(height: 10),
                   Text('Địa chỉ: ${address ?? "Không có thông tin"}'),
                   Text('Loại sản phẩm: ${product.categoryName}'),
-                  Text('Đánh giá: ${product.rating} sao'),
+                  Row(
+                    children: [
+                      const Text('Đánh giá: '),
+                      Star(value: product.rating),
+                    ],
+                  ),
                   if (details['phone_number'] != null)
                     Text('Liên hệ: ${details['phone_number']}'),
+                  if (details['company_name'] != null)
+                    Text('Cơ sở sản xuất: ${details['company_name']}'),
                 ],
               ),
             ),

@@ -63,6 +63,7 @@ class _MenuState extends State<Menu> {
   late Set<int> localSelectedDistrictIds;
   late bool localShowCommunes;
   late bool localShowDistricts;
+  bool _allCommunesSelected = false;
 
   @override
   void initState() {
@@ -73,11 +74,28 @@ class _MenuState extends State<Menu> {
     localSelectedDistrictIds = Set<int>.from(widget.selectedDistrictIds);
     localShowCommunes = widget.showCommunes;
     localShowDistricts = widget.showDistricts;
+    _allCommunesSelected =
+        localSelectedCommuneIds.length == widget.communes.length;
+  }
+
+  void _toggleAllCommunes(bool? value) {
+    setState(() {
+      _allCommunesSelected = value ?? false;
+      if (_allCommunesSelected) {
+        localSelectedCommuneIds =
+            Set<int>.from(widget.communes.map((c) => c.id));
+      } else {
+        localSelectedCommuneIds.clear();
+      }
+      widget.onFilterCommunes(localSelectedCommuneIds.toList());
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    Set<String> productTypes = widget.companyDataList.map((company) => company.productTypeName).toSet();
+    Set<String> productTypes = widget.companyDataList
+        .map((company) => company.productTypeName)
+        .toSet();
 
     return Drawer(
       child: ListView(
@@ -223,7 +241,9 @@ class _MenuState extends State<Menu> {
             subtitle: const Text('Lọc theo chủ thể'),
             children: [
               ...productTypes.map((type) {
-                int count = widget.companyDataList.where((company) => company.productTypeName == type).length;
+                int count = widget.companyDataList
+                    .where((company) => company.productTypeName == type)
+                    .length;
                 return CheckboxListTile(
                   title: Row(
                     children: [
@@ -257,7 +277,8 @@ class _MenuState extends State<Menu> {
                       } else {
                         localSelectedProductTypes.remove(type);
                       }
-                      widget.onFilterCompanies(localSelectedProductTypes.toList());
+                      widget.onFilterCompanies(
+                          localSelectedProductTypes.toList());
                     });
                   },
                 );
@@ -281,7 +302,8 @@ class _MenuState extends State<Menu> {
                       } else {
                         localSelectedDistrictIds.remove(district.id);
                       }
-                      widget.onFilterDistricts(localSelectedDistrictIds.toList());
+                      widget
+                          .onFilterDistricts(localSelectedDistrictIds.toList());
                     });
                   },
                 );
@@ -291,24 +313,36 @@ class _MenuState extends State<Menu> {
             ExpansionTile(
               leading: const Icon(Icons.location_on),
               title: const Text('Lọc xã'),
-              children: widget.communes.map((commune) {
-                return CheckboxListTile(
-                  title: Text(commune.name),
-                  value: localSelectedCommuneIds.contains(commune.id),
+              children: [
+                CheckboxListTile(
+                  title: const Text('Chọn tất cả'),
+                  value: _allCommunesSelected,
+                  onChanged: _toggleAllCommunes,
                   controlAffinity: ListTileControlAffinity.leading,
-                  activeColor: Colors.blue,
-                  onChanged: (bool? value) {
-                    setState(() {
-                      if (value == true) {
-                        localSelectedCommuneIds.add(commune.id);
-                      } else {
-                        localSelectedCommuneIds.remove(commune.id);
-                      }
-                      widget.onFilterCommunes(localSelectedCommuneIds.toList());
-                    });
-                  },
-                );
-              }).toList(),
+                ),
+                const Divider(),
+                ...widget.communes.map((commune) {
+                  return CheckboxListTile(
+                    title: Text(commune.name),
+                    value: localSelectedCommuneIds.contains(commune.id),
+                    controlAffinity: ListTileControlAffinity.leading,
+                    activeColor: Colors.blue,
+                    onChanged: (bool? value) {
+                      setState(() {
+                        if (value == true) {
+                          localSelectedCommuneIds.add(commune.id);
+                        } else {
+                          localSelectedCommuneIds.remove(commune.id);
+                        }
+                        _allCommunesSelected = localSelectedCommuneIds.length ==
+                            widget.communes.length;
+                        widget
+                            .onFilterCommunes(localSelectedCommuneIds.toList());
+                      });
+                    },
+                  );
+                }).toList(),
+              ],
             ),
         ],
       ),

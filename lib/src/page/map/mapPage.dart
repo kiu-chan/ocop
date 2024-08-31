@@ -39,14 +39,14 @@ class _MapPageState extends State<MapPage> {
   double currentZoom = MapConfig().getDefaultZoom();
 
   int? selectedMap = 1;
-  
+
   String mapName = "Bản đồ";
   List<String> listMapUrl = AppPath().listMapUrl;
   String mapUrl = AppPath().mapUrl;
   final String namePackage = "com.example.app";
 
-  final LatLng mapLat = MapConfig().getDefaultMap();  //Tọa độ mặc định
-  final LatLng mapLatFinal = MapConfig().getDefaultMap();  //Tọa độ mặc định
+  final LatLng mapLat = MapConfig().getDefaultMap(); //Tọa độ mặc định
+  final LatLng mapLatFinal = MapConfig().getDefaultMap(); //Tọa độ mặc định
 
   List<ImageData> imageDataList = [];
 
@@ -54,9 +54,21 @@ class _MapPageState extends State<MapPage> {
   List<MapData> polygonData = [];
   List<String> listPaths = AppPath().listPaths;
   final List<Color> orderedColors = [
-    Colors.red, Colors.blue, Colors.green, Colors.yellow, Colors.orange,
-    Colors.purple, Colors.teal, Colors.pink, Colors.cyan, Colors.brown,
-    Colors.indigo, Colors.lime, Colors.deepOrange, Colors.lightBlue, Colors.pinkAccent,
+    Colors.red,
+    Colors.blue,
+    Colors.green,
+    Colors.yellow,
+    Colors.orange,
+    Colors.purple,
+    Colors.teal,
+    Colors.pink,
+    Colors.cyan,
+    Colors.brown,
+    Colors.indigo,
+    Colors.lime,
+    Colors.deepOrange,
+    Colors.lightBlue,
+    Colors.pinkAccent,
   ];
 
   bool isOfflineMode = MapConfig.isOfflineMode;
@@ -105,7 +117,7 @@ class _MapPageState extends State<MapPage> {
       imageData.setCheck();
     });
   }
-  
+
   void _setPolygonData(MapData mapData) {
     setState(() {
       mapData.setCheck();
@@ -118,8 +130,9 @@ class _MapPageState extends State<MapPage> {
       if (selectedTypes.isEmpty) {
         filteredCompanies = [];
       } else {
-        filteredCompanies = companies.where((company) => 
-          selectedTypes.contains(company.productTypeName)).toList();
+        filteredCompanies = companies
+            .where((company) => selectedTypes.contains(company.productTypeName))
+            .toList();
       }
     });
   }
@@ -128,7 +141,8 @@ class _MapPageState extends State<MapPage> {
     setState(() {
       selectedCommuneIds = Set<int>.from(selectedIds);
       for (var commune in communes) {
-        commune.isVisible = showCommunes && selectedCommuneIds.contains(commune.id);
+        commune.isVisible =
+            showCommunes && selectedCommuneIds.contains(commune.id);
       }
     });
   }
@@ -137,7 +151,8 @@ class _MapPageState extends State<MapPage> {
     setState(() {
       selectedDistrictIds = Set<int>.from(selectedIds);
       for (var district in districts) {
-        district.isVisible = showDistricts && selectedDistrictIds.contains(district.id);
+        district.isVisible =
+            showDistricts && selectedDistrictIds.contains(district.id);
       }
     });
   }
@@ -169,7 +184,7 @@ class _MapPageState extends State<MapPage> {
   void _showCommuneInfo(AreaData commune) async {
     print("Showing info for commune with ID: ${commune.id}");
     var communeDetails = await dataLoader.getCommuneDetails(commune.id);
-    
+
     if (communeDetails != null) {
       showDialog(
         context: context,
@@ -181,8 +196,9 @@ class _MapPageState extends State<MapPage> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text('ID: ${communeDetails['id'] ?? 'N/A'}'),
-                Text('Diện tích: ${communeDetails['area'] != null ? communeDetails['area'].toStringAsFixed(2) : 'N/A'} km²'),
-                Text('Dân số: ${communeDetails['population'] ?? 'N/A'}'),
+                Text(
+                    'Diện tích: ${communeDetails['area'] != null ? communeDetails['area'].toStringAsFixed(2) : 'N/A'} km²'),
+                Text('Dân số: ${communeDetails['population'] ?? 'N/A'} người'),
               ],
             ),
             actions: <Widget>[
@@ -340,12 +356,14 @@ class _MapPageState extends State<MapPage> {
                       children: [
                         ..._searchProductResults.map((product) => ListTile(
                               title: Text(product.name),
-                              subtitle: Text('Sản phẩm - ${product.categoryName}'),
+                              subtitle:
+                                  Text('Sản phẩm - ${product.categoryName}'),
                               onTap: () => _moveToProduct(product),
                             )),
                         ..._searchCompanyResults.map((company) => ListTile(
                               title: Text(company.name),
-                              subtitle: Text('Công ty - ${company.productTypeName}'),
+                              subtitle:
+                                  Text('Công ty - ${company.productTypeName}'),
                               onTap: () => _moveToCompany(company),
                             )),
                       ],
@@ -360,7 +378,8 @@ class _MapPageState extends State<MapPage> {
             child: Column(
               children: [
                 FloatingActionButton(
-                  onPressed: () => mapControllers.location(mapController, mapLat),
+                  onPressed: () =>
+                      mapControllers.location(mapController, mapLat),
                   heroTag: "location",
                   child: const Icon(Icons.location_on),
                 ),
