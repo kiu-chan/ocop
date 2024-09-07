@@ -28,48 +28,48 @@ class _ProductListState extends State<ProductList> {
       isLoading = true;
     });
 
+    List<ProductHome> onlineProducts = [];
+    List<ProductHome> offlineProducts = [];
+
+    // Tải dữ liệu offline
+    offlineProducts = await OfflineStorageService.getOfflineProducts();
+
+    // Kiểm tra kết nối và tải dữ liệu online nếu có thể
     var connectivityResult = await (Connectivity().checkConnectivity());
-    if (connectivityResult == ConnectivityResult.none) {
-      // Không có kết nối mạng, tải dữ liệu offline
-      final offlineProducts = await OfflineStorageService.getOfflineProducts();
-      setState(() {
-        products = offlineProducts;
-        isLoading = false;
-      });
-    } else {
-      // Có kết nối mạng, tải dữ liệu online
+    if (connectivityResult != ConnectivityResult.none) {
       final DefaultDatabaseOptions db = DefaultDatabaseOptions();
       try {
         await db.connect();
         final randomProducts = await db.getRandomProducts();
-        setState(() {
-          products = randomProducts.map((product) => ProductHome(
-            id: product['id'],
-            name: product['name'],
-            star: product['rating'],
-            category: product['category'] ?? 'Unknown',
-            img: product['img'],
-          )).toList();
-        });
-
-        // Lưu dữ liệu để sử dụng offline
-        for (var product in products) {
-          await OfflineStorageService.saveProduct(product);
-        }
+        onlineProducts = randomProducts.map((product) => ProductHome(
+          id: product['id'],
+          name: product['name'],
+          star: product['rating'],
+          category: product['category'] ?? 'Unknown',
+          img: product['img'],
+        )).toList();
       } catch (e) {
         print('Lỗi khi tải dữ liệu online: $e');
-        // Nếu có lỗi khi tải dữ liệu online, thử tải dữ liệu offline
-        final offlineProducts = await OfflineStorageService.getOfflineProducts();
-        setState(() {
-          products = offlineProducts;
-        });
       } finally {
         await db.close();
-        setState(() {
-          isLoading = false;
-        });
       }
     }
+
+    // Kết hợp dữ liệu online và offline, ưu tiên dữ liệu offline
+    Map<int, ProductHome> productMap = {};
+    for (var product in offlineProducts) {
+      productMap[product.id] = product;
+    }
+    for (var product in onlineProducts) {
+      if (!productMap.containsKey(product.id)) {
+        productMap[product.id] = product;
+      }
+    }
+
+    setState(() {
+      products = productMap.values.toList();
+      isLoading = false;
+    });
   }
 
   @override

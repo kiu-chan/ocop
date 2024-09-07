@@ -1,21 +1,20 @@
 import 'package:flutter/material.dart';
 import 'package:chewie/chewie.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:ocop/mainData/database/databases.dart';
 import 'package:ocop/src/data/home/videosData.dart';
 
-
 class VideoList extends StatefulWidget {
-  const VideoList({super.key});
+  const VideoList({Key? key}) : super(key: key);
 
   @override
   _VideoListState createState() => _VideoListState();
 }
 
 class _VideoListState extends State<VideoList> {
-  final DefaultDatabaseOptions db = DefaultDatabaseOptions();
   List<VideoData> videos = [];
+  bool isLoading = true;
   int _currentVideoIndex = 0;
-  bool _isLoading = true;
 
   @override
   void initState() {
@@ -25,18 +24,43 @@ class _VideoListState extends State<VideoList> {
 
   Future<void> _loadVideos() async {
     setState(() {
-      _isLoading = true;
+      isLoading = true;
     });
-    await db.connect();
-    videos = await db.getAllVideo();
-    await db.close();
 
-    if (videos.isNotEmpty) {
-      await videos[0].initialize();
+    List<VideoData> onlineVideos = [];
+    List<VideoData> offlineVideos = []; // Thường sẽ trống vì video không lưu offline
+
+    // Kiểm tra kết nối và tải dữ liệu online nếu có thể
+    var connectivityResult = await (Connectivity().checkConnectivity());
+    if (connectivityResult != ConnectivityResult.none) {
+      final DefaultDatabaseOptions db = DefaultDatabaseOptions();
+      try {
+        await db.connect();
+        onlineVideos = await db.getAllVideo();
+        if (onlineVideos.isNotEmpty) {
+          await onlineVideos[0].initialize();
+        }
+      } catch (e) {
+        print('Lỗi khi tải dữ liệu video online: $e');
+      } finally {
+        await db.close();
+      }
+    }
+
+    // Kết hợp dữ liệu online và offline, ưu tiên dữ liệu online
+    Map<String, VideoData> videoMap = {};
+    for (var video in onlineVideos) {
+      videoMap[video.id] = video;
+    }
+    for (var video in offlineVideos) {
+      if (!videoMap.containsKey(video.id)) {
+        videoMap[video.id] = video;
+      }
     }
 
     setState(() {
-      _isLoading = false;
+      videos = videoMap.values.toList();
+      isLoading = false;
     });
   }
 
@@ -49,34 +73,40 @@ class _VideoListState extends State<VideoList> {
   }
 
   Widget _buildVideoPlayer() {
-    if (_isLoading) {
-      return const Center(child: CircularProgressIndicator());
+    if (videos.isEmpty) {
+      return Center(
+        child: Text(
+          "Kết nối mạng để xem video",
+          style: TextStyle(
+            fontSize: 16,
+            color: Colors.grey[600],
+            fontStyle: FontStyle.italic,
+          ),
+        ),
+      );
     }
-    return videos.isNotEmpty && videos[_currentVideoIndex].isInitialized
+    return videos[_currentVideoIndex].isInitialized
         ? AspectRatio(
             aspectRatio: 16 / 9,
             child: Chewie(controller: videos[_currentVideoIndex].chewieController!),
           )
-        : const Center(child: Text('Đang tải video...'));
+        : const Center(child: CircularProgressIndicator());
   }
 
   Future<void> _changeVideo(int index) async {
     if (index != _currentVideoIndex) {
       setState(() {
-        _isLoading = true;
+        isLoading = true;
       });
-
       if (videos[_currentVideoIndex].controller != null) {
         videos[_currentVideoIndex].controller!.pause();
       }
-
       if (!videos[index].isInitialized) {
         await videos[index].initialize();
       }
-
       setState(() {
         _currentVideoIndex = index;
-        _isLoading = false;
+        isLoading = false;
       });
     }
   }
@@ -96,40 +126,43 @@ class _VideoListState extends State<VideoList> {
             ),
           ),
         ),
-        LayoutBuilder(
-          builder: (BuildContext context, BoxConstraints constraints) {
-            return Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                // Video Player
-                SizedBox(
-                  width: constraints.maxWidth * 0.7, // 70% of the width
-                  child: _buildVideoPlayer(),
-                ),
-                // Video List
-                SizedBox(
-                  width: constraints.maxWidth * 0.3, // 30% of the width
-                  height: constraints.maxWidth * 0.7 * 9 / 16, // Match the height of the video player
-                  child: ListView.builder(
-                    itemCount: videos.length,
-                    itemBuilder: (context, index) {
-                      return ListTile(
-                        title: Text(
-                          videos[index].title,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
+        isLoading
+            ? const Center(child: CircularProgressIndicator())
+            : LayoutBuilder(
+                builder: (BuildContext context, BoxConstraints constraints) {
+                  return Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      // Video Player
+                      SizedBox(
+                        width: constraints.maxWidth * 0.7, // 70% of the width
+                        child: _buildVideoPlayer(),
+                      ),
+                      // Video List
+                      if (videos.isNotEmpty)
+                        SizedBox(
+                          width: constraints.maxWidth * 0.3, // 30% of the width
+                          height: constraints.maxWidth * 0.7 * 9 / 16, // Match the height of the video player
+                          child: ListView.builder(
+                            itemCount: videos.length,
+                            itemBuilder: (context, index) {
+                              return ListTile(
+                                title: Text(
+                                  videos[index].title,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                onTap: () => _changeVideo(index),
+                                selected: index == _currentVideoIndex,
+                                dense: true,
+                              );
+                            },
+                          ),
                         ),
-                        onTap: () => _changeVideo(index),
-                        selected: index == _currentVideoIndex,
-                        dense: true,
-                      );
-                    },
-                  ),
-                ),
-              ],
-            );
-          },
-        ),
+                    ],
+                  );
+                },
+              ),
       ],
     );
   }

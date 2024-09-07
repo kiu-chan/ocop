@@ -175,7 +175,7 @@ class DefaultDatabaseOptions {
   }
 
   Future<bool> updateUserInfo(int userId, Map<String, dynamic> newInfo) async {
-    final userRole = await AuthService.getUserRole(); // Assume this method exists
+    final userRole = await AuthService.getUserRole();
     return await accountDatabase.updateUserInfo(userId, newInfo, userRole ?? 'unknown');
   }
 

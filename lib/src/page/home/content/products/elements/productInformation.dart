@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:convert';
 import 'package:ocop/mainData/offline/offline_storage_service.dart';
 import 'package:ocop/src/data/home/productHomeData.dart';
 import 'package:ocop/src/page/elements/star.dart';
@@ -120,6 +121,42 @@ class _ProductInformationState extends State<ProductInformation> {
     }
   }
 
+Widget _buildImageWidget(String imageData) {
+  if (imageData.startsWith('http')) {
+    // Đây là URL
+    return Image.network(
+      imageData,
+      fit: BoxFit.contain,
+      errorBuilder: (context, error, stackTrace) {
+        return Image.asset(
+          'lib/src/assets/img/home/image.png',
+          fit: BoxFit.contain,
+        );
+      },
+    );
+  } else {
+    // Giả sử đây là dữ liệu base64
+    try {
+      return Image.memory(
+        base64Decode(imageData),
+        fit: BoxFit.contain,
+        errorBuilder: (context, error, stackTrace) {
+          return Image.asset(
+            'lib/src/assets/img/home/image.png',
+            fit: BoxFit.contain,
+          );
+        },
+      );
+    } catch (e) {
+      // Nếu không thể giải mã base64, hiển thị hình ảnh mặc định
+      return Image.asset(
+        'lib/src/assets/img/home/image.png',
+        fit: BoxFit.contain,
+      );
+    }
+  }
+}
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -175,16 +212,8 @@ class _ProductInformationState extends State<ProductInformation> {
                     },
                     itemBuilder: (context, index) {
                       if (widget.product.imageUrls.isNotEmpty) {
-                        return Image.network(
-                          widget.product.imageUrls[index],
-                          fit: BoxFit.contain,
-                          errorBuilder: (context, error, stackTrace) {
-                            return Image.asset(
-                              'lib/src/assets/img/home/image.png',
-                              fit: BoxFit.contain,
-                            );
-                          },
-                        );
+                        return _buildImageWidget(
+                            widget.product.imageUrls[index]);
                       } else {
                         return Image.asset(
                           'lib/src/assets/img/home/image.png',
@@ -222,16 +251,8 @@ class _ProductInformationState extends State<ProductInformation> {
                                 width: 2,
                               ),
                             ),
-                            child: Image.network(
-                              widget.product.imageUrls[index],
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) {
-                                return Image.asset(
-                                  'lib/src/assets/img/home/image.png',
-                                  fit: BoxFit.cover,
-                                );
-                              },
-                            ),
+                            child: _buildImageWidget(
+                                widget.product.imageUrls[index]),
                           ),
                         );
                       },
@@ -398,9 +419,7 @@ class _ProductInformationState extends State<ProductInformation> {
                         onPressed: () => _openMap(
                             widget.product.latitude, widget.product.longitude),
                         child: const Text('Xem trên bản đồ',
-                            style: TextStyle(
-                              color: Colors.blue,
-                            )),
+                            style: TextStyle(color: Colors.blue)),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: Colors.white,
                         ),

@@ -1,30 +1,46 @@
 import 'package:flutter/material.dart';
-import 'package:ocop/mainData/offline/offline_storage_service.dart';
+import 'dart:convert';
 import 'package:ocop/src/data/home/productHomeData.dart';
 import 'package:ocop/src/page/home/content/products/elements/productInformation.dart';
 import 'package:ocop/src/page/elements/star.dart';
 
-class ProductCard extends StatefulWidget {
+class ProductCard extends StatelessWidget {
   final ProductHome product;
   
   const ProductCard({Key? key, required this.product}) : super(key: key);
 
-  @override
-  _ProductCardState createState() => _ProductCardState();
-}
+  Widget _buildProductImage() {
+    if (product.isOfflineAvailable && product.imageUrls.isNotEmpty) {
+      try {
+        return Image.memory(
+          base64Decode(product.imageUrls.first),
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) {
+            return _buildFallbackImage();
+          },
+        );
+      } catch (e) {
+        print("Lỗi khi giải mã hình ảnh offline: $e");
+        return _buildFallbackImage();
+      }
+    } else if (product.img != null && product.img!.isNotEmpty) {
+      return Image.network(
+        product.img!,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          return _buildFallbackImage();
+        },
+      );
+    } else {
+      return _buildFallbackImage();
+    }
+  }
 
-class _ProductCardState extends State<ProductCard> {
-  bool _isDownloading = false;
-
-  void _downloadProduct() async {
-    setState(() {
-      _isDownloading = true;
-    });
-    await OfflineStorageService.saveProduct(widget.product);
-    setState(() {
-      widget.product.isOfflineAvailable = true;
-      _isDownloading = false;
-    });
+  Widget _buildFallbackImage() {
+    return Image.asset(
+      'lib/src/assets/img/home/image.png',
+      fit: BoxFit.cover,
+    );
   }
 
   @override
@@ -39,71 +55,62 @@ class _ProductCardState extends State<ProductCard> {
             Navigator.push(
               context,
               MaterialPageRoute(
-                builder: (context) => ProductInformation(product: widget.product),
+                builder: (context) => ProductInformation(product: product),
               ),
             );
           },
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: <Widget>[
-              Expanded(
-                flex: 3,
-                child: Stack(
-                  children: [
-                    Center(
-                      child: widget.product.img != null && widget.product.img!.isNotEmpty
-                        ? Image.network(
-                            widget.product.img!,
-                            fit: BoxFit.cover,
-                            errorBuilder: (context, error, stackTrace) {
-                              return Image.asset(
-                                'lib/src/assets/img/home/image.png',
-                                fit: BoxFit.cover,
-                              );
-                            },
-                          )
-                        : Image.asset(
-                            'lib/src/assets/img/home/image.png',
-                            fit: BoxFit.cover,
-                          ),
+          child: Stack(
+            children: [
+              Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: <Widget>[
+                  Expanded(
+                    flex: 3,
+                    child: Center(
+                      child: _buildProductImage(),
                     ),
-                    Positioned(
-                      right: 0,
-                      top: 0,
-                      child: widget.product.isOfflineAvailable
-                        ? Icon(Icons.offline_pin, color: Colors.green)
-                        : IconButton(
-                            icon: _isDownloading 
-                              ? CircularProgressIndicator() 
-                              : Icon(Icons.download),
-                            onPressed: _downloadProduct,
+                  ),
+                  Expanded(
+                    flex: 2,
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Text(
+                            product.name,
+                            style: const TextStyle(fontWeight: FontWeight.bold),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            textAlign: TextAlign.center,
                           ),
-                    ),
-                  ],
-                ),
-              ),
-              Expanded(
-                flex: 2,
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Text(
-                        widget.product.name,
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        textAlign: TextAlign.center,
+                          const SizedBox(height: 4),
+                          Star(value: product.star),
+                        ],
                       ),
-                      const SizedBox(height: 4),
-                      Star(value: widget.product.star),
-                    ],
+                    ),
+                  ),
+                ],
+              ),
+              if (product.isOfflineAvailable)
+                Positioned(
+                  top: 8,
+                  right: 8,
+                  child: Container(
+                    padding: EdgeInsets.all(4),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      Icons.check_circle,
+                      color: Colors.green,
+                      size: 20,
+                    ),
                   ),
                 ),
-              ),
             ],
           ),
         ),

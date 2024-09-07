@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:ocop/src/data/home/companyData.dart';
 import 'package:ocop/mainData/database/databases.dart';
 import 'package:carousel_slider/carousel_slider.dart';
@@ -6,7 +7,7 @@ import 'package:ocop/src/page/home/content/companies/companyDetails.dart';
 import 'package:ocop/src/page/home/content/companies/allCompanies.dart';
 
 class CompanyList extends StatefulWidget {
-  const CompanyList({super.key});
+  const CompanyList({Key? key}) : super(key: key);
 
   @override
   _CompanyListState createState() => _CompanyListState();
@@ -24,13 +25,41 @@ class _CompanyListState extends State<CompanyList> {
   }
 
   Future<void> _loadCompanies() async {
-    await db.connect();
-    final companyData = await db.getRandomCompanies(limit: 10);
     setState(() {
-      companies = companyData;
+      isLoading = true;
+    });
+
+    List<Company> onlineCompanies = [];
+    List<Company> offlineCompanies = []; // Thường sẽ trống vì công ty không lưu offline
+
+    // Kiểm tra kết nối và tải dữ liệu online nếu có thể
+    var connectivityResult = await (Connectivity().checkConnectivity());
+    if (connectivityResult != ConnectivityResult.none) {
+      try {
+        await db.connect();
+        onlineCompanies = await db.getRandomCompanies(limit: 10);
+      } catch (e) {
+        print('Lỗi khi tải dữ liệu công ty online: $e');
+      } finally {
+        await db.close();
+      }
+    }
+
+    // Kết hợp dữ liệu online và offline, ưu tiên dữ liệu online
+    Map<int, Company> companyMap = {};
+    for (var company in onlineCompanies) {
+      companyMap[company.id] = company;
+    }
+    for (var company in offlineCompanies) {
+      if (!companyMap.containsKey(company.id)) {
+        companyMap[company.id] = company;
+      }
+    }
+
+    setState(() {
+      companies = companyMap.values.toList();
       isLoading = false;
     });
-    await db.close();
   }
 
   String truncateName(String name, int wordLimit) {
@@ -74,7 +103,7 @@ class _CompanyListState extends State<CompanyList> {
               ),
               const SizedBox(height: 8),
               Text(
-                truncateName(company.name, 5), // Giới hạn 3 từ
+                truncateName(company.name, 5),
                 textAlign: TextAlign.center,
                 style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
                 maxLines: 2,
@@ -120,22 +149,34 @@ class _CompanyListState extends State<CompanyList> {
         ),
         isLoading
             ? const Center(child: CircularProgressIndicator())
-            : CarouselSlider.builder(
-                itemCount: companies.length,
-                itemBuilder: (BuildContext context, int index, int realIndex) {
-                  return _buildCompanyCard(companies[index]);
-                },
-                options: CarouselOptions(
-                  height: 180,
-                  viewportFraction: 0.5,
-                  enableInfiniteScroll: companies.length > 1,
-                  enlargeCenterPage: true,
-                  autoPlay: companies.length > 1,
-                  autoPlayInterval: const Duration(seconds: 3),
-                  autoPlayAnimationDuration: const Duration(milliseconds: 800),
-                  autoPlayCurve: Curves.fastOutSlowIn,
-                ),
-              ),
+            : companies.isEmpty
+                ? Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Text(
+                      "Kết nối mạng để xem thông tin công ty",
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.grey[600],
+                        fontStyle: FontStyle.italic,
+                      ),
+                    ),
+                  )
+                : CarouselSlider.builder(
+                    itemCount: companies.length,
+                    itemBuilder: (BuildContext context, int index, int realIndex) {
+                      return _buildCompanyCard(companies[index]);
+                    },
+                    options: CarouselOptions(
+                      height: 180,
+                      viewportFraction: 0.5,
+                      enableInfiniteScroll: companies.length > 1,
+                      enlargeCenterPage: true,
+                      autoPlay: companies.length > 1,
+                      autoPlayInterval: const Duration(seconds: 3),
+                      autoPlayAnimationDuration: const Duration(milliseconds: 800),
+                      autoPlayCurve: Curves.fastOutSlowIn,
+                    ),
+                  ),
       ],
     );
   }
