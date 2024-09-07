@@ -80,7 +80,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
   }
 
   Future<void> checkExistingCode() async {
-    bool emailExists = await databaseOptions.accountDatabase.checkEmailExists(_emailController.text);
+    bool emailExists = await databaseOptions.checkEmailExists(_emailController.text);
     
     if (!emailExists) {
       setState(() {
@@ -90,7 +90,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
       return;
     }
 
-    int remainingTime = await databaseOptions.accountDatabase.getRemainingTimeForResetCode(_emailController.text);
+    int remainingTime = await databaseOptions.getRemainingTimeForResetCode(_emailController.text);
     if (remainingTime > 0) {
       setState(() {
         _isCodeSent = true;
@@ -121,7 +121,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
     });
 
     try {
-      bool emailExists = await databaseOptions.accountDatabase.checkEmailExists(_emailController.text);
+      bool emailExists = await databaseOptions.checkEmailExists(_emailController.text);
 
       if (!emailExists) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -133,7 +133,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
         return;
       }
 
-      String resetCode = await databaseOptions.accountDatabase.createPasswordResetToken(_emailController.text);
+      String resetCode = await databaseOptions.createPasswordResetToken(_emailController.text);
 
       if (resetCode.isNotEmpty) {
         final smtpServer = gmail('hotro.ocopbentre@gmail.com', 'tfrd gzze qpxt rlks ');
@@ -179,7 +179,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
   Future<void> verifyCode() async {
     if (_formKey.currentState!.validate()) {
       try {
-        bool isVerified = await databaseOptions.accountDatabase.verifyPasswordResetToken(_emailController.text, _codeController.text);
+        bool isVerified = await databaseOptions.verifyPasswordResetToken(_emailController.text, _codeController.text);
 
         if (isVerified) {
           setState(() {
@@ -206,7 +206,7 @@ Future<void> resetPassword() async {
   if (_formKey.currentState!.validate()) {
     if (_newPasswordController.text == _confirmPasswordController.text) {
       try {
-        bool isReset = await databaseOptions.accountDatabase.resetPassword(_emailController.text, _newPasswordController.text);
+        bool isReset = await databaseOptions.resetPassword(_emailController.text, _newPasswordController.text);
 
         if (isReset) {
           ScaffoldMessenger.of(context).showSnackBar(

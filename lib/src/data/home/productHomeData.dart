@@ -16,6 +16,7 @@ class ProductHome {
   double? latitude;
   double? longitude;
   String? district;
+  bool isOfflineAvailable = false;
 
   ProductHome({
     required this.id,
@@ -34,5 +35,6 @@ class ProductHome {
     this.latitude,
     this.longitude,
     this.district,
+    this.isOfflineAvailable = false,
   });
 }

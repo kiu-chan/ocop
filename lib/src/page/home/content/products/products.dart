@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:ocop/mainData/database/databases.dart';
+import 'package:ocop/mainData/offline/offline_storage_service.dart';
 import 'package:ocop/src/data/home/productHomeData.dart';
 import 'package:ocop/src/page/home/content/products/elements/productCard.dart';
 import 'package:ocop/src/page/home/content/products/elements/productsList.dart';
-
+import 'package:connectivity_plus/connectivity_plus.dart';
 
 class ProductList extends StatefulWidget {
-  const ProductList({super.key});
+  const ProductList({Key? key}) : super(key: key);
 
   @override
   _ProductListState createState() => _ProductListState();
@@ -14,7 +15,7 @@ class ProductList extends StatefulWidget {
 
 class _ProductListState extends State<ProductList> {
   List<ProductHome> products = [];
-  final DefaultDatabaseOptions db = DefaultDatabaseOptions();
+  bool isLoading = true;
 
   @override
   void initState() {
@@ -22,20 +23,54 @@ class _ProductListState extends State<ProductList> {
     _loadProducts();
   }
 
-Future<void> _loadProducts() async {
-  await db.connect();
-  final randomProducts = await db.getRandomProducts();
-  setState(() {
-    products = randomProducts.map((product) => ProductHome(
-      id: product['id'],
-      name: product['name'],
-      star: product['rating'],
-      category: product['category'] ?? 'Unknown',
-      img: product['img'],
-    )).toList();
-  });
-  await db.close();
-}
+  Future<void> _loadProducts() async {
+    setState(() {
+      isLoading = true;
+    });
+
+    var connectivityResult = await (Connectivity().checkConnectivity());
+    if (connectivityResult == ConnectivityResult.none) {
+      // Không có kết nối mạng, tải dữ liệu offline
+      final offlineProducts = await OfflineStorageService.getOfflineProducts();
+      setState(() {
+        products = offlineProducts;
+        isLoading = false;
+      });
+    } else {
+      // Có kết nối mạng, tải dữ liệu online
+      final DefaultDatabaseOptions db = DefaultDatabaseOptions();
+      try {
+        await db.connect();
+        final randomProducts = await db.getRandomProducts();
+        setState(() {
+          products = randomProducts.map((product) => ProductHome(
+            id: product['id'],
+            name: product['name'],
+            star: product['rating'],
+            category: product['category'] ?? 'Unknown',
+            img: product['img'],
+          )).toList();
+        });
+
+        // Lưu dữ liệu để sử dụng offline
+        for (var product in products) {
+          await OfflineStorageService.saveProduct(product);
+        }
+      } catch (e) {
+        print('Lỗi khi tải dữ liệu online: $e');
+        // Nếu có lỗi khi tải dữ liệu online, thử tải dữ liệu offline
+        final offlineProducts = await OfflineStorageService.getOfflineProducts();
+        setState(() {
+          products = offlineProducts;
+        });
+      } finally {
+        await db.close();
+        setState(() {
+          isLoading = false;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -74,22 +109,24 @@ Future<void> _loadProducts() async {
             ),
           ],
         ),
-        SizedBox(
-  height: 250,  // Điều chỉnh chiều cao nếu cần
-  child: ListView.builder(
-    scrollDirection: Axis.horizontal,
-    itemCount: products.length,
-    itemBuilder: (context, index) {
-      return Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 4),
-        child: SizedBox(
-          width: 180,  // Điều chỉnh chiều rộng nếu cần
-          child: ProductCard(product: products[index]),
-        ),
-      );
-    },
-  ),
-),
+        isLoading
+            ? const CircularProgressIndicator()
+            : SizedBox(
+                height: 250,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: products.length,
+                  itemBuilder: (context, index) {
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 4),
+                      child: SizedBox(
+                        width: 180,
+                        child: ProductCard(product: products[index]),
+                      ),
+                    );
+                  },
+                ),
+              ),
       ],
     );
   }

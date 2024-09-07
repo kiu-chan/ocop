@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:ocop/mainData/offline/offline_storage_service.dart';
 import 'package:ocop/src/data/home/productHomeData.dart';
 import 'package:ocop/src/page/elements/star.dart';
 import 'package:ocop/src/page/elements/logo.dart';
@@ -10,7 +11,7 @@ import 'package:ocop/src/page/home/content/companies/companyDetails.dart';
 class ProductInformation extends StatefulWidget {
   final ProductHome product;
 
-  const ProductInformation({super.key, required this.product});
+  const ProductInformation({Key? key, required this.product}) : super(key: key);
 
   @override
   _ProductInformationState createState() => _ProductInformationState();
@@ -25,7 +26,13 @@ class _ProductInformationState extends State<ProductInformation> {
   @override
   void initState() {
     super.initState();
-    _loadProductDetails();
+    if (widget.product.isOfflineAvailable) {
+      setState(() {
+        isLoading = false;
+      });
+    } else {
+      _loadProductDetails();
+    }
   }
 
   @override
@@ -44,8 +51,6 @@ class _ProductInformationState extends State<ProductInformation> {
     final address = await db.getProductAddress(widget.product.id);
     final details = await db.getProductDetails(widget.product.id);
 
-    print('Product Details received: $details');
-
     setState(() {
       if (content != null) {
         widget.product.describe = _convertHtmlToPlainText(content);
@@ -60,15 +65,6 @@ class _ProductInformationState extends State<ProductInformation> {
       widget.product.website = details['website'];
       widget.product.latitude = details['latitude'];
       widget.product.longitude = details['longitude'];
-
-      print('After setting values:');
-      print('Company ID: ${widget.product.companyId}');
-      print('Company Name: ${widget.product.companyName}');
-      print('Phone Number: ${widget.product.phoneNumber}');
-      print('Representative: ${widget.product.representative}');
-      print('Email: ${widget.product.email}');
-      print('Website: ${widget.product.website}');
-
       isLoading = false;
     });
     await db.close();
@@ -129,8 +125,39 @@ class _ProductInformationState extends State<ProductInformation> {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.product.name),
+        actions: [
+          if (!widget.product.isOfflineAvailable)
+            IconButton(
+              icon: Icon(Icons.download),
+              onPressed: () async {
+                await OfflineStorageService.saveProduct(widget.product);
+                setState(() {
+                  widget.product.isOfflineAvailable = true;
+                });
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                      content: Text('Sản phẩm đã được lưu để xem offline')),
+                );
+              },
+            ),
+          if (widget.product.isOfflineAvailable)
+            IconButton(
+              icon: Icon(Icons.delete),
+              onPressed: () async {
+                await OfflineStorageService.removeProduct(widget.product.id);
+                setState(() {
+                  widget.product.isOfflineAvailable = false;
+                });
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(
+                      content:
+                          Text('Sản phẩm đã được xóa khỏi bộ nhớ offline')),
+                );
+              },
+            ),
+        ],
       ),
-      body: isLoading
+      body: isLoading && !widget.product.isOfflineAvailable
           ? const Center(child: CircularProgressIndicator())
           : ListView(
               children: <Widget>[
