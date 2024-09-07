@@ -5,13 +5,13 @@ import 'package:ocop/mainData/database/databases.dart';
 import 'package:ocop/src/data/home/videosData.dart';
 
 class VideoList extends StatefulWidget {
-  const VideoList({Key? key}) : super(key: key);
+  const VideoList({super.key});
 
   @override
-  _VideoListState createState() => _VideoListState();
+  VideoListState createState() => VideoListState();
 }
 
-class _VideoListState extends State<VideoList> {
+class VideoListState extends State<VideoList> {
   List<VideoData> videos = [];
   bool isLoading = true;
   int _currentVideoIndex = 0;
@@ -22,6 +22,10 @@ class _VideoListState extends State<VideoList> {
     _loadVideos();
   }
 
+  void loadVideos() {
+    // Call your existing method to load products
+    _loadVideos();
+  }
   Future<void> _loadVideos() async {
     setState(() {
       isLoading = true;

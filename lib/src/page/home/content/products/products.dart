@@ -7,13 +7,13 @@ import 'package:ocop/src/page/home/content/products/elements/productsList.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 
 class ProductList extends StatefulWidget {
-  const ProductList({Key? key}) : super(key: key);
+  const ProductList({super.key});
 
   @override
-  _ProductListState createState() => _ProductListState();
+  ProductListState createState() => ProductListState();
 }
 
-class _ProductListState extends State<ProductList> {
+class ProductListState extends State<ProductList> {
   List<ProductHome> products = [];
   bool isLoading = true;
 
@@ -23,6 +23,10 @@ class _ProductListState extends State<ProductList> {
     _loadProducts();
   }
 
+  void loadProducts() {
+    // Call your existing method to load products
+    _loadProducts();
+  }
   Future<void> _loadProducts() async {
     setState(() {
       isLoading = true;

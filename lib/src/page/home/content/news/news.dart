@@ -6,19 +6,24 @@ import '../../../home/content/news/elements/allNews.dart';
 import '../../../home/content/news/elements/newsCard.dart';
 
 class NewsList extends StatefulWidget {
-  const NewsList({Key? key}) : super(key: key);
+  const NewsList({super.key});
 
   @override
-  _NewsListState createState() => _NewsListState();
+  NewsListState createState() => NewsListState();
 }
 
-class _NewsListState extends State<NewsList> {
+class NewsListState extends State<NewsList> {
   List<News> news = [];
   bool isLoading = true;
 
   @override
   void initState() {
     super.initState();
+    _loadNews();
+  }
+
+    void loadNews() {
+    // Call your existing method to load products
     _loadNews();
   }
 

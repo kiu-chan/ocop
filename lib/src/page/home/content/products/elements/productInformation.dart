@@ -12,7 +12,7 @@ import 'package:ocop/src/page/home/content/companies/companyDetails.dart';
 class ProductInformation extends StatefulWidget {
   final ProductHome product;
 
-  const ProductInformation({Key? key, required this.product}) : super(key: key);
+  const ProductInformation({super.key, required this.product});
 
   @override
   _ProductInformationState createState() => _ProductInformationState();
@@ -165,28 +165,28 @@ Widget _buildImageWidget(String imageData) {
         actions: [
           if (!widget.product.isOfflineAvailable)
             IconButton(
-              icon: Icon(Icons.download),
+              icon: const Icon(Icons.download),
               onPressed: () async {
                 await OfflineStorageService.saveProduct(widget.product);
                 setState(() {
                   widget.product.isOfflineAvailable = true;
                 });
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
+                  const SnackBar(
                       content: Text('Sản phẩm đã được lưu để xem offline')),
                 );
               },
             ),
           if (widget.product.isOfflineAvailable)
             IconButton(
-              icon: Icon(Icons.delete),
+              icon: const Icon(Icons.delete),
               onPressed: () async {
                 await OfflineStorageService.removeProduct(widget.product.id);
                 setState(() {
                   widget.product.isOfflineAvailable = false;
                 });
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
+                  const SnackBar(
                       content:
                           Text('Sản phẩm đã được xóa khỏi bộ nhớ offline')),
                 );

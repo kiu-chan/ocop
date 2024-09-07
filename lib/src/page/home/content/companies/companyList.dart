@@ -7,13 +7,13 @@ import 'package:ocop/src/page/home/content/companies/companyDetails.dart';
 import 'package:ocop/src/page/home/content/companies/allCompanies.dart';
 
 class CompanyList extends StatefulWidget {
-  const CompanyList({Key? key}) : super(key: key);
+  const CompanyList({super.key});
 
   @override
-  _CompanyListState createState() => _CompanyListState();
+  CompanyListState createState() => CompanyListState();
 }
 
-class _CompanyListState extends State<CompanyList> {
+class CompanyListState extends State<CompanyList> {
   List<Company> companies = [];
   final DefaultDatabaseOptions db = DefaultDatabaseOptions();
   bool isLoading = true;
@@ -21,6 +21,11 @@ class _CompanyListState extends State<CompanyList> {
   @override
   void initState() {
     super.initState();
+    _loadCompanies();
+  }
+
+  void loadCompanies() {
+    // Call your existing method to load products
     _loadCompanies();
   }
 

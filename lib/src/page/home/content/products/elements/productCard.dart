@@ -7,7 +7,7 @@ import 'package:ocop/src/page/elements/star.dart';
 class ProductCard extends StatelessWidget {
   final ProductHome product;
   
-  const ProductCard({Key? key, required this.product}) : super(key: key);
+  const ProductCard({super.key, required this.product});
 
   Widget _buildProductImage() {
     if (product.isOfflineAvailable && product.imageUrls.isNotEmpty) {
@@ -99,12 +99,12 @@ class ProductCard extends StatelessWidget {
                   top: 8,
                   right: 8,
                   child: Container(
-                    padding: EdgeInsets.all(4),
-                    decoration: BoxDecoration(
+                    padding: const EdgeInsets.all(4),
+                    decoration: const BoxDecoration(
                       color: Colors.white,
                       shape: BoxShape.circle,
                     ),
-                    child: Icon(
+                    child: const Icon(
                       Icons.check_circle,
                       color: Colors.green,
                       size: 20,
