@@ -58,6 +58,7 @@ dependencies:
   mailer: ^6.1.2
   carousel_slider: ^5.0.0
   connectivity_plus: ^6.0.5
+  internet_connection_checker: ^1.0.0+1
 
 dev_dependencies:
   flutter_test:

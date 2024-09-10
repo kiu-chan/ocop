@@ -9,7 +9,7 @@ import 'chartDataLoader.dart';
 import 'package:connectivity_plus/connectivity_plus.dart';
 
 class ChartPage extends StatefulWidget {
-  const ChartPage({Key? key}) : super(key: key);
+  const ChartPage({super.key});
 
   @override
   _ChartPageState createState() => _ChartPageState();

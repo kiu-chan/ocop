@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:ocop/mainData/database/databases.dart';
+import 'package:ocop/mainData/offline/council_offline_storage.dart';
+import 'package:internet_connection_checker/internet_connection_checker.dart';
 
 class ProductEvaluationDetails extends StatefulWidget {
   final int productId;
@@ -14,121 +16,109 @@ class ProductEvaluationDetails extends StatefulWidget {
   });
 
   @override
-  _ProductEvaluationDetailsState createState() => _ProductEvaluationDetailsState();
+  _ProductEvaluationDetailsState createState() =>
+      _ProductEvaluationDetailsState();
 }
 
 class _ProductEvaluationDetailsState extends State<ProductEvaluationDetails> {
-  final DefaultDatabaseOptions _databaseOptions = DefaultDatabaseOptions();
   int? _evaluationId;
   List<Map<String, dynamic>> _evaluationPoints = [];
   bool _isLoading = true;
   String _errorMessage = '';
+  bool _isOffline = false;
 
   @override
   void initState() {
     super.initState();
-    _loadData();
+    _checkConnectivityAndLoadData();
+  }
+
+  Future<void> _checkConnectivityAndLoadData() async {
+    bool result = await InternetConnectionChecker().hasConnection;
+    setState(() {
+      _isOffline = !result;
+      _isLoading = true;
+      _errorMessage = '';
+    });
+    await _loadData();
   }
 
   Future<void> _loadData() async {
     try {
-      setState(() {
-        _isLoading = true;
-        _errorMessage = '';
-      });
-      await _databaseOptions.connect();
-      final evaluationId = await _databaseOptions.getProductEvaluationId(widget.productId);
-      if (evaluationId != null) {
-        final points = await _databaseOptions.getEvaluationPoints(evaluationId);
-        setState(() {
-          _evaluationId = evaluationId;
-          _evaluationPoints = points;
-          _isLoading = false;
-        });
+      if (_isOffline) {
+        await _loadOfflineData();
       } else {
-        setState(() {
-          _isLoading = false;
-          _errorMessage = 'Không tìm thấy ID đánh giá.';
-        });
+        await _loadOnlineData();
       }
     } catch (e) {
       setState(() {
-        _isLoading = false;
         _errorMessage = 'Đã xảy ra lỗi khi tải dữ liệu: $e';
+      });
+    } finally {
+      setState(() {
+        _isLoading = false;
       });
     }
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Chi tiết đánh giá: ${widget.productName}'),
-        backgroundColor: Colors.blue,
-      ),
-      body: _buildBody(),
-      backgroundColor: Colors.grey[100],
-    );
-  }
-
-  Widget _buildBody() {
-    if (_isLoading) {
-      return const Center(child: CircularProgressIndicator());
-    } else if (_errorMessage.isNotEmpty) {
-      return Center(child: Text(_errorMessage, style: const TextStyle(color: Colors.red)));
-    } else if (_evaluationPoints.isEmpty) {
-      return const Center(child: Text('Không có dữ liệu đánh giá.'));
+  Future<void> _loadOfflineData() async {
+    final offlineEvaluation =
+        await CouncilOfflineStorage.getProductEvaluation(widget.productId);
+    if (offlineEvaluation != null) {
+      setState(() {
+        _evaluationId = offlineEvaluation['evaluation_id'];
+        _evaluationPoints = List<Map<String, dynamic>>.from(
+            offlineEvaluation['evaluation_points']);
+      });
     } else {
-      return ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          Card(
-            elevation: 4,
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Text(
-                'ID Đánh giá: $_evaluationId',
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-              ),
-            ),
-          ),
-          const SizedBox(height: 16),
-          ..._evaluationPoints.map((councilData) {
-            var points = (councilData['points'] as List).cast<Map<String, dynamic>>();
-            var groupedPoints = groupPointsByGroup(points);
-            return Card(
-              elevation: 4,
-              margin: const EdgeInsets.only(bottom: 16),
-              child: ExpansionTile(
-                title: Text('Người chấm: ${councilData['council_user_name'] ?? 'Không xác định'}'),
-                subtitle: Text('Tổng điểm: ${councilData['total_points'] ?? 'N/A'}'),
-                children: [
-                  ...groupedPoints.entries.map((groupEntry) {
-                    return _buildGroupTile(groupEntry.key, groupEntry.value);
-                  }),
-                ],
-              ),
-            );
-          }),
-        ],
-      );
+      setState(() {
+        _errorMessage = 'Không có dữ liệu offline cho sản phẩm này.';
+      });
     }
   }
 
-  Widget _buildGroupTile(String groupName, Map<String, List<Map<String, dynamic>>> subGroups) {
-    if (groupName.isEmpty) return const SizedBox.shrink(); // Không hiển thị nếu groupName trống
+  Future<void> _loadOnlineData() async {
+    final DefaultDatabaseOptions _databaseOptions = DefaultDatabaseOptions();
+    await _databaseOptions.connect();
+    final evaluationId =
+        await _databaseOptions.getProductEvaluationId(widget.productId);
+    if (evaluationId != null) {
+      final points = await _databaseOptions.getEvaluationPoints(evaluationId);
+      setState(() {
+        _evaluationId = evaluationId;
+        _evaluationPoints = points;
+      });
+      await CouncilOfflineStorage.saveProductEvaluation(widget.productId, {
+        'evaluation_id': evaluationId,
+        'evaluation_points': points,
+      });
+    } else {
+      setState(() {
+        _errorMessage = 'Không tìm thấy ID đánh giá.';
+      });
+    }
+    _databaseOptions.close();
+  }
+
+  Widget _buildGroupTile(
+      String groupName, Map<String, List<Map<String, dynamic>>> subGroups) {
+    if (groupName.isEmpty) return const SizedBox.shrink();
     return ExpansionTile(
-      title: Text(groupName, style: const TextStyle(fontWeight: FontWeight.bold)),
+      title:
+          Text(groupName, style: const TextStyle(fontWeight: FontWeight.bold)),
       children: subGroups.entries.map((subGroupEntry) {
         return _buildSubGroupTile(subGroupEntry.key, subGroupEntry.value);
       }).toList(),
     );
   }
 
-  Widget _buildSubGroupTile(String subGroupName, List<Map<String, dynamic>> criteria) {
-    if (subGroupName.isEmpty) return Column(children: criteria.map(_buildCriteriaTile).toList());
+  Widget _buildSubGroupTile(
+      String subGroupName, List<Map<String, dynamic>> criteria) {
+    if (subGroupName.isEmpty)
+      return Column(children: criteria.map(_buildCriteriaTile).toList());
     return ExpansionTile(
-      title: Text(subGroupName, style: const TextStyle(fontStyle: FontStyle.italic)),
+      title: Text(subGroupName,
+          style: const TextStyle(fontStyle: FontStyle.italic)),
       children: criteria.map(_buildCriteriaTile).toList(),
     );
   }
@@ -140,7 +130,8 @@ class _ProductEvaluationDetailsState extends State<ProductEvaluationDetails> {
       trailing: IconButton(
         icon: const Icon(Icons.info_outline),
         onPressed: () {
-          _showCommentDialog(point['criteria_name'] ?? 'Không có tên tiêu chí', point['comment'] ?? 'Không có nhận xét');
+          _showCommentDialog(point['criteria_name'] ?? 'Không có tên tiêu chí',
+              point['comment'] ?? 'Không có nhận xét');
         },
       ),
     );
@@ -166,12 +157,13 @@ class _ProductEvaluationDetailsState extends State<ProductEvaluationDetails> {
     );
   }
 
-  Map<String, Map<String, List<Map<String, dynamic>>>> groupPointsByGroup(List<Map<String, dynamic>> points) {
+  Map<String, Map<String, List<Map<String, dynamic>>>> groupPointsByGroup(
+      List<Map<String, dynamic>> points) {
     Map<String, Map<String, List<Map<String, dynamic>>>> groupedPoints = {};
     for (var point in points) {
       String groupName = point['group_name'] ?? '';
       String subGroupName = point['group_sub_name'] ?? '';
-      if (groupName.isEmpty) continue; // Bỏ qua nếu group_name trống
+      if (groupName.isEmpty) continue;
       if (!groupedPoints.containsKey(groupName)) {
         groupedPoints[groupName] = {};
       }
@@ -182,25 +174,21 @@ class _ProductEvaluationDetailsState extends State<ProductEvaluationDetails> {
     }
 
     // Sắp xếp các phần theo thứ tự
-    var sortedGroups = Map.fromEntries(
-      groupedPoints.entries.toList()
-        ..sort((a, b) {
-          int orderA = a.value.values.first.first['group_order'] as int? ?? 9999;
-          int orderB = b.value.values.first.first['group_order'] as int? ?? 9999;
-          return orderA.compareTo(orderB);
-        })
-    );
+    var sortedGroups = Map.fromEntries(groupedPoints.entries.toList()
+      ..sort((a, b) {
+        int orderA = a.value.values.first.first['group_order'] as int? ?? 9999;
+        int orderB = b.value.values.first.first['group_order'] as int? ?? 9999;
+        return orderA.compareTo(orderB);
+      }));
 
     // Sắp xếp các nhóm trong mỗi phần theo thứ tự
     sortedGroups.forEach((groupName, subGroups) {
-      sortedGroups[groupName] = Map.fromEntries(
-        subGroups.entries.toList()
-          ..sort((a, b) {
-            int orderA = a.value.first['group_sub_order'] as int? ?? 9999;
-            int orderB = b.value.first['group_sub_order'] as int? ?? 9999;
-            return orderA.compareTo(orderB);
-          })
-      );
+      sortedGroups[groupName] = Map.fromEntries(subGroups.entries.toList()
+        ..sort((a, b) {
+          int orderA = a.value.first['group_sub_order'] as int? ?? 9999;
+          int orderB = b.value.first['group_sub_order'] as int? ?? 9999;
+          return orderA.compareTo(orderB);
+        }));
     });
 
     // Sắp xếp các tiêu chí trong mỗi nhóm theo thứ tự
@@ -219,8 +207,86 @@ class _ProductEvaluationDetailsState extends State<ProductEvaluationDetails> {
   }
 
   @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(_isOffline
+            ? 'Chi tiết đánh giá: ${widget.productName} (Offline)'
+            : 'Chi tiết đánh giá: ${widget.productName}'),
+        actions: [
+          if (_isOffline)
+            IconButton(
+              icon: const Icon(Icons.cloud_off),
+              onPressed: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Đang ở chế độ offline')),
+                );
+              },
+            ),
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: _checkConnectivityAndLoadData,
+          ),
+        ],
+      ),
+      body: _buildBody(),
+    );
+  }
+
+  Widget _buildBody() {
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    } else if (_errorMessage.isNotEmpty) {
+      return Center(
+          child:
+              Text(_errorMessage, style: const TextStyle(color: Colors.red)));
+    } else if (_evaluationPoints.isEmpty) {
+      return const Center(child: Text('Không có dữ liệu đánh giá.'));
+    } else {
+      return ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          Card(
+            elevation: 4,
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Text(
+                'ID Đánh giá: $_evaluationId',
+                style:
+                    const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          ..._evaluationPoints.map((councilData) {
+            var points =
+                (councilData['points'] as List).cast<Map<String, dynamic>>();
+            var groupedPoints = groupPointsByGroup(points);
+            return Card(
+              elevation: 4,
+              margin: const EdgeInsets.only(bottom: 16),
+              child: ExpansionTile(
+                title: Text(
+                    'Người chấm: ${councilData['council_user_name'] ?? 'Không xác định'}'),
+                subtitle:
+                    Text('Tổng điểm: ${councilData['total_points'] ?? 'N/A'}'),
+                children: [
+                  ...groupedPoints.entries.map((groupEntry) {
+                    return _buildGroupTile(groupEntry.key, groupEntry.value);
+                  }),
+                ],
+              ),
+            );
+          }),
+        ],
+      );
+    }
+  }
+
+  @override
   void dispose() {
-    _databaseOptions.close();
+    // if (!_isOffline) {
+    // }
     super.dispose();
   }
 }

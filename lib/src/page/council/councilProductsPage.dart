@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:ocop/mainData/database/databases.dart';
 import 'package:intl/intl.dart';
 import 'productEvaluationDetails.dart';
+import 'package:ocop/mainData/offline/council_offline_storage.dart';
+import 'package:internet_connection_checker/internet_connection_checker.dart';
 
 class CouncilProductsPage extends StatefulWidget {
   final int councilId;
@@ -17,32 +19,67 @@ class _CouncilProductsPageState extends State<CouncilProductsPage> {
   final DefaultDatabaseOptions _databaseOptions = DefaultDatabaseOptions();
   List<Map<String, dynamic>> _products = [];
   bool _isLoading = true;
+  bool _isOffline = false;
   String _errorMessage = '';
 
   @override
   void initState() {
     super.initState();
-    _loadProducts();
+    _checkConnectivityAndLoadData();
+  }
+
+  Future<void> _checkConnectivityAndLoadData() async {
+    bool result = await InternetConnectionChecker().hasConnection;
+    setState(() {
+      _isOffline = !result;
+      _isLoading = true;
+    });
+    await _loadProducts();
+    setState(() {
+      _isLoading = false;
+    });
   }
 
   Future<void> _loadProducts() async {
     try {
-      setState(() {
-        _isLoading = true;
-        _errorMessage = '';
-      });
-      await _databaseOptions.connect();
-      final productsData = await _databaseOptions.getCouncilProducts(widget.councilId);
-      setState(() {
-        _products = productsData;
-        _isLoading = false;
-      });
+      if (_isOffline) {
+        await _loadOfflineProducts();
+      } else {
+        await _loadOnlineProducts();
+      }
     } catch (e) {
       setState(() {
-        _isLoading = false;
         _errorMessage = 'Đã xảy ra lỗi khi tải dữ liệu: $e';
       });
     }
+  }
+
+  Future<void> _loadOfflineProducts() async {
+    final offlineProducts = await CouncilOfflineStorage.getProductList(widget.councilId);
+    setState(() {
+      _products = offlineProducts;
+    });
+  }
+
+  Future<void> _loadOnlineProducts() async {
+    await _databaseOptions.connect();
+    final productsData = await _databaseOptions.getCouncilProducts(widget.councilId);
+    
+    // Convert DateTime fields to strings before saving
+    final convertedProductsData = productsData.map((product) {
+      return {
+        ...product,
+        'submitted_at': _formatDate(product['submitted_at']),
+        'in_district_at': _formatDate(product['in_district_at']),
+        'in_province_at': _formatDate(product['in_province_at']),
+        'finalize_at': _formatDate(product['finalize_at']),
+      };
+    }).toList();
+
+    await CouncilOfflineStorage.saveProductList(widget.councilId, convertedProductsData);
+    setState(() {
+      _products = convertedProductsData;
+    });
   }
 
   @override
@@ -50,6 +87,21 @@ class _CouncilProductsPageState extends State<CouncilProductsPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Sản phẩm của ${widget.councilTitle}'),
+        actions: [
+          if (_isOffline)
+            IconButton(
+              icon: const Icon(Icons.cloud_off),
+              onPressed: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Đang ở chế độ offline')),
+                );
+              },
+            ),
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: _checkConnectivityAndLoadData,
+          ),
+        ],
       ),
       body: _buildBody(),
       backgroundColor: Colors.white,
@@ -82,43 +134,43 @@ class _CouncilProductsPageState extends State<CouncilProductsPage> {
               buildInfoTile('Sao cấp huyện', product['district_star']?.toString() ?? 'N/A'),
               buildInfoTile('Điểm cấp tỉnh', product['province_score']?.toString() ?? 'N/A'),
               buildInfoTile('Sao cấp tỉnh', product['province_star']?.toString() ?? 'N/A'),
-              buildInfoTile('Ngày nộp', _formatDate(product['submitted_at'])),
-              buildInfoTile('Ngày chấm cấp huyện', _formatDate(product['in_district_at'])),
-              buildInfoTile('Ngày chấm cấp tỉnh', _formatDate(product['in_province_at'])),
-              buildInfoTile('Ngày hoàn thành', _formatDate(product['finalize_at'])),
-Padding(
-  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-  child: ElevatedButton(
-    child: const Text(
-      'Xem chi tiết đánh giá',
-      style: TextStyle(
-        fontSize: 16,
-        fontWeight: FontWeight.bold,
-      ),
-    ),
-    style: ElevatedButton.styleFrom(
-      backgroundColor: Colors.blue, // Thay cho primary
-      foregroundColor: Colors.white, // Thay cho onPrimary
-      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(8),
-      ),
-      elevation: 3,
-    ),
-    onPressed: () {
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => ProductEvaluationDetails(
-            productId: product['id'],
-            councilId: widget.councilId,
-            productName: product['name'] ?? 'Không có tên',
-          ),
-        ),
-      );
-    },
-  ),
-),
+              buildInfoTile('Ngày nộp', product['submitted_at'] ?? 'N/A'),
+              buildInfoTile('Ngày chấm cấp huyện', product['in_district_at'] ?? 'N/A'),
+              buildInfoTile('Ngày chấm cấp tỉnh', product['in_province_at'] ?? 'N/A'),
+              buildInfoTile('Ngày hoàn thành', product['finalize_at'] ?? 'N/A'),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                child: ElevatedButton(
+                  child: const Text(
+                    'Xem chi tiết đánh giá',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blue,
+                    foregroundColor: Colors.white,
+                    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 24),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    elevation: 3,
+                  ),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => ProductEvaluationDetails(
+                          productId: product['id'],
+                          councilId: widget.councilId,
+                          productName: product['name'] ?? 'Không có tên',
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
             ],
           );
         },
