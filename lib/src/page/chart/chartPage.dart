@@ -1,35 +1,36 @@
-// chartPage.dart
 import 'package:flutter/material.dart';
+import 'package:ocop/mainData/offline/chart_offline_storage.dart';
 import 'package:ocop/mainData/user/authService.dart';
 import 'package:ocop/src/page/chart/elements/pieChart.dart';
 import 'package:ocop/src/data/chart/chartData.dart';
 import 'package:ocop/src/page/chart/elements/barChart.dart';
 import 'chartMenu.dart';
 import 'chartDataLoader.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 
 class ChartPage extends StatefulWidget {
-  const ChartPage({super.key});
+  const ChartPage({Key? key}) : super(key: key);
 
   @override
   _ChartPageState createState() => _ChartPageState();
 }
 
 class _ChartPageState extends State<ChartPage> {
-  int? selectedChart = 1;
-  int? selectedLoadData = 1;
-  int? selectedCompanyData = 1;
-  int? selectedOcopData = 1;
-  int? checkSelected = 1;
+  int selectedChart = 1;
+  int selectedLoadData = 1;
+  int selectedCompanyData = 1;
+  int selectedOcopData = 1;
+  int checkSelected = 1;
   bool checkData = false;
   bool isAdmin = false;
+  bool isOffline = false;
 
   ChartData chartData = ChartData(
-    data: {'data': 0},
-    title: "Chưa có dữ liệu",
-    x_title: "Chưa có dữ liệu",
-    y_title: "Chưa có dữ liệu",
-    name: "Chưa có dữ liệu"
-  );
+      data: {'data': 0},
+      title: "Chưa có dữ liệu",
+      x_title: "Chưa có dữ liệu",
+      y_title: "Chưa có dữ liệu",
+      name: "Chưa có dữ liệu");
 
   late ChartDataLoader dataLoader;
 
@@ -37,8 +38,24 @@ class _ChartPageState extends State<ChartPage> {
   void initState() {
     super.initState();
     dataLoader = ChartDataLoader();
-    _loadProductRating();
-    _checkUserRole();
+    _initializeData();
+    print(isOffline);
+  }
+
+  Future<void> _initializeData() async {
+    await _checkConnectivity();
+    await _checkUserRole();
+    if (!isOffline) {
+      await _loadAndSaveAllData();
+    }
+    await _loadInitialData();
+  }
+
+  Future<void> _checkConnectivity() async {
+    var connectivityResult = await (Connectivity().checkConnectivity());
+    setState(() {
+      isOffline = connectivityResult == ConnectivityResult.none;
+    });
   }
 
   Future<void> _checkUserRole() async {
@@ -48,41 +65,153 @@ class _ChartPageState extends State<ChartPage> {
     });
   }
 
-  void setCheckData() {
-    setState(() {
-      checkData = !checkData;
-    });
-  }
-
-  Future<void> _loadData(Future<ChartData> Function() loadFunction) async {
+  Future<void> _loadAndSaveAllData() async {
     await dataLoader.connect();
-    var newChartData = await loadFunction();
+    await _loadAndSaveData('product_1', dataLoader.loadProductRating);
+    await _loadAndSaveData('product_2', dataLoader.loadProductCategory);
+    await _loadAndSaveData('product_3', dataLoader.loadProductCommune);
+    await _loadAndSaveData('product_4', dataLoader.loadProductDistrict);
+    await _loadAndSaveData('product_5', dataLoader.loadProductYear);
+    await _loadAndSaveData('company_1', dataLoader.loadCompanyTypes);
+    await _loadAndSaveData('company_2', dataLoader.loadCompanyDistricts);
+    await _loadAndSaveData('company_3', dataLoader.loadCompanyStatus);
+    if (isAdmin) {
+      await _loadAndSaveData('ocop_1', dataLoader.loadTotalProductCount);
+      await _loadAndSaveData('ocop_2', dataLoader.loadProductStatusCounts);
+      await _loadAndSaveData('ocop_3', dataLoader.loadOcopFileDistrict);
+      await _loadAndSaveData('ocop_4', dataLoader.loadOcopFileYear);
+    }
+  }
+
+  Future<void> _loadAndSaveData(
+      String identifier, Future<ChartData> Function() loadFunction) async {
+    try {
+      var data = await loadFunction();
+      await ChartOfflineStorage.saveChartData(identifier, data);
+    } catch (e) {
+      setState(() {
+        isOffline = true;
+      });
+      print('Lỗi khi tải và lưu dữ liệu cho $identifier: $e');
+    }
+  }
+
+  Future<void> _loadInitialData() async {
     setState(() {
-      chartData = newChartData;
-      setCheckData();
+      checkData = false;
+    });
+
+    String identifier = _getCurrentIdentifier();
+    if (isOffline) {
+      await _loadOfflineData(identifier);
+    } else {
+      await _loadOnlineData(identifier);
+    }
+  }
+
+  Future<void> _loadOnlineData(String identifier) async {
+    try {
+      await dataLoader.connect();
+      var newChartData = await _getDataForIdentifier(identifier);
+      setState(() {
+        chartData = newChartData;
+        checkData = true;
+      });
+      await ChartOfflineStorage.saveChartData(identifier, chartData);
+    } catch (e) {
+      print('Lỗi khi tải dữ liệu online: $e');
+      await _loadOfflineData(identifier);
+    }
+  }
+
+  Future<void> _loadOfflineData(String identifier) async {
+    ChartData? offlineData = await ChartOfflineStorage.getChartData(identifier);
+    setState(() {
+      if (offlineData != null) {
+        chartData = offlineData;
+      } else {
+        chartData = ChartData(
+            data: {'data': 0},
+            title: "Không có dữ liệu offline",
+            x_title: "Không có dữ liệu",
+            y_title: "Không có dữ liệu",
+            name: "Không có dữ liệu offline");
+      }
+      checkData = true;
     });
   }
 
-  Future<void> _loadProductRating() => _loadData(dataLoader.loadProductRating);
-  Future<void> _loadProductCategory() => _loadData(dataLoader.loadProductCategory);
-  Future<void> _loadProductCommune() => _loadData(dataLoader.loadProductCommune);
-  Future<void> _loadProductYear() => _loadData(dataLoader.loadProductYear);
-  Future<void> _loadCompanyTypes() => _loadData(dataLoader.loadCompanyTypes);
-  Future<void> _loadCompanyDistricts() => _loadData(dataLoader.loadCompanyDistricts);
-  Future<void> _loadProductDistrict() => _loadData(dataLoader.loadProductDistrict);
-  Future<void> _loadCompanyStatus() => _loadData(dataLoader.loadCompanyStatus);
-  Future<void> _loadTotalProductCount() => _loadData(dataLoader.loadTotalProductCount);
-  Future<void> _loadProductStatusCounts() => _loadData(dataLoader.loadProductStatusCounts);
-  Future<void> _loadOcopFileDistrict() => _loadData(dataLoader.loadOcopFileDistrict);
-  Future<void> _loadOcopFileYear() => _loadData(dataLoader.loadOcopFileYear);
+  Future<ChartData> _getDataForIdentifier(String identifier) async {
+    switch (identifier) {
+      case 'product_1':
+        return await dataLoader.loadProductRating();
+      case 'product_2':
+        return await dataLoader.loadProductCategory();
+      case 'product_3':
+        return await dataLoader.loadProductCommune();
+      case 'product_4':
+        return await dataLoader.loadProductDistrict();
+      case 'product_5':
+        return await dataLoader.loadProductYear();
+      case 'company_1':
+        return await dataLoader.loadCompanyTypes();
+      case 'company_2':
+        return await dataLoader.loadCompanyDistricts();
+      case 'company_3':
+        return await dataLoader.loadCompanyStatus();
+      case 'ocop_1':
+        return await dataLoader.loadTotalProductCount();
+      case 'ocop_2':
+        return await dataLoader.loadProductStatusCounts();
+      case 'ocop_3':
+        return await dataLoader.loadOcopFileDistrict();
+      case 'ocop_4':
+        return await dataLoader.loadOcopFileYear();
+      default:
+        throw Exception('Không tìm thấy dữ liệu cho identifier: $identifier');
+    }
+  }
+
+  String _getCurrentIdentifier() {
+    switch (checkSelected) {
+      case 1:
+        return 'product_$selectedLoadData';
+      case 2:
+        return 'company_$selectedCompanyData';
+      case 3:
+        return 'ocop_$selectedOcopData';
+      default:
+        return 'unknown';
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Biểu đồ'),
+        title:
+            isOffline ? const Text('Biểu đồ(offline)') : const Text('Biểu đồ'),
         automaticallyImplyLeading: false,
         actions: [
+          if (isOffline)
+            IconButton(
+              icon: const Icon(Icons.cloud_off),
+              onPressed: () {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Đang ở chế độ offline')),
+                );
+              },
+            ),
+          IconButton(
+            icon: const Icon(Icons.refresh),
+            onPressed: () async {
+              await _checkConnectivity();
+              if (!isOffline) {
+                await _loadAndSaveAllData();
+              }
+              await _loadInitialData();
+            },
+          ),
           Builder(
             builder: (BuildContext context) {
               return IconButton(
@@ -105,88 +234,64 @@ class _ChartPageState extends State<ChartPage> {
         selectedOcopData: selectedOcopData,
         onChartTypeChanged: (value) {
           setState(() {
-            selectedChart = value;
+            selectedChart = value ?? 1;
           });
         },
-        onCheckSelectedChanged: (value) {
+        onCheckSelectedChanged: (value) async {
           setState(() {
-            checkSelected = value;
-            setCheckData();
-            if (value == 1) {
-              _loadProductRating();
-            } else if (value == 2) {
-              _loadCompanyTypes();
-            } else if (value == 3 && isAdmin) {
-              _loadTotalProductCount();
-            }
+            checkSelected = value ?? 1;
           });
+          await _loadInitialData();
         },
-        onLoadDataChanged: (value) {
+        onLoadDataChanged: (value) async {
           setState(() {
-            selectedLoadData = value;
-            setCheckData();
-            switch (value) {
-              case 1:
-                _loadProductRating();
-                break;
-              case 2:
-                _loadProductCategory();
-                break;
-              case 3:
-                _loadProductCommune();
-                break;
-              case 4:
-                _loadProductDistrict();
-                break;
-              case 5:
-                _loadProductYear();
-                break;
-            }
+            selectedLoadData = value ?? 1;
           });
+          await _loadInitialData();
         },
-        onCompanyDataChanged: (value) {
+        onCompanyDataChanged: (value) async {
           setState(() {
-            selectedCompanyData = value;
-            setCheckData();
-            switch (value) {
-              case 1:
-                _loadCompanyTypes();
-                break;
-              case 2:
-                _loadCompanyDistricts();
-                break;
-              case 3:
-                _loadCompanyStatus();
-                break;
-            }
+            selectedCompanyData = value ?? 1;
           });
+          await _loadInitialData();
         },
-        onOcopDataChanged: (value) {
+        onOcopDataChanged: (value) async {
           setState(() {
-            selectedOcopData = value;
-            setCheckData();
-            switch (value) {
-              case 1:
-                _loadTotalProductCount();
-                break;
-              case 2:
-                _loadProductStatusCounts();
-                break;
-              case 3:
-                _loadOcopFileDistrict();
-                break;
-              case 4:
-                _loadOcopFileYear();
-                break;
-            }
+            selectedOcopData = value ?? 1;
           });
+          await _loadInitialData();
         },
       ),
-      body: checkData
-          ? (selectedChart == 1
-              ? PieChartSample(chartData: chartData,)
-              : BarChartSample(chartData: chartData))
-          : const Center(child: CircularProgressIndicator()),
+      body: Column(
+        children: [
+          if (isOffline)
+            Container(
+              padding: const EdgeInsets.all(8.0),
+              color: Colors.orange[100],
+              child: Row(
+                children: [
+                  Icon(Icons.info_outline, color: Colors.orange[800]),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'Đây là dữ liệu offline. Vui lòng kết nối mạng để cập nhật dữ liệu mới nhất.',
+                      style: TextStyle(
+                          color: Colors.orange[800],
+                          fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          Expanded(
+            child: checkData
+                ? (selectedChart == 1
+                    ? PieChartSample(chartData: chartData)
+                    : BarChartSample(chartData: chartData))
+                : const Center(child: CircularProgressIndicator()),
+          ),
+        ],
+      ),
     );
   }
 }
