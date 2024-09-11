@@ -3,6 +3,7 @@ import 'package:chewie/chewie.dart';
 import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:ocop/mainData/database/databases.dart';
 import 'package:ocop/src/data/home/videosData.dart';
+import 'package:ocop/mainData/offline/video_offline_storage.dart';
 
 class VideoList extends StatefulWidget {
   const VideoList({super.key});
@@ -23,18 +24,17 @@ class VideoListState extends State<VideoList> {
   }
 
   void loadVideos() {
-    // Call your existing method to load products
     _loadVideos();
   }
+
   Future<void> _loadVideos() async {
     setState(() {
       isLoading = true;
     });
 
     List<VideoData> onlineVideos = [];
-    List<VideoData> offlineVideos = []; // Thường sẽ trống vì video không lưu offline
+    List<VideoData> offlineVideos = await VideoOfflineStorage.getOfflineVideos();
 
-    // Kiểm tra kết nối và tải dữ liệu online nếu có thể
     bool result = await InternetConnectionChecker().hasConnection;
     if (result) {
       final DefaultDatabaseOptions db = DefaultDatabaseOptions();
@@ -51,12 +51,11 @@ class VideoListState extends State<VideoList> {
       }
     }
 
-    // Kết hợp dữ liệu online và offline, ưu tiên dữ liệu online
     Map<String, VideoData> videoMap = {};
-    for (var video in onlineVideos) {
+    for (var video in offlineVideos) {
       videoMap[video.id] = video;
     }
-    for (var video in offlineVideos) {
+    for (var video in onlineVideos) {
       if (!videoMap.containsKey(video.id)) {
         videoMap[video.id] = video;
       }
@@ -80,7 +79,7 @@ class VideoListState extends State<VideoList> {
     if (videos.isEmpty) {
       return Center(
         child: Text(
-          "Kết nối mạng để xem video",
+          "Kết nối mạng để xem video hoặc tải video để xem offline",
           style: TextStyle(
             fontSize: 16,
             color: Colors.grey[600],
@@ -115,6 +114,47 @@ class VideoListState extends State<VideoList> {
     }
   }
 
+  Widget _buildVideoList() {
+    return ListView.builder(
+      itemCount: videos.length,
+      itemBuilder: (context, index) {
+        return ListTile(
+          title: Text(
+            videos[index].title,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
+          onTap: () => _changeVideo(index),
+          selected: index == _currentVideoIndex,
+          dense: true,
+          trailing: FutureBuilder<bool>(
+            future: VideoOfflineStorage.isVideoSaved(videos[index].id),
+            builder: (context, snapshot) {
+              if (snapshot.hasData) {
+                return snapshot.data!
+                    ? IconButton(
+                        icon: const Icon(Icons.offline_pin),
+                        onPressed: () async {
+                          await VideoOfflineStorage.removeVideo(videos[index].id);
+                          setState(() {});
+                        },
+                      )
+                    : IconButton(
+                        icon: const Icon(Icons.download),
+                        onPressed: () async {
+                          await VideoOfflineStorage.saveVideo(videos[index]);
+                          setState(() {});
+                        },
+                      );
+              }
+              return const SizedBox.shrink();
+            },
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -137,31 +177,15 @@ class VideoListState extends State<VideoList> {
                   return Row(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      // Video Player
                       SizedBox(
-                        width: constraints.maxWidth * 0.7, // 70% of the width
+                        width: constraints.maxWidth * 0.7,
                         child: _buildVideoPlayer(),
                       ),
-                      // Video List
                       if (videos.isNotEmpty)
                         SizedBox(
-                          width: constraints.maxWidth * 0.3, // 30% of the width
-                          height: constraints.maxWidth * 0.7 * 9 / 16, // Match the height of the video player
-                          child: ListView.builder(
-                            itemCount: videos.length,
-                            itemBuilder: (context, index) {
-                              return ListTile(
-                                title: Text(
-                                  videos[index].title,
-                                  maxLines: 2,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                onTap: () => _changeVideo(index),
-                                selected: index == _currentVideoIndex,
-                                dense: true,
-                              );
-                            },
-                          ),
+                          width: constraints.maxWidth * 0.3,
+                          height: constraints.maxWidth * 0.7 * 9 / 16,
+                          child: _buildVideoList(),
                         ),
                     ],
                   );

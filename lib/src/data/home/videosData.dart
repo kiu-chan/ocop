@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'package:video_player/video_player.dart';
 import 'package:chewie/chewie.dart';
 
@@ -7,14 +8,19 @@ class VideoData {
   VideoPlayerController? controller;
   ChewieController? chewieController;
   bool isInitialized = false;
+  String? offlineFilePath;
 
-  VideoData({required this.id, required this.title});
+  VideoData({required this.id, required this.title, this.offlineFilePath});
 
   Future<void> initialize() async {
     if (!isInitialized) {
-      controller = VideoPlayerController.network(
-        'https://drive.google.com/uc?export=download&id=$id',
-      );
+      if (offlineFilePath != null) {
+        controller = VideoPlayerController.file(File(offlineFilePath!));
+      } else {
+        controller = VideoPlayerController.network(
+          'https://drive.google.com/uc?export=download&id=$id',
+        );
+      }
       await controller!.initialize();
       chewieController = ChewieController(
         videoPlayerController: controller!,
