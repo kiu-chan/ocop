@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:ocop/src/data/home/newsData.dart';
 import 'package:ocop/mainData/database/databases.dart';
 import '../../../home/content/news/elements/allNews.dart';
 import '../../../home/content/news/elements/newsCard.dart';
+import 'package:ocop/mainData/offline/news_offline_storage.dart';
 
 class NewsList extends StatefulWidget {
   const NewsList({super.key});
@@ -22,8 +23,7 @@ class NewsListState extends State<NewsList> {
     _loadNews();
   }
 
-    void loadNews() {
-    // Call your existing method to load products
+  void loadNews() {
     _loadNews();
   }
 
@@ -33,11 +33,10 @@ class NewsListState extends State<NewsList> {
     });
 
     List<News> onlineNews = [];
-    List<News> offlineNews = []; // Thường sẽ trống vì tin tức không lưu offline
+    List<News> offlineNews = await NewsOfflineStorage.getOfflineNews();
 
-    // Kiểm tra kết nối và tải dữ liệu online nếu có thể
-    var connectivityResult = await (Connectivity().checkConnectivity());
-    if (connectivityResult != ConnectivityResult.none) {
+    bool result = await InternetConnectionChecker().hasConnection;
+    if (result) {
       final DefaultDatabaseOptions db = DefaultDatabaseOptions();
       try {
         await db.connect();
@@ -58,15 +57,13 @@ class NewsListState extends State<NewsList> {
       }
     }
 
-    // Kết hợp dữ liệu online và offline, ưu tiên dữ liệu online cho tin tức
+    // Combine online and offline news, prioritizing online data
     Map<int, News> newsMap = {};
-    for (var newsItem in onlineNews) {
+    for (var newsItem in offlineNews) {
       newsMap[newsItem.id] = newsItem;
     }
-    for (var newsItem in offlineNews) {
-      if (!newsMap.containsKey(newsItem.id)) {
-        newsMap[newsItem.id] = newsItem;
-      }
+    for (var newsItem in onlineNews) {
+      newsMap[newsItem.id] = newsItem;
     }
 
     setState(() {
@@ -118,7 +115,7 @@ class NewsListState extends State<NewsList> {
                 ? Padding(
                     padding: const EdgeInsets.all(16.0),
                     child: Text(
-                      "Kết nối mạng để xem thông tin chi tiết",
+                      "Không có tin tức để hiển thị. Hãy kết nối mạng để tải tin tức mới.",
                       style: TextStyle(
                         fontSize: 16,
                         color: Colors.grey[600],

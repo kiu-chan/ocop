@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:ocop/mainData/offline/chart_offline_storage.dart';
 import 'package:ocop/mainData/user/authService.dart';
 import 'package:ocop/src/page/chart/elements/pieChart.dart';
@@ -6,7 +7,6 @@ import 'package:ocop/src/data/chart/chartData.dart';
 import 'package:ocop/src/page/chart/elements/barChart.dart';
 import 'chartMenu.dart';
 import 'chartDataLoader.dart';
-import 'package:connectivity_plus/connectivity_plus.dart';
 
 class ChartPage extends StatefulWidget {
   const ChartPage({super.key});
@@ -52,9 +52,9 @@ class _ChartPageState extends State<ChartPage> {
   }
 
   Future<void> _checkConnectivity() async {
-    var connectivityResult = await (Connectivity().checkConnectivity());
+    bool result = await InternetConnectionChecker().hasConnection;
     setState(() {
-      isOffline = connectivityResult == ConnectivityResult.none;
+      isOffline = !result;
     });
   }
 

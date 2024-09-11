@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:ocop/src/data/home/companyData.dart';
 import 'package:ocop/mainData/database/databases.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:ocop/src/page/home/content/companies/companyDetails.dart';
 import 'package:ocop/src/page/home/content/companies/allCompanies.dart';
+import 'package:ocop/mainData/offline/company_offline_storage.dart';
 
 class CompanyList extends StatefulWidget {
   const CompanyList({super.key});
@@ -14,59 +15,59 @@ class CompanyList extends StatefulWidget {
 }
 
 class CompanyListState extends State<CompanyList> {
-  List<Company> companies = [];
-  final DefaultDatabaseOptions db = DefaultDatabaseOptions();
-  bool isLoading = true;
+  List<Company> companies = []; // Danh sách các công ty sẽ được hiển thị
+  final DefaultDatabaseOptions db = DefaultDatabaseOptions(); // Đối tượng để tương tác với cơ sở dữ liệu
+  bool isLoading = true; // Biến để kiểm soát trạng thái đang tải dữ liệu
 
   @override
   void initState() {
     super.initState();
-    _loadCompanies();
+    _loadCompanies(); // Gọi hàm tải dữ liệu công ty khi widget được khởi tạo
   }
 
+  // Phương thức công khai để tải lại dữ liệu công ty
   void loadCompanies() {
-    // Call your existing method to load products
     _loadCompanies();
   }
 
+  // Phương thức để tải dữ liệu công ty
   Future<void> _loadCompanies() async {
     setState(() {
-      isLoading = true;
+      isLoading = true; // Bắt đầu quá trình tải, hiển thị trạng thái đang tải
     });
 
-    List<Company> onlineCompanies = [];
-    List<Company> offlineCompanies = []; // Thường sẽ trống vì công ty không lưu offline
+    List<Company> onlineCompanies = []; // Danh sách công ty từ server
+    List<Company> offlineCompanies = await CompanyOfflineStorage.getOfflineCompanies(); // Lấy danh sách công ty đã lưu offline
 
-    // Kiểm tra kết nối và tải dữ liệu online nếu có thể
-    var connectivityResult = await (Connectivity().checkConnectivity());
-    if (connectivityResult != ConnectivityResult.none) {
+    // Kiểm tra kết nối internet
+    bool result = await InternetConnectionChecker().hasConnection;
+    if (result) {
       try {
-        await db.connect();
-        onlineCompanies = await db.getRandomCompanies(limit: 10);
+        await db.connect(); // Kết nối đến cơ sở dữ liệu
+        onlineCompanies = await db.getRandomCompanies(limit: 10); // Lấy 10 công ty ngẫu nhiên từ server
       } catch (e) {
         print('Lỗi khi tải dữ liệu công ty online: $e');
       } finally {
-        await db.close();
+        await db.close(); // Đảm bảo đóng kết nối cơ sở dữ liệu
       }
     }
 
     // Kết hợp dữ liệu online và offline, ưu tiên dữ liệu online
     Map<int, Company> companyMap = {};
-    for (var company in onlineCompanies) {
+    for (var company in offlineCompanies) {
       companyMap[company.id] = company;
     }
-    for (var company in offlineCompanies) {
-      if (!companyMap.containsKey(company.id)) {
-        companyMap[company.id] = company;
-      }
+    for (var company in onlineCompanies) {
+      companyMap[company.id] = company; // Ghi đè lên dữ liệu offline nếu có
     }
 
     setState(() {
-      companies = companyMap.values.toList();
-      isLoading = false;
+      companies = companyMap.values.toList(); // Cập nhật danh sách công ty
+      isLoading = false; // Kết thúc quá trình tải
     });
   }
 
+  // Phương thức để cắt ngắn tên công ty nếu quá dài
   String truncateName(String name, int wordLimit) {
     List<String> words = name.split(' ');
     if (words.length <= wordLimit) {
@@ -75,6 +76,7 @@ class CompanyListState extends State<CompanyList> {
     return '${words.take(wordLimit).join(' ')}...';
   }
 
+  // Widget để hiển thị một công ty
   Widget _buildCompanyCard(Company company) {
     return Card(
       elevation: 4,
@@ -153,12 +155,12 @@ class CompanyListState extends State<CompanyList> {
           ),
         ),
         isLoading
-            ? const Center(child: CircularProgressIndicator())
+            ? const Center(child: CircularProgressIndicator()) // Hiển thị indicator khi đang tải
             : companies.isEmpty
                 ? Padding(
                     padding: const EdgeInsets.all(16.0),
                     child: Text(
-                      "Kết nối mạng để xem thông tin công ty",
+                      "Không có thông tin công ty. Hãy kết nối mạng để tải dữ liệu mới.",
                       style: TextStyle(
                         fontSize: 16,
                         color: Colors.grey[600],

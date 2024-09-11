@@ -7,6 +7,47 @@ class NewsCard extends StatelessWidget {
 
   const NewsCard({super.key, required this.news});
 
+  Widget _buildImage() {
+    if (news.imageUrl != null) {
+      if (news.imageUrl!.startsWith('data:image')) {
+        // This is a base64 encoded image
+        return Image.memory(
+          Uri.parse(news.imageUrl!).data!.contentAsBytes(),
+          height: 100,
+          width: 100,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) {
+            print('Error loading base64 image: $error');
+            return _buildFallbackImage();
+          },
+        );
+      } else {
+        // This is a network image
+        return Image.network(
+          news.imageUrl!,
+          height: 100,
+          width: 100,
+          fit: BoxFit.cover,
+          errorBuilder: (context, error, stackTrace) {
+            print('Error loading network image: $error');
+            return _buildFallbackImage();
+          },
+        );
+      }
+    } else {
+      return _buildFallbackImage();
+    }
+  }
+
+  Widget _buildFallbackImage() {
+    return Image.asset(
+      'lib/src/assets/img/img.jpg',
+      height: 100,
+      width: 100,
+      fit: BoxFit.cover,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Card(
@@ -32,27 +73,7 @@ class NewsCard extends StatelessWidget {
                 topLeft: Radius.circular(10),
                 bottomLeft: Radius.circular(10),
               ),
-              child: news.imageUrl != null
-                ? Image.network(
-                    news.imageUrl!,
-                    height: 100,
-                    width: 100,
-                    fit: BoxFit.cover,
-                    errorBuilder: (context, error, stackTrace) {
-                      return Image.asset(
-                        'lib/src/assets/img/map/img.png',
-                        height: 100,
-                        width: 100,
-                        fit: BoxFit.cover,
-                      );
-                    },
-                  )
-                : Image.asset(
-                    'lib/src/assets/img/map/img.png',
-                    height: 100,
-                    width: 100,
-                    fit: BoxFit.cover,
-                  ),
+              child: _buildImage(),
             ),
             Expanded(
               child: Padding(

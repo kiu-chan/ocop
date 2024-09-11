@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:chewie/chewie.dart';
-import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:internet_connection_checker/internet_connection_checker.dart';
 import 'package:ocop/mainData/database/databases.dart';
 import 'package:ocop/src/data/home/videosData.dart';
 
@@ -35,8 +35,8 @@ class VideoListState extends State<VideoList> {
     List<VideoData> offlineVideos = []; // Thường sẽ trống vì video không lưu offline
 
     // Kiểm tra kết nối và tải dữ liệu online nếu có thể
-    var connectivityResult = await (Connectivity().checkConnectivity());
-    if (connectivityResult != ConnectivityResult.none) {
+    bool result = await InternetConnectionChecker().hasConnection;
+    if (result) {
       final DefaultDatabaseOptions db = DefaultDatabaseOptions();
       try {
         await db.connect();

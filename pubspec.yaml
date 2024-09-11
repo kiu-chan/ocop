@@ -57,7 +57,6 @@ dependencies:
   video_player: ^2.9.1
   mailer: ^6.1.2
   carousel_slider: ^5.0.0
-  connectivity_plus: ^6.0.5
   internet_connection_checker: ^1.0.0+1
 
 dev_dependencies:
@@ -84,6 +83,7 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   assets:
+    - lib/src/assets/img/img.jpg
     - lib/src/assets/img/home/logo.png
     - lib/src/assets/img/home/image.png
     - lib/src/assets/img/settings/ic_launcher.png

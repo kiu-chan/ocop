@@ -4,7 +4,7 @@ import 'package:ocop/mainData/offline/offline_storage_service.dart';
 import 'package:ocop/src/data/home/productHomeData.dart';
 import 'package:ocop/src/page/home/content/products/elements/productCard.dart';
 import 'package:ocop/src/page/home/content/products/elements/productsList.dart';
-import 'package:connectivity_plus/connectivity_plus.dart';
+import 'package:internet_connection_checker/internet_connection_checker.dart';
 
 class ProductList extends StatefulWidget {
   const ProductList({super.key});
@@ -35,12 +35,10 @@ class ProductListState extends State<ProductList> {
     List<ProductHome> onlineProducts = [];
     List<ProductHome> offlineProducts = [];
 
-    // Tải dữ liệu offline
     offlineProducts = await OfflineStorageService.getOfflineProducts();
 
-    // Kiểm tra kết nối và tải dữ liệu online nếu có thể
-    var connectivityResult = await (Connectivity().checkConnectivity());
-    if (connectivityResult != ConnectivityResult.none) {
+    bool result = await InternetConnectionChecker().hasConnection;
+    if (result) {
       final DefaultDatabaseOptions db = DefaultDatabaseOptions();
       try {
         await db.connect();
