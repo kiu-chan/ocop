@@ -201,7 +201,7 @@ class _MenuState extends State<Menu> {
             subtitle: const Text('Mô tả'),
             children: [
               CheckboxListTile(
-                title: const Text('Hiển thị biên giới'),
+                title: const Text('Ranh giới'),
                 value: widget.showBorders,
                 onChanged: (bool? value) {
                   widget.onToggleBorders(value ?? false);
@@ -210,7 +210,7 @@ class _MenuState extends State<Menu> {
                 activeColor: Colors.blue,
               ),
               CheckboxListTile(
-                title: const Text('Hiển thị huyện'),
+                title: const Text('Ranh giới huyện'),
                 value: localShowDistricts,
                 onChanged: (bool? value) {
                   setState(() {
@@ -222,7 +222,7 @@ class _MenuState extends State<Menu> {
                 activeColor: Colors.blue,
               ),
               CheckboxListTile(
-                title: const Text('Hiển thị xã'),
+                title: const Text('Ranh giới xã'),
                 value: localShowCommunes,
                 onChanged: (bool? value) {
                   setState(() {
