@@ -14,7 +14,7 @@ class VideoData {
 
   Future<void> initialize() async {
     if (!isInitialized) {
-      if (offlineFilePath != null) {
+      if (offlineFilePath != null && File(offlineFilePath!).existsSync()) {
         controller = VideoPlayerController.file(File(offlineFilePath!));
       } else {
         controller = VideoPlayerController.network(

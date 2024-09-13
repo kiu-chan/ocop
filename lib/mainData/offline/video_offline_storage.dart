@@ -5,7 +5,6 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:path/path.dart';
 import 'package:http/http.dart' as http;
 import 'package:ocop/src/data/home/videosData.dart';
-import 'package:video_player/video_player.dart';
 
 class VideoOfflineStorage {
   static const String _offlineVideosKey = 'offline_videos';
@@ -13,14 +12,7 @@ class VideoOfflineStorage {
   static Future<void> saveVideo(VideoData video) async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      Directory? documentsDirectory;
-      try {
-        documentsDirectory = await getApplicationDocumentsDirectory();
-      } catch (e) {
-        print('Error getting application documents directory: $e');
-        // Fallback to temporary directory if documents directory is not available
-        documentsDirectory = await getTemporaryDirectory();
-      }
+      Directory documentsDirectory = await getApplicationDocumentsDirectory();
       
       String videoFileName = 'video_${video.id}.mp4';
       String videoFilePath = join(documentsDirectory.path, videoFileName);
@@ -42,7 +34,6 @@ class VideoOfflineStorage {
       await prefs.setStringList(_offlineVideosKey, savedVideos);
     } catch (e) {
       print('Error saving video: $e');
-      // You might want to rethrow or handle this error depending on your app's needs
     }
   }
 
@@ -56,7 +47,8 @@ class VideoOfflineStorage {
         return VideoData(
           id: videoInfo['id'],
           title: videoInfo['title'],
-        )..controller = VideoPlayerController.file(File(videoInfo['filePath']));
+          offlineFilePath: videoInfo['filePath'],
+        );
       }).toList();
     } catch (e) {
       print('Error getting offline videos: $e');

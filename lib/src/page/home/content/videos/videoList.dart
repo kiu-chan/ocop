@@ -6,7 +6,7 @@ import 'package:ocop/src/data/home/videosData.dart';
 import 'package:ocop/mainData/offline/video_offline_storage.dart';
 
 class VideoList extends StatefulWidget {
-  const VideoList({super.key});
+  const VideoList({Key? key}) : super(key: key);
 
   @override
   VideoListState createState() => VideoListState();
@@ -16,6 +16,7 @@ class VideoListState extends State<VideoList> {
   List<VideoData> videos = [];
   bool isLoading = true;
   int _currentVideoIndex = 0;
+  Map<String, bool> _downloadingVideos = {};
 
   @override
   void initState() {
@@ -35,15 +36,12 @@ class VideoListState extends State<VideoList> {
     List<VideoData> onlineVideos = [];
     List<VideoData> offlineVideos = await VideoOfflineStorage.getOfflineVideos();
 
-    bool result = await InternetConnectionChecker().hasConnection;
-    if (result) {
+    bool hasInternetConnection = await InternetConnectionChecker().hasConnection;
+    if (hasInternetConnection) {
       final DefaultDatabaseOptions db = DefaultDatabaseOptions();
       try {
         await db.connect();
         onlineVideos = await db.getAllVideo();
-        if (onlineVideos.isNotEmpty) {
-          await onlineVideos[0].initialize();
-        }
       } catch (e) {
         print('Lỗi khi tải dữ liệu video online: $e');
       } finally {
@@ -65,6 +63,11 @@ class VideoListState extends State<VideoList> {
       videos = videoMap.values.toList();
       isLoading = false;
     });
+
+    if (videos.isNotEmpty) {
+      await videos[0].initialize();
+      setState(() {});
+    }
   }
 
   @override
@@ -131,21 +134,38 @@ class VideoListState extends State<VideoList> {
             future: VideoOfflineStorage.isVideoSaved(videos[index].id),
             builder: (context, snapshot) {
               if (snapshot.hasData) {
-                return snapshot.data!
-                    ? IconButton(
-                        icon: const Icon(Icons.offline_pin),
-                        onPressed: () async {
-                          await VideoOfflineStorage.removeVideo(videos[index].id);
-                          setState(() {});
-                        },
-                      )
-                    : IconButton(
-                        icon: const Icon(Icons.download),
-                        onPressed: () async {
-                          await VideoOfflineStorage.saveVideo(videos[index]);
-                          setState(() {});
-                        },
-                      );
+                if (_downloadingVideos[videos[index].id] == true) {
+                  return SizedBox(
+                    width: 24,
+                    height: 24,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      valueColor: AlwaysStoppedAnimation<Color>(Theme.of(context).primaryColor),
+                    ),
+                  );
+                } else if (snapshot.data!) {
+                  return IconButton(
+                    icon: const Icon(Icons.offline_pin),
+                    onPressed: () async {
+                      await VideoOfflineStorage.removeVideo(videos[index].id);
+                      _loadVideos(); // Reload videos after removing
+                    },
+                  );
+                } else {
+                  return IconButton(
+                    icon: const Icon(Icons.download),
+                    onPressed: () async {
+                      setState(() {
+                        _downloadingVideos[videos[index].id] = true;
+                      });
+                      await VideoOfflineStorage.saveVideo(videos[index]);
+                      setState(() {
+                        _downloadingVideos[videos[index].id] = false;
+                      });
+                      _loadVideos(); // Reload videos after saving
+                    },
+                  );
+                }
               }
               return const SizedBox.shrink();
             },
