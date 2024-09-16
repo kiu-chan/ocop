@@ -47,12 +47,39 @@
 	<true/>
 	<key>LSApplicationQueriesSchemes</key>
 	<array>
-	<string>https</string>
-	<string>http</string>
+		<string>https</string>
+		<string>http</string>
+		<string>tel</string>
 	</array>
-	<key>LSApplicationQueriesSchemes</key>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>This app needs access to location when open.</string>
+	<key>NSLocationAlwaysUsageDescription</key>
+	<string>This app needs access to location when in the background.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>This app requires access to the camera.</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>This app requires access to the photo library.</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>This app requires access to the microphone.</string>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+	</dict>
+	<key>CFBundleLocalizations</key>
 	<array>
-	<string>tel</string>
+		<string>en</string>
+		<string>vi</string>
 	</array>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
+	<key>UIViewControllerBasedStatusBarAppearance</key>
+	<false/>
+	<key>UIStatusBarHidden</key>
+	<false/>
+	<key>UIStatusBarStyle</key>
+	<string>UIStatusBarStyleDefault</string>
+	<key>FLTEnableImpeller</key>
+	<false/>
 </dict>
 </plist>
