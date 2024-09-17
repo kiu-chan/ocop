@@ -78,12 +78,12 @@ class _ProductEvaluationDetailsState extends State<ProductEvaluationDetails> {
   }
 
   Future<void> _loadOnlineData() async {
-    final DefaultDatabaseOptions _databaseOptions = DefaultDatabaseOptions();
-    await _databaseOptions.connect();
+    final DefaultDatabaseOptions databaseOptions = DefaultDatabaseOptions();
+    await databaseOptions.connect();
     final evaluationId =
-        await _databaseOptions.getProductEvaluationId(widget.productId);
+        await databaseOptions.getProductEvaluationId(widget.productId);
     if (evaluationId != null) {
-      final points = await _databaseOptions.getEvaluationPoints(evaluationId);
+      final points = await databaseOptions.getEvaluationPoints(evaluationId);
       setState(() {
         _evaluationId = evaluationId;
         _evaluationPoints = points;
@@ -97,7 +97,7 @@ class _ProductEvaluationDetailsState extends State<ProductEvaluationDetails> {
         _errorMessage = 'Không tìm thấy ID đánh giá.';
       });
     }
-    _databaseOptions.close();
+    databaseOptions.close();
   }
 
   Widget _buildGroupTile(
@@ -114,8 +114,9 @@ class _ProductEvaluationDetailsState extends State<ProductEvaluationDetails> {
 
   Widget _buildSubGroupTile(
       String subGroupName, List<Map<String, dynamic>> criteria) {
-    if (subGroupName.isEmpty)
+    if (subGroupName.isEmpty) {
       return Column(children: criteria.map(_buildCriteriaTile).toList());
+    }
     return ExpansionTile(
       title: Text(subGroupName,
           style: const TextStyle(fontStyle: FontStyle.italic)),

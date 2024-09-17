@@ -6,7 +6,7 @@ import 'package:ocop/src/data/home/videosData.dart';
 import 'package:ocop/mainData/offline/video_offline_storage.dart';
 
 class VideoList extends StatefulWidget {
-  const VideoList({Key? key}) : super(key: key);
+  const VideoList({super.key});
 
   @override
   VideoListState createState() => VideoListState();
@@ -16,7 +16,7 @@ class VideoListState extends State<VideoList> {
   List<VideoData> videos = [];
   bool isLoading = true;
   int _currentVideoIndex = 0;
-  Map<String, bool> _downloadingVideos = {};
+  final Map<String, bool> _downloadingVideos = {};
 
   @override
   void initState() {

@@ -59,10 +59,10 @@ class _CouncilListPageState extends State<CouncilListPage> {
   }
 
   Future<void> _loadOnlineCouncils() async {
-    final DefaultDatabaseOptions _databaseOptions = DefaultDatabaseOptions();
-    await _databaseOptions.connect();
+    final DefaultDatabaseOptions databaseOptions = DefaultDatabaseOptions();
+    await databaseOptions.connect();
     final councilsData =
-        await _databaseOptions.councilsDatabase.getCouncilList();
+        await databaseOptions.councilsDatabase.getCouncilList();
     final councils =
         councilsData.map((data) => Council.fromJson(data)).toList();
     await CouncilOfflineStorage.saveCouncilList(councils);
