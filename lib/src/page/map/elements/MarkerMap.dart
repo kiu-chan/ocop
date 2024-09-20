@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
+import 'package:ocop/config/map.dart';
 import 'package:ocop/src/data/map/ImageData.dart';
 import 'package:ocop/src/data/map/companiesData.dart';
 import 'package:ocop/src/data/map/productMapData.dart';
@@ -32,12 +33,13 @@ class MarkerMap extends StatefulWidget {
 class _MarkerMapState extends State<MarkerMap> {
   bool _isLoading = false;
 
-  @override
   Widget build(BuildContext context) {
     return MarkerLayer(
       markers: _buildMarkers(context) +
           _buildCompanyMarkers() +
-          _buildProductMarkers(context),
+          (MapConfig.showProducts
+              ? _buildProductMarkers(context)
+              : []), // Only build product markers if showProducts is true
     );
   }
 

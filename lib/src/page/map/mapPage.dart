@@ -75,6 +75,7 @@ class _MapPageState extends State<MapPage> {
   bool showCommunes = MapConfig.showCommunes;
   bool showDistricts = MapConfig.showDistricts;
   bool showBorders = MapConfig.showBorders;
+  bool showProducts = MapConfig.showProducts;
   int selectedMapType = 0;
   Set<int> selectedCommuneIds = {};
   Set<int> selectedDistrictIds = {};
@@ -345,7 +346,6 @@ class _MapPageState extends State<MapPage> {
               zoom: currentZoom,
               interactiveFlags: InteractiveFlag.all & ~InteractiveFlag.rotate,
               onTap: (_, latlng) {
-                print("Map tapped at $latlng");
                 mapControllers.handleMapTap(latlng, communes, districts,
                     showCommunes, _showCommuneInfo, _showDistrictInfo);
               },
@@ -364,12 +364,13 @@ class _MapPageState extends State<MapPage> {
                 showDistricts: showDistricts,
                 showCommunes: showCommunes,
               ),
-              MarkerMap(
-                imageDataList: imageDataList,
-                companies: filteredCompanies,
-                products: products,
-                selectedProductTypes: selectedProductTypes,
-              ),
+              if (showProducts)
+                MarkerMap(
+                  imageDataList: imageDataList,
+                  companies: filteredCompanies,
+                  products: products,
+                  selectedProductTypes: selectedProductTypes,
+                ),
             ],
           ),
           Positioned(
@@ -393,7 +394,7 @@ class _MapPageState extends State<MapPage> {
                 if (_showSearchResults)
                   Container(
                     color: Colors.white,
-                    height: 200, // Điều chỉnh theo nhu cầu
+                    height: 200,
                     child: ListView(
                       children: [
                         ..._searchProductResults.map((product) => ListTile(
