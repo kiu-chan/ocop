@@ -8,7 +8,7 @@ class MapConfig {
   static bool get showCommunes => false;
   static bool get showDistricts => true;
   static bool get showBorders => false;
-  static bool get showProducts => false;
+  static bool get showProducts => true;
 
   double getDefaultZoom() {
     return defaultZoom;
