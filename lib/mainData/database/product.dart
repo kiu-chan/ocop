@@ -33,7 +33,7 @@ class ProductDatabase {
             fileName = parts[0];
           }
           imageUrl =
-              'https://ocop.bentre.gov.vn/storage/images/product/${row[6]}/conversions/$fileName-md.jpg';
+              'https://ocopbentre.girc.edu.vn/storage/images/product/${row[6]}/conversions/$fileName-md.jpg';
         }
         return ProductData(
           id: row[0] as int,
@@ -241,7 +241,7 @@ class ProductDatabase {
             fileName = parts[0];
           }
           imageUrl =
-              'https://ocop.bentre.gov.vn/storage/images/product/${row[4]}/conversions/$fileName-md.jpg';
+              'https://ocopbentre.girc.edu.vn/storage/images/product/${row[4]}/conversions/$fileName-md.jpg';
         }
         return {
           'id': row[0] as int,
@@ -281,7 +281,7 @@ class ProductDatabase {
             fileName = parts[0];
           }
           imageUrl =
-              'https://ocop.bentre.gov.vn/storage/images/product/${row[4]}/conversions/$fileName-md.jpg';
+              'https://ocopbentre.girc.edu.vn/storage/images/product/${row[4]}/conversions/$fileName-md.jpg';
         }
         return {
           'id': row[0] as int,
@@ -363,9 +363,9 @@ class ProductDatabase {
           }
           String conversion =
               collectionName == 'product_featured_image' ? 'md' : 'thumb';
-          return 'https://ocop.bentre.gov.vn/storage/images/product/$id/conversions/$fileName-$conversion.jpg';
+          return 'https://ocopbentre.girc.edu.vn/storage/images/product/$id/conversions/$fileName-$conversion.jpg';
         } else {
-          return 'https://ocop.bentre.gov.vn/storage/images/product/$id/$fileName';
+          return 'https://ocopbentre.girc.edu.vn/storage/images/product/$id/$fileName';
         }
       }).toList();
     } catch (e) {

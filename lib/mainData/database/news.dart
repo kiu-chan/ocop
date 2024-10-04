@@ -141,9 +141,9 @@ class NewsDatabase {
         }
 
         if (hasConversions) {
-          return 'https://ocop.bentre.gov.vn/storage/images/post/$id/conversions/$fileNameWithoutExtension-md.jpg';
+          return 'https://ocopbentre.girc.edu.vn/storage/images/post/$id/conversions/$fileNameWithoutExtension-md.jpg';
         } else {
-          return 'https://ocop.bentre.gov.vn/storage/images/post/$id/$fileName';
+          return 'https://ocopbentre.girc.edu.vn/storage/images/post/$id/$fileName';
         }
       }
       return null;

@@ -36,7 +36,7 @@ class CompanyDatabase {
         String? logoUrl;
         if (row[5] != null && row[6] != null) {
           logoUrl =
-              'https://ocop.bentre.gov.vn/storage/images/company/${row[5]}/${row[6]}';
+              'https://https://ocopbentre.girc.edu.vn/storage/images/company/${row[5]}/${row[6]}';
         }
         return CompanyData(
           location: LatLng(
@@ -74,7 +74,7 @@ class CompanyDatabase {
         String? logoUrl;
         if (row[2] != null && row[3] != null) {
           logoUrl =
-              'https://ocop.bentre.gov.vn/storage/images/company/${row[2]}/${row[3]}';
+              'https://https://ocopbentre.girc.edu.vn/storage/images/company/${row[2]}/${row[3]}';
         }
         return Company(
           id: row[0] as int,
@@ -108,7 +108,7 @@ class CompanyDatabase {
         String? logoUrl;
         if (row[8] != null && row[9] != null) {
           logoUrl =
-              'https://ocop.bentre.gov.vn/storage/images/company/${row[8]}/${row[9]}';
+              'https://https://ocopbentre.girc.edu.vn/storage/images/company/${row[8]}/${row[9]}';
         }
 
         // Lấy danh sách sản phẩm của công ty
@@ -133,7 +133,7 @@ class CompanyDatabase {
               fileName = parts[0];
             }
             imageUrl =
-                'https://ocop.bentre.gov.vn/storage/images/product/${productRow[4]}/conversions/$fileName-md.jpg';
+                'https://https://ocopbentre.girc.edu.vn/storage/images/product/${productRow[4]}/conversions/$fileName-md.jpg';
           }
           return ProductHome(
             id: productRow[0] as int,
@@ -191,7 +191,7 @@ class CompanyDatabase {
         String? logoUrl;
         if (row[2] != null && row[3] != null) {
           logoUrl =
-              'https://ocop.bentre.gov.vn/storage/images/company/${row[2]}/${row[3]}';
+              'https://https://ocopbentre.girc.edu.vn/storage/images/company/${row[2]}/${row[3]}';
         }
         return Company(
           id: row[0] as int,
